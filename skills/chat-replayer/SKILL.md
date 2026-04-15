@@ -13,7 +13,7 @@ One file: `<slug>.html`. No external dependencies. The transcript JSON is embedd
 
 ### Player features
 
-- **Step-by-step reveal** — each → (Space/arrow) reveals one block: a user message, a text block, or a tool call (with its result). Tool calls and their results are shown together in one click.
+- **Step-by-step reveal** — each → (Space/arrow) reveals one block: a user message, a text block, or a tool call (with its result). Tool calls and their results are shown together in one click. Uses **incremental DOM updates** — next appends one element, prev removes one — no full-page rebuild or flicker.
 - **Collapsed tool cards** — tool calls are collapsed by default showing just `🔧 tool_name — description`. Click to expand and see input parameters + result.
 - **Markdown rendering** — assistant text blocks render as proper HTML: tables, headings, bold, lists, code blocks with KQL/SQL syntax highlighting.
 - **Empty tool filtering** — tools with no input AND no output (or only "(no output)") are automatically hidden.

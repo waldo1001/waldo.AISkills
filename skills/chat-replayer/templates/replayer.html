@@ -734,12 +734,12 @@
   }
 
   // ── Rendering ──────────────────────────────────────────────────────────────
-  function render() {
+  // Full rebuild — only used for setTranscript, reset, revealAll, and progress-bar jumps
+  function fullRender() {
     if (!transcript || steps.length === 0) {
       emptyEl.style.display = 'block';
       chatEl.innerHTML = '';
-      $('counter').textContent = '0 / 0';
-      $('progress-bar').style.width = '0%';
+      updateUI();
       return;
     }
     emptyEl.style.display = 'none';
@@ -747,12 +747,39 @@
     for (let i = 0; i < visibleSteps; i++) {
       chatEl.appendChild(renderStep(steps[i]));
     }
-    $('counter').textContent = `${visibleSteps} / ${steps.length}`;
-    $('progress-bar').style.width = `${(visibleSteps / steps.length) * 100}%`;
+    updateUI();
+    scrollToBottom();
+  }
+
+  // Incremental: append one step
+  function appendStep() {
+    emptyEl.style.display = 'none';
+    const el = renderStep(steps[visibleSteps - 1]);
+    chatEl.appendChild(el);
+    updateUI();
+    scrollToBottom();
+  }
+
+  // Incremental: remove last step
+  function removeLastStep() {
+    const last = chatEl.lastElementChild;
+    if (last) last.remove();
+    updateUI();
+    // Scroll to new last element
+    const newLast = chatEl.lastElementChild;
+    if (newLast) newLast.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  function scrollToBottom() {
     requestAnimationFrame(() => {
       const last = chatEl.lastElementChild;
       if (last) last.scrollIntoView({ behavior: 'smooth', block: 'end' });
     });
+  }
+
+  function updateUI() {
+    $('counter').textContent = `${visibleSteps} / ${steps.length}`;
+    $('progress-bar').style.width = `${steps.length ? (visibleSteps / steps.length) * 100 : 0}%`;
     updateButtons();
   }
 
@@ -782,23 +809,23 @@
     steps = flattenTranscript(t);
     visibleSteps = steps.length > 0 ? 1 : 0;
     renderHeader();
-    render();
+    fullRender();
   }
 
   function next() {
-    if (visibleSteps < steps.length) { visibleSteps++; render(); }
+    if (visibleSteps < steps.length) { visibleSteps++; appendStep(); }
     else { stopPlay(); }
   }
   function prev() {
-    if (visibleSteps > 0) { visibleSteps--; render(); }
+    if (visibleSteps > 0) { visibleSteps--; removeLastStep(); }
   }
   function reset() {
     visibleSteps = steps.length > 0 ? 1 : 0;
-    render();
+    fullRender();
   }
   function revealAll() {
     visibleSteps = steps.length;
-    render();
+    fullRender();
   }
   function togglePlay() { playing ? stopPlay() : startPlay(); }
   function startPlay() {
@@ -856,7 +883,7 @@
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
     visibleSteps = Math.max(0, Math.min(steps.length, Math.round(pct * steps.length)));
-    render();
+    fullRender();
   };
 
   // ── Load embedded transcript ──────────────────────────────────────────────
@@ -887,7 +914,7 @@
     let t = tryLoadEmbedded();
     if (!t) t = await tryLoadFromUrl();
     if (t) setTranscript(t);
-    else render();
+    else fullRender();
   })();
 })();
 </script>
