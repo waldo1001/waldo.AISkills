@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "title": "BC Telemetry Buddy — slow page investigation",
+    "agent": "BC Telemetry Buddy",
+    "model": "gpt-4o",
+    "source": "copilot-studio"
+  },
+  "turns": [
+    {
+      "role": "user",
+      "content": "Why is the Sales Order list so slow for Contoso since last Tuesday?"
+    },
+    {
+      "role": "assistant",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Let me check Application Insights for that environment over the last week."
+        },
+        {
+          "type": "tool_use",
+          "id": "call_01",
+          "name": "query_app_insights",
+          "input": {
+            "kql": "traces\n| where customDimensions.environmentName == 'CONTOSO-PROD'\n| where customDimensions.eventId == 'RT0005'\n| where timestamp > ago(7d)\n| where customDimensions.alObjectId == 9305\n| summarize avg_ms = avg(toreal(customDimensions.serverExecutionTime)),\n            p95_ms = percentile(toreal(customDimensions.serverExecutionTime), 95),\n            count() by bin(timestamp, 1h)\n| order by timestamp asc",
+            "timespan": "P7D"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "toolUseId": "call_01",
+      "name": "query_app_insights",
+      "content": [
+        {
+          "type": "text",
+          "content": "Returned 168 rows.\n\nBaseline (Mon-Tue early): avg ~140ms, p95 ~380ms, ~45 calls/hr.\nFrom Tuesday 14:00 onward: avg jumped to ~2,800ms, p95 ~7,200ms, same call volume.\n\nNo errors. Just slow."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Big jump at a specific time — that smells like a deployment or a data shape change. Let me check what was deployed around then and what the SQL is doing now."
+        },
+        {
+          "type": "tool_use",
+          "id": "call_02",
+          "name": "query_app_insights",
+          "input": {
+            "kql": "traces\n| where customDimensions.environmentName == 'CONTOSO-PROD'\n| where customDimensions.eventId == 'AL0000E26'\n| where timestamp between (datetime('2026-04-07 12:00') .. datetime('2026-04-07 16:00'))\n| project timestamp, customDimensions.extensionName, customDimensions.extensionVersion"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "toolUseId": "call_02",
+      "name": "query_app_insights",
+      "content": [
+        {
+          "type": "text",
+          "content": "1 row.\n\n2026-04-07 13:52  Contoso Sales Customizations  v2.4.1 → v2.5.0"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Confirmed — Contoso Sales Customizations was upgraded to v2.5.0 about 8 minutes before the slowdown started. Let me look at the long-running SQL statements on that page now."
+        },
+        {
+          "type": "tool_use",
+          "id": "call_03",
+          "name": "query_app_insights",
+          "input": {
+            "kql": "traces\n| where customDimensions.environmentName == 'CONTOSO-PROD'\n| where customDimensions.eventId == 'RT0005'\n| where customDimensions.alObjectId == 9305\n| where timestamp > ago(2d)\n| join kind=inner (\n    traces\n    | where customDimensions.eventId == 'RT0008'\n    | project operation_Id, sqlStatement = customDimensions.sqlStatement,\n              sql_ms = toreal(customDimensions.executionTimeInMS)\n) on operation_Id\n| top 5 by sql_ms desc\n| project sqlStatement, sql_ms"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "toolUseId": "call_03",
+      "name": "query_app_insights",
+      "content": [
+        {
+          "type": "text",
+          "content": "Top statement (5 of 5 hits): 6,400ms\n\nSELECT TOP(50) * FROM [CRONUS$Sales Header$...] WHERE [Document Type]=@0 AND [Custom Region Code]=@1 ORDER BY [Posting Date] DESC\n\nNo matching key on (Document Type, Custom Region Code, Posting Date). Falls back to clustered scan."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Found it.\n\n**Root cause:** v2.5.0 of Contoso Sales Customizations added a `Custom Region Code` filter to the Sales Order List, but no SecondaryKey was added to `Sales Header` for the new field. Every list refresh now scans the table.\n\n**Fix:** Add a key `(Document Type, Custom Region Code, Posting Date)` to the `Sales Header` extension table in v2.5.1.\n\n**Workaround until then:** users can clear the Custom Region filter on the page; performance returns to baseline immediately.\n\nWant me to draft the AL change?"
+        }
+      ]
+    }
+  ]
+}

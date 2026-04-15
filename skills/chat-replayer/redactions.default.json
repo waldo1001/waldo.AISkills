@@ -1,0 +1,41 @@
+{
+  "replacements": [],
+  "patterns": [
+    {
+      "regex": "\\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\b",
+      "replace": "00000000-0000-0000-0000-000000000000",
+      "flags": "gi"
+    },
+    {
+      "regex": "\\b[\\w.-]+@[\\w.-]+\\.[a-z]{2,}\\b",
+      "replace": "user@example.com",
+      "flags": "gi"
+    },
+    {
+      "regex": "Bearer\\s+ey[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+",
+      "replace": "Bearer eyREDACTED.REDACTED.REDACTED",
+      "flags": "g"
+    },
+    {
+      "regex": "https://[a-z0-9-]+\\.crm\\d*\\.dynamics\\.com",
+      "replace": "https://contoso.crm.dynamics.com",
+      "flags": "gi"
+    },
+    {
+      "regex": "https://[a-z0-9-]+\\.sharepoint\\.com",
+      "replace": "https://contoso.sharepoint.com",
+      "flags": "gi"
+    },
+    {
+      "regex": "https://api\\.businesscentral\\.dynamics\\.com/v\\d+\\.\\d+/[a-f0-9-]+",
+      "replace": "https://api.businesscentral.dynamics.com/v2.0/00000000-0000-0000-0000-000000000000",
+      "flags": "gi"
+    },
+    {
+      "regex": "Server=[^;]+;Database=[^;]+;",
+      "replace": "Server=demo-sql;Database=demo-db;",
+      "flags": "gi"
+    }
+  ],
+  "dropBlocks": []
+}
