@@ -5,17 +5,25 @@ My personal collection of [Claude Skills](https://docs.claude.com/en/docs/claude
 ## Layout
 
 ```
-skills/         One folder per skill. Each is self-contained around its SKILL.md.
-demos/          Rendered demo output (e.g. replayed chats for talks).
-dist/           Packaged skill .zip files, ready to upload.
+skills/           One folder per distributable skill. Each is self-contained around its SKILL.md.
+demos/            Rendered demo output (e.g. replayed chats for talks).
+dist/             Packaged skill .zip files, ready to upload.
+.claude/skills/   Workspace-local skills, scoped to this repo only (not for distribution).
 ```
 
-## Skills
+## Distributable skills
 
 | Skill | Description |
 |---|---|
 | [chat-replayer](skills/chat-replayer/SKILL.md) | Convert AI agent chat sessions into self-contained, sanitized HTML files that replay the chat for live presentation. |
-| [sync-from-user](skills/sync-from-user/SKILL.md) | Local repo skill. Pull skill edits from `~/.claude/skills/` back into this repo after editing them live in another project. |
+
+## Workspace-local skills
+
+These live under `.claude/skills/` and are only active when Claude Code runs inside this repo. They exist to maintain the repo itself.
+
+| Skill | Description |
+|---|---|
+| [sync-from-user](.claude/skills/sync-from-user/SKILL.md) | Pull skill edits from `~/.claude/skills/` back into `skills/` after editing a skill live in another project. |
 
 ---
 
