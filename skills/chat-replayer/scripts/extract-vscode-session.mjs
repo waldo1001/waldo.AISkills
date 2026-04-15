@@ -52,7 +52,9 @@ for (const entry of jsonlEntries) {
       // If this is the first kind:2 for this path and the array was pre-populated
       // (e.g. request object created with response[] already filled), clear it first
       // to avoid duplicates — the incremental log re-supplies all items.
-      if (!appendedPaths.has(pathKey) && target.length > 0) {
+      // Exception: the top-level `requests` array is always appended to, never re-supplied.
+      const isTopLevelRequests = entry.k.length === 1 && entry.k[0] === 'requests';
+      if (!isTopLevelRequests && !appendedPaths.has(pathKey) && target.length > 0) {
         target.length = 0;
       }
       appendedPaths.add(pathKey);

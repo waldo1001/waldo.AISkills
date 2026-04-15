@@ -212,11 +212,13 @@
   .tool-desc {
     color: var(--text-muted);
     font-size: 13px;
-    flex: 1;
+    flex: 0 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0;
   }
+  .tool-toggle { margin-left: auto; }
   .tool-toggle {
     color: var(--text-muted);
     font-size: 11px;
@@ -229,7 +231,25 @@
     flex-direction: column;
     gap: 10px;
   }
-  .tool-wrap.collapsed .tool-details { display: none; }
+  .tool-wrap .tool-details-anim {
+    max-height: 3000px;
+    overflow: hidden;
+    opacity: 1;
+    transition: max-height 320ms ease, opacity 220ms ease;
+  }
+  .tool-wrap.collapsed .tool-details-anim {
+    max-height: 0;
+    opacity: 0;
+  }
+  .tool-result-preview {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 340px;
+  }
   .tool-section-label {
     font-size: 11px;
     font-weight: 600;
@@ -327,6 +347,32 @@
     padding: 60px 40px; margin-top: 24px; max-width: 500px; margin-left: auto; margin-right: auto;
   }
   .empty .drop-zone.dragover { border-color: var(--user); background: var(--surface); }
+  /* ── Animation additions ─────────────────────────────────────────────── */
+  .thinking-dots {
+    display: inline-flex; gap: 5px; padding: 4px 2px; align-items: center;
+  }
+  .thinking-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-muted);
+    animation: dot-pulse 900ms ease-in-out infinite;
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 150ms; }
+  .thinking-dots span:nth-child(3) { animation-delay: 300ms; }
+  @keyframes dot-pulse {
+    0%, 80%, 100% { opacity: 0.25; transform: scale(0.75); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+  .speed-controls { display: inline-flex; gap: 4px; margin-right: 6px; }
+  .speed-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 34px;
+  }
+  .speed-btn.active {
+    background: var(--user);
+    color: white;
+    border-color: var(--user);
+  }
 </style>
 </head>
 <body>
@@ -376,7 +422,68 @@
   let visibleSteps = 0;
   let playing = false;
   let playTimer = null;
-  const PLAY_DELAY_MS = 1800;
+  // Speed: 1 = 1×, 2 = 2×, 4 = 4×, 0 = instant (no animation)
+  let SPEED = 1;
+  const isInstant = () => SPEED === 0;
+  const speedMul = () => (SPEED === 0 ? 1 : SPEED);
+
+  // ── Typewriter ──────────────────────────────────────────────────────────
+  // Progressively reveal all text nodes inside `el` while preserving its
+  // rendered HTML structure (headings, lists, <code>, <pre>, links, tables).
+  function typewriteElement(el, slowFactor) {
+    if (!el || isInstant()) return Promise.resolve();
+    const slow = slowFactor || 1;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    const nodes = [];
+    let total = 0;
+    while (walker.nextNode()) {
+      const n = walker.currentNode;
+      const full = n.nodeValue;
+      if (!full) continue;
+      nodes.push({ node: n, full, len: full.length });
+      total += full.length;
+    }
+    if (total === 0) return Promise.resolve();
+    for (const n of nodes) n.node.nodeValue = '';
+    const BASE_MS_PER_CHAR = 6;
+    const MIN_MS = 150;
+    const MAX_MS = 600;
+    const duration = (Math.max(MIN_MS, Math.min(MAX_MS, total * BASE_MS_PER_CHAR)) * slow) / speedMul();
+    return new Promise(resolve => {
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(1, elapsed / duration);
+        let remaining = Math.floor(progress * total);
+        for (const n of nodes) {
+          if (remaining >= n.len) { n.node.nodeValue = n.full; remaining -= n.len; }
+          else if (remaining > 0) { n.node.nodeValue = n.full.slice(0, remaining); remaining = 0; }
+          else { n.node.nodeValue = ''; }
+        }
+        scrollToBottom();
+        if (progress >= 1) {
+          for (const n of nodes) n.node.nodeValue = n.full;
+          resolve();
+        } else {
+          requestAnimationFrame(tick);
+        }
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  // Delay between steps during Play. Short within an assistant turn,
+  // longer between turns; zero when instant.
+  function stepDelay(cur, nxt) {
+    if (isInstant() || !nxt) return 0;
+    if (!cur) return 0; // no leading delay before the very first reveal
+    const mul = speedMul();
+    if (cur && cur.type === 'label') return 350 / mul;          // thinking beat
+    if (cur && cur.type === 'text' && nxt.type === 'text') return 400 / mul;
+    if (nxt.type === 'user') return 1400 / mul;
+    if (cur && cur.type === 'user') return 700 / mul;
+    return 900 / mul;
+  }
 
   const $ = id => document.getElementById(id);
   const chatEl = $('chat');
@@ -648,24 +755,58 @@
       const wrap = document.createElement('div');
       wrap.className = 'tool-wrap collapsed'; // collapsed by default
 
-      // Summary header: icon + name + description
+      // Summary header: icon + name + description + first-line of result
       const desc = step.description || '';
+      let resultPreview = '';
+      if (step.result) {
+        const firstText = (step.result.content || []).find(c => c.type === 'text' && (c.content || '').trim());
+        if (firstText) {
+          const firstLine = String(firstText.content).split('\n').find(l => l.trim()) || '';
+          if (firstLine) {
+            resultPreview = `<span class="tool-result-preview">[${escapeHtml(firstLine.trim())}]</span>`;
+          }
+        }
+      }
       const summaryHtml = `
         <div class="tool-summary">
           <span class="tool-icon">🔧</span>
           <span class="tool-name">${escapeHtml(step.name || 'tool')}</span>
           ${desc ? `<span class="tool-desc">— ${escapeHtml(desc)}</span>` : ''}
+          ${resultPreview}
           <span class="tool-toggle">▼</span>
         </div>
       `;
       wrap.innerHTML = summaryHtml;
       wrap.querySelector('.tool-summary').addEventListener('click', () => {
-        wrap.classList.toggle('collapsed');
+        const anim = wrap.querySelector('.tool-details-anim');
+        if (!anim) { wrap.classList.toggle('collapsed'); return; }
+        const collapsing = !wrap.classList.contains('collapsed');
+        if (collapsing) {
+          anim.style.maxHeight = anim.scrollHeight + 'px';
+          requestAnimationFrame(() => {
+            wrap.classList.add('collapsed');
+            anim.style.maxHeight = '0px';
+          });
+        } else {
+          wrap.classList.remove('collapsed');
+          const target = anim.scrollHeight;
+          anim.style.maxHeight = '0px';
+          requestAnimationFrame(() => { anim.style.maxHeight = target + 'px'; });
+          const onEnd = (e) => {
+            if (e.propertyName !== 'max-height') return;
+            anim.style.maxHeight = 'none';
+            anim.removeEventListener('transitionend', onEnd);
+          };
+          anim.addEventListener('transitionend', onEnd);
+        }
       });
 
-      // Details container (hidden when collapsed)
+      // Details container (animated collapse via max-height)
+      const detailsAnim = document.createElement('div');
+      detailsAnim.className = 'tool-details-anim';
       const details = document.createElement('div');
       details.className = 'tool-details';
+      detailsAnim.appendChild(details);
 
       // Input section
       const inputKeys = step.input ? Object.keys(step.input) : [];
@@ -696,7 +837,7 @@
         }
       }
 
-      wrap.appendChild(details);
+      wrap.appendChild(detailsAnim);
       div.appendChild(wrap);
       return div;
     }
@@ -751,13 +892,34 @@
     scrollToBottom();
   }
 
-  // Incremental: append one step
+  // Incremental: append one step. Returns a promise that resolves when any
+  // typewriter/thinking animation for this step has finished.
   function appendStep() {
     emptyEl.style.display = 'none';
-    const el = renderStep(steps[visibleSteps - 1]);
+    const step = steps[visibleSteps - 1];
+    const el = renderStep(step);
     chatEl.appendChild(el);
     updateUI();
     scrollToBottom();
+    if (isInstant()) return Promise.resolve();
+    if (step.type === 'user') {
+      // User text types at half speed (twice the duration) for emphasis
+      return typewriteElement(el.querySelector('.bubble'), 2);
+    }
+    if (step.type === 'text') {
+      return typewriteElement(el.querySelector('.text-block'));
+    }
+    if (step.type === 'label') {
+      const lbl = el.querySelector('.role-label');
+      if (!lbl) return Promise.resolve();
+      const dots = document.createElement('span');
+      dots.className = 'thinking-dots';
+      dots.innerHTML = '<span></span><span></span><span></span>';
+      dots.style.marginLeft = '8px';
+      lbl.appendChild(dots);
+      return new Promise(r => setTimeout(() => { dots.remove(); r(); }, 350 / speedMul()));
+    }
+    return Promise.resolve();
   }
 
   // Incremental: remove last step
@@ -807,20 +969,23 @@
   function setTranscript(t) {
     transcript = t;
     steps = flattenTranscript(t);
-    visibleSteps = steps.length > 0 ? 1 : 0;
+    // Start empty so Play animates from the very first message
+    visibleSteps = 0;
     renderHeader();
     fullRender();
   }
 
   function next() {
-    if (visibleSteps < steps.length) { visibleSteps++; appendStep(); }
-    else { stopPlay(); }
+    if (visibleSteps < steps.length) { visibleSteps++; return appendStep(); }
+    stopPlay();
+    return Promise.resolve();
   }
   function prev() {
     if (visibleSteps > 0) { visibleSteps--; removeLastStep(); }
   }
   function reset() {
-    visibleSteps = steps.length > 0 ? 1 : 0;
+    stopPlay();
+    visibleSteps = 0;
     fullRender();
   }
   function revealAll() {
@@ -828,17 +993,26 @@
     fullRender();
   }
   function togglePlay() { playing ? stopPlay() : startPlay(); }
-  function startPlay() {
+  async function startPlay() {
     if (visibleSteps >= steps.length) return;
     playing = true; updateButtons();
-    playTimer = setInterval(() => {
-      next();
-      if (visibleSteps >= steps.length) stopPlay();
-    }, PLAY_DELAY_MS);
+    while (playing && visibleSteps < steps.length) {
+      const cur = steps[visibleSteps - 1] || null;
+      const nxt = steps[visibleSteps] || null;
+      const d = stepDelay(cur, nxt);
+      if (d > 0) {
+        await new Promise(r => { playTimer = setTimeout(r, d); });
+        if (!playing) return;
+      }
+      visibleSteps++;
+      await appendStep();
+      if (!playing) return;
+    }
+    stopPlay();
   }
   function stopPlay() {
     playing = false;
-    if (playTimer) clearInterval(playTimer);
+    if (playTimer) { clearTimeout(playTimer); clearInterval(playTimer); }
     playTimer = null;
     updateButtons();
   }
@@ -879,6 +1053,36 @@
   $('btn-play').onclick = togglePlay;
   $('btn-theme').onclick = () =>
     applyTheme(document.body.classList.contains('light') ? 'dark' : 'light');
+
+  // ── Speed controls (injected) ─────────────────────────────────────────
+  (function injectSpeedControls() {
+    const rightControls = document.querySelector('footer .controls:last-child');
+    if (!rightControls) return;
+    const wrap = document.createElement('span');
+    wrap.className = 'speed-controls';
+    const speeds = [
+      { v: 1, label: '1×' },
+      { v: 2, label: '2×' },
+      { v: 4, label: '4×' },
+      { v: 0, label: '⚡' },
+    ];
+    for (const s of speeds) {
+      const b = document.createElement('button');
+      b.className = 'speed-btn';
+      b.dataset.speed = String(s.v);
+      b.textContent = s.label;
+      b.title = s.v === 0 ? 'Instant (no animation)' : `Playback speed ${s.label}`;
+      if (s.v === SPEED) b.classList.add('active');
+      b.onclick = () => {
+        SPEED = s.v;
+        wrap.querySelectorAll('.speed-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      };
+      wrap.appendChild(b);
+    }
+    rightControls.insertBefore(wrap, rightControls.firstChild);
+  })();
+
   $('progress').onclick = e => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
@@ -889,7 +1093,10 @@
   // ── Load embedded transcript ──────────────────────────────────────────────
   function tryLoadEmbedded() {
     const raw = $('transcript-data').textContent.trim();
-    if (raw === '"__TRANSCRIPT_JSON__"' || raw === '__TRANSCRIPT_JSON__') return null;
+    // Sentinel is concatenated at runtime so naive string-replace of the
+    // line-415 placeholder doesn't also clobber this guard.
+    const SENTINEL = '__TRANSCRIPT' + '_JSON__';
+    if (raw === '"' + SENTINEL + '"' || raw === SENTINEL) return null;
     try { return JSON.parse(raw); } catch { return null; }
   }
   async function tryLoadFromUrl() {
