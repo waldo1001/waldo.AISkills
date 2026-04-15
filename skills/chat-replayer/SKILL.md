@@ -11,6 +11,15 @@ Turn a real (or hand-crafted) AI chat session into a single self-contained HTML 
 
 One file: `<slug>.html`. No external dependencies. The transcript JSON is embedded inside it. The user can email it, drop it on a USB stick, or open it on conference WiFi-less laptops.
 
+### Player features
+
+- **Step-by-step reveal** — each → (Space/arrow) reveals one block: a user message, a text block, or a tool call (with its result). Tool calls and their results are shown together in one click.
+- **Collapsed tool cards** — tool calls are collapsed by default showing just `🔧 tool_name — description`. Click to expand and see input parameters + result.
+- **Markdown rendering** — assistant text blocks render as proper HTML: tables, headings, bold, lists, code blocks with KQL/SQL syntax highlighting.
+- **Empty tool filtering** — tools with no input AND no output (or only "(no output)") are automatically hidden.
+- **Description as summary** — the `description`/`explanation`/`goal` parameter from tool inputs is shown as the collapsed summary label (matching VS Code's display), not buried in the input body.
+- Dark/light theme toggle, keyboard nav, drag-drop transcript loading, auto-play mode.
+
 ## Workflow
 
 Four steps. Do not skip any.
@@ -57,13 +66,21 @@ When the user wants to convert a chat from their current VS Code workspace:
 
 2. **Present the session list** to the user using `vscode_askQuestions` (or just show the table) and let them pick one.
 
-3. **Get the session content.** VS Code stores conversation content in an internal virtual filesystem (`vscode-chat-session://`) that is not directly accessible from disk. After the user selects a session, instruct them:
+3. **Extract the session directly** using the JSONL extraction script. VS Code stores full conversation data (user messages, tool calls with inputs/outputs, assistant responses) in JSONL files at:
+   ```
+   ~/Library/Application Support/Code/User/workspaceStorage/<id>/chatSessions/<sessionId>.jsonl
+   ```
    
-   *"Open that chat session in the Copilot Chat panel (it should be in the sidebar history), then select all the conversation text and paste it here. Alternatively, right-click in the chat and use 'Copy Chat' if available."*
+   Run the extraction script to convert it directly to the transcript schema:
+   ```bash
+   node scripts/extract-vscode-session.mjs "<path-to-session.jsonl>" --out ./transcript.json
+   ```
    
-   The user can also use the VS Code command palette: **"Chat: Export Session..."** if their version supports it.
+   This produces a complete `transcript.json` — **skip Step 2** and go directly to Step 3 (Sanitize).
 
-4. Once the user provides the content (pasted text from the selected session), proceed to Step 2 (Normalize) as usual. Treat it as a **GitHub Copilot Chat** source for parsing.
+   **Fallback** (if the JSONL file is missing or corrupted): ask the user to open the chat session in the Copilot Chat panel and paste the content here, or use **"Chat: Export Session..."** from the command palette.
+
+4. Once extracted, proceed to Step 3 (Sanitize). The extraction script handles normalization automatically.
 
 ---
 

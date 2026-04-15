@@ -61,20 +61,9 @@
     gap: 16px;
     flex-shrink: 0;
   }
-  header .title {
-    font-size: 18px;
-    font-weight: 600;
-  }
-  header .agent {
-    color: var(--text-muted);
-    font-size: 14px;
-    margin-top: 2px;
-  }
-  header .meta-right {
-    color: var(--text-muted);
-    font-size: 13px;
-    text-align: right;
-  }
+  header .title { font-size: 18px; font-weight: 600; }
+  header .agent { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
+  header .meta-right { color: var(--text-muted); font-size: 13px; text-align: right; }
   main {
     flex: 1;
     overflow-y: auto;
@@ -86,20 +75,21 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
   }
-  .turn {
+  .step {
     animation: appear 240ms ease-out;
   }
   @keyframes appear {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .turn.user {
+  /* User bubble */
+  .step-user {
     display: flex;
     justify-content: flex-end;
   }
-  .turn.user .bubble {
+  .step-user .bubble {
     background: var(--user);
     color: white;
     padding: 14px 20px;
@@ -107,54 +97,101 @@
     max-width: 75%;
     white-space: pre-wrap;
     word-wrap: break-word;
+    font-size: 16px;
   }
-  body.light .turn.user .bubble { color: white; }
-  .turn.assistant {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  body.light .step-user .bubble { color: white; }
+  /* Role label (shown once before first assistant block in a group) */
   .role-label {
     font-size: 12px;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
+  /* Text block (assistant markdown) */
   .text-block {
     background: var(--surface);
     border: 1px solid var(--border);
     padding: 16px 20px;
     border-radius: 4px 18px 18px 18px;
-    white-space: pre-wrap;
     word-wrap: break-word;
+    overflow-wrap: break-word;
   }
-  .text-block:not(:first-child) {
-    border-radius: 18px;
+  /* Markdown inside text blocks */
+  .text-block h1, .text-block h2, .text-block h3, .text-block h4 {
+    margin: 0.6em 0 0.3em 0;
+    line-height: 1.3;
   }
+  .text-block h1 { font-size: 1.3em; }
+  .text-block h2 { font-size: 1.15em; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .text-block h3 { font-size: 1.05em; }
+  .text-block h4 { font-size: 1em; }
+  .text-block p { margin: 0.5em 0; }
+  .text-block ul, .text-block ol { margin: 0.4em 0; padding-left: 1.6em; }
+  .text-block li { margin: 0.15em 0; }
   .text-block strong { color: var(--text); }
   .text-block code {
     background: var(--code-bg);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.92em;
+    font-size: 0.88em;
     font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
   }
-  .tool-card {
+  .text-block pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 0.5em 0;
+    font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--text);
+  }
+  .text-block pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+  }
+  .text-block table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5em 0;
+    font-size: 0.9em;
+  }
+  .text-block th, .text-block td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+  }
+  .text-block th {
+    background: var(--surface-2);
+    font-weight: 600;
+  }
+  .text-block blockquote {
+    border-left: 3px solid var(--border);
+    margin: 0.5em 0;
+    padding: 0.3em 0 0.3em 14px;
+    color: var(--text-muted);
+  }
+  .text-block hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1em 0;
+  }
+  /* Tool wrapper — one collapsible unit per tool call+result */
+  .tool-wrap {
     background: var(--tool-bg);
     border: 1px solid var(--border);
     border-left: 3px solid var(--tool);
     border-radius: 8px;
     overflow: hidden;
   }
-  .tool-card.result {
-    border-left-color: var(--assistant);
-    background: var(--surface);
-    margin-left: 24px;
-    margin-top: -6px;
-  }
-  .tool-header {
+  .tool-summary {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -163,65 +200,81 @@
     user-select: none;
     font-size: 14px;
   }
-  .tool-header:hover { background: rgba(255,255,255,0.03); }
-  body.light .tool-header:hover { background: rgba(0,0,0,0.03); }
-  .tool-icon {
-    font-size: 14px;
-    color: var(--tool);
-  }
-  .tool-card.result .tool-icon { color: var(--assistant); }
+  .tool-summary:hover { background: rgba(255,255,255,0.03); }
+  body.light .tool-summary:hover { background: rgba(0,0,0,0.03); }
+  .tool-icon { font-size: 14px; color: var(--tool); }
   .tool-name {
     font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
     font-weight: 600;
     color: var(--text);
+    font-size: 13px;
   }
-  .tool-label {
+  .tool-desc {
     color: var(--text-muted);
-    font-size: 12px;
-    margin-left: auto;
+    font-size: 13px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .tool-toggle {
     color: var(--text-muted);
     font-size: 11px;
     transition: transform 200ms;
   }
-  .tool-card.collapsed .tool-toggle { transform: rotate(-90deg); }
-  .tool-body {
+  .tool-wrap.collapsed .tool-toggle { transform: rotate(-90deg); }
+  .tool-details {
     padding: 0 16px 14px 16px;
-    max-height: 600px;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-  .tool-card.collapsed .tool-body { display: none; }
-  .tool-body pre {
+  .tool-wrap.collapsed .tool-details { display: none; }
+  .tool-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+  .tool-input pre, .tool-result pre {
     background: var(--code-bg);
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 12px 14px;
     margin: 0;
     font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
-    font-size: 13.5px;
+    font-size: 13px;
     line-height: 1.5;
     overflow-x: auto;
     white-space: pre;
     color: var(--text);
   }
-  .tool-body .field-label {
+  .tool-input .field-label {
     color: var(--text-muted);
     font-size: 12px;
     font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
     margin: 8px 0 4px 0;
     text-transform: lowercase;
   }
-  .tool-body .field-label:first-child { margin-top: 4px; }
+  .tool-input .field-label:first-child { margin-top: 0; }
+  .tool-result {
+    border-left: 3px solid var(--assistant);
+    padding-left: 12px;
+  }
   .result-text {
     white-space: pre-wrap;
     word-wrap: break-word;
     font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
-    font-size: 13.5px;
+    font-size: 13px;
+    line-height: 1.5;
     background: var(--code-bg);
     border: 1px solid var(--border);
     padding: 12px 14px;
     border-radius: 6px;
+    max-height: 500px;
+    overflow-y: auto;
   }
   /* Syntax highlighting */
   .tok-kw { color: var(--kw); font-weight: 600; }
@@ -240,11 +293,7 @@
     gap: 16px;
     flex-shrink: 0;
   }
-  .controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+  .controls { display: flex; gap: 8px; align-items: center; }
   button {
     background: var(--surface-2);
     color: var(--text);
@@ -258,11 +307,7 @@
   }
   button:hover { background: var(--border); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
-  button.primary {
-    background: var(--user);
-    color: white;
-    border-color: var(--user);
-  }
+  button.primary { background: var(--user); color: white; border-color: var(--user); }
   .counter {
     color: var(--text-muted);
     font-size: 13px;
@@ -271,42 +316,17 @@
     text-align: center;
   }
   .progress {
-    flex: 1;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-    max-width: 300px;
-    cursor: pointer;
+    flex: 1; height: 4px; background: var(--border);
+    border-radius: 2px; overflow: hidden; max-width: 300px; cursor: pointer;
   }
-  .progress-bar {
-    height: 100%;
-    background: var(--user);
-    transition: width 200ms;
-  }
-  .hint {
-    color: var(--text-muted);
-    font-size: 12px;
-  }
-  .empty {
-    color: var(--text-muted);
-    text-align: center;
-    margin-top: 80px;
-    font-size: 15px;
-  }
+  .progress-bar { height: 100%; background: var(--user); transition: width 200ms; }
+  .hint { color: var(--text-muted); font-size: 12px; }
+  .empty { color: var(--text-muted); text-align: center; margin-top: 80px; font-size: 15px; }
   .empty .drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 60px 40px;
-    margin-top: 24px;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 60px 40px; margin-top: 24px; max-width: 500px; margin-left: auto; margin-right: auto;
   }
-  .empty .drop-zone.dragover {
-    border-color: var(--user);
-    background: var(--surface);
-  }
+  .empty .drop-zone.dragover { border-color: var(--user); background: var(--surface); }
 </style>
 </head>
 <body>
@@ -350,9 +370,10 @@
 
 <script>
 (function() {
-  // ---------- State ----------
+  // ── State ──────────────────────────────────────────────────────────────────
   let transcript = null;
-  let visibleTurns = 0;
+  let steps = [];         // flattened reveal steps
+  let visibleSteps = 0;
   let playing = false;
   let playTimer = null;
   const PLAY_DELAY_MS = 1800;
@@ -360,68 +381,145 @@
   const $ = id => document.getElementById(id);
   const chatEl = $('chat');
   const emptyEl = $('empty');
-  const titleEl = $('title');
-  const agentEl = $('agent');
-  const metaRightEl = $('meta-right');
-  const counterEl = $('counter');
-  const progressBar = $('progress-bar');
   const dropZone = $('drop-zone');
 
-  // ---------- Load transcript ----------
-  function tryLoadEmbedded() {
-    const raw = $('transcript-data').textContent.trim();
-    if (raw === '"__TRANSCRIPT_JSON__"' || raw === '__TRANSCRIPT_JSON__') return null;
-    try {
-      // The build script writes the object directly; the placeholder is a string
-      return JSON.parse(raw);
-    } catch (e) {
-      console.warn('Embedded transcript failed to parse:', e);
-      return null;
+  // ── Markdown renderer (self-contained, no deps) ───────────────────────────
+  function renderMarkdown(src) {
+    const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // Fenced code blocks first
+    const codeBlocks = [];
+    src = src.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      const i = codeBlocks.length;
+      codeBlocks.push(`<pre><code>${highlightCode(code.replace(/\n$/, ''), lang)}</code></pre>`);
+      return `\x00CB${i}\x00`;
+    });
+
+    // Split into lines
+    const lines = src.split('\n');
+    let html = '';
+    let inList = false;
+    let inTable = false;
+    let tableHeaderDone = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+
+      // Code block placeholder
+      const cbMatch = line.match(/^\x00CB(\d+)\x00$/);
+      if (cbMatch) {
+        if (inList) { html += '</ul>'; inList = false; }
+        if (inTable) { html += '</tbody></table>'; inTable = false; }
+        html += codeBlocks[parseInt(cbMatch[1])];
+        continue;
+      }
+
+      // Table row
+      if (line.match(/^\|(.+)\|$/)) {
+        if (inList) { html += '</ul>'; inList = false; }
+        // Check if next line is separator
+        const nextLine = lines[i + 1] || '';
+        if (!inTable) {
+          html += '<table>';
+          inTable = true;
+          tableHeaderDone = false;
+          // This is the header row
+          const cells = line.split('|').filter(c => c !== '').map(c => `<th>${inlineMarkdown(esc(c.trim()))}</th>`).join('');
+          html += `<thead><tr>${cells}</tr></thead>`;
+          // Skip separator line if present
+          if (nextLine.match(/^\|[\s:|-]+\|$/)) { i++; }
+          html += '<tbody>';
+          tableHeaderDone = true;
+          continue;
+        }
+        // Separator line (skip if we already started tbody)
+        if (line.match(/^\|[\s:|-]+\|$/)) continue;
+        // Data row
+        const cells = line.split('|').filter(c => c !== '').map(c => `<td>${inlineMarkdown(esc(c.trim()))}</td>`).join('');
+        html += `<tr>${cells}</tr>`;
+        continue;
+      } else if (inTable) {
+        html += '</tbody></table>';
+        inTable = false;
+      }
+
+      // Heading
+      const hMatch = line.match(/^(#{1,4})\s+(.+)$/);
+      if (hMatch) {
+        if (inList) { html += '</ul>'; inList = false; }
+        const level = hMatch[1].length;
+        html += `<h${level}>${inlineMarkdown(esc(hMatch[2]))}</h${level}>`;
+        continue;
+      }
+
+      // HR
+      if (line.match(/^[-*_]{3,}$/)) {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += '<hr>';
+        continue;
+      }
+
+      // Blockquote
+      if (line.match(/^>\s?/)) {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += `<blockquote>${inlineMarkdown(esc(line.replace(/^>\s?/, '')))}</blockquote>`;
+        continue;
+      }
+
+      // Unordered list
+      if (line.match(/^[-*+]\s+/)) {
+        if (!inList) { html += '<ul>'; inList = true; }
+        html += `<li>${inlineMarkdown(esc(line.replace(/^[-*+]\s+/, '')))}</li>`;
+        continue;
+      }
+
+      // Ordered list
+      if (line.match(/^\d+\.\s+/)) {
+        if (!inList) { html += '<ul>'; inList = true; }
+        html += `<li>${inlineMarkdown(esc(line.replace(/^\d+\.\s+/, '')))}</li>`;
+        continue;
+      }
+
+      // Close list if we got here
+      if (inList) { html += '</ul>'; inList = false; }
+
+      // Empty line
+      if (line.trim() === '') {
+        continue;
+      }
+
+      // Paragraph
+      html += `<p>${inlineMarkdown(esc(line))}</p>`;
     }
+
+    if (inList) html += '</ul>';
+    if (inTable) html += '</tbody></table>';
+    return html;
   }
 
-  async function tryLoadFromUrl() {
-    const params = new URLSearchParams(location.search);
-    const src = params.get('src');
-    if (!src) return null;
-    try {
-      const r = await fetch(src);
-      return await r.json();
-    } catch (e) {
-      console.warn('Could not fetch transcript from src:', e);
-      return null;
-    }
+  function inlineMarkdown(s) {
+    // Bold + italic
+    s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    // Bold
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // Inline code
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Links
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return s;
   }
 
-  function setTranscript(t) {
-    transcript = t;
-    visibleTurns = t && t.turns && t.turns.length > 0 ? 1 : 0;
-    renderHeader();
-    render();
-  }
-
-  // ---------- Rendering ----------
-  function renderHeader() {
-    if (!transcript) return;
-    const m = transcript.meta || {};
-    titleEl.textContent = m.title || 'Chat Replay';
-    document.title = m.title || 'Chat Replay';
-    agentEl.textContent = m.agent || '';
-    const right = [];
-    if (m.model) right.push(m.model);
-    if (m.source) right.push(m.source);
-    metaRightEl.textContent = right.join(' · ');
-  }
-
+  // ── Syntax highlighting ────────────────────────────────────────────────────
   function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
-  // Tiny KQL/SQL/JSON highlighter
-  function highlight(code, lang) {
+  function highlightCode(code, lang) {
     let s = escapeHtml(code);
+    lang = (lang || '').toLowerCase();
     if (lang === 'json') {
       s = s.replace(/("(?:[^"\\]|\\.)*")(\s*:)?/g, (_, str, colon) =>
         colon ? `<span class="tok-fn">${str}</span>${colon}` : `<span class="tok-str">${str}</span>`)
@@ -430,9 +528,14 @@
       return s;
     }
     // KQL / SQL
-    const kw = ['select','from','where','and','or','not','order','by','asc','desc','top','distinct','group','having','join','inner','left','right','full','outer','on','as','case','when','then','else','end','union','project','extend','summarize','count','sum','avg','min','max','let','union','take','limit','make-list','make-set','bin','ago','datetime','between','startswith','endswith','contains','in'];
-    s = s
-      .replace(/(--[^\n]*|\/\/[^\n]*)/g, '<span class="tok-com">$1</span>')
+    const kw = ['select','from','where','and','or','not','order','by','asc','desc','top',
+      'distinct','group','having','join','inner','left','right','full','outer','on','as',
+      'case','when','then','else','end','union','project','extend','summarize','count',
+      'sum','avg','min','max','let','take','limit','make-list','make-set','bin','ago',
+      'datetime','between','startswith','endswith','contains','in','tostring','toint',
+      'toreal','todatetime','totimespan','strlen','strcat','parse_json','dynamic',
+      'mv-expand','getschema','print','render','sort','top-nested','percentile'];
+    s = s.replace(/(--[^\n]*|\/\/[^\n]*)/g, '<span class="tok-com">$1</span>')
       .replace(/('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g, '<span class="tok-str">$1</span>')
       .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="tok-num">$1</span>');
     const kwRe = new RegExp('\\b(' + kw.join('|') + ')\\b', 'gi');
@@ -440,12 +543,165 @@
     return s;
   }
 
-  function detectLang(key, value) {
+  function detectLang(key) {
     const k = (key || '').toLowerCase();
-    if (k === 'kql' || k === 'sql' || k === 'query') return k === 'kql' ? 'kql' : 'sql';
-    if (k === 'code') return 'sql';
-    if (typeof value === 'object') return 'json';
+    if (k === 'kql' || k === 'sql' || k === 'query' || k === 'code') return 'kql';
     return null;
+  }
+
+  // ── Flatten transcript into steps ──────────────────────────────────────────
+  // Each step is one unit revealed per →. Types:
+  //   { type: 'user',   content }
+  //   { type: 'label' }                              — "Assistant" role label
+  //   { type: 'text',   content }                     — assistant markdown
+  //   { type: 'tool',   name, input, result }         — call + result in one step
+  function flattenTranscript(t) {
+    if (!t || !t.turns) return [];
+    const flat = [];
+    // Build a map of tool results by toolUseId
+    const resultMap = {};
+    for (const turn of t.turns) {
+      if (turn.role === 'tool' && turn.toolUseId) {
+        resultMap[turn.toolUseId] = turn;
+      }
+    }
+
+    function hasInput(input) {
+      if (!input) return false;
+      if (typeof input !== 'object') return String(input).trim().length > 0;
+      return Object.keys(input).length > 0;
+    }
+    function isEmptyText(s) {
+      const t = (s || '').trim().toLowerCase();
+      return t.length === 0 || t === '(no output)' || t === 'no output';
+    }
+    function hasResult(result) {
+      if (!result) return false;
+      const content = result.content || [];
+      return content.some(c => c.type === 'text' && !isEmptyText(c.content));
+    }
+
+    let lastRole = null;
+    for (const turn of t.turns) {
+      if (turn.role === 'user') {
+        flat.push({ type: 'user', content: turn.content || '' });
+        lastRole = 'user';
+      } else if (turn.role === 'assistant') {
+        if (lastRole !== 'assistant') {
+          flat.push({ type: 'label' });
+        }
+        for (const block of (turn.blocks || [])) {
+          if (block.type === 'text') {
+            flat.push({ type: 'text', content: block.content || '' });
+          } else if (block.type === 'tool_use') {
+            const result = resultMap[block.id] || null;
+            // Skip tools with no input AND no output
+            if (!hasInput(block.input) && !hasResult(result)) continue;
+            // Extract description for summary display
+            const desc = block.input?.description || block.input?.explanation || block.input?.goal || '';
+            flat.push({
+              type: 'tool',
+              name: block.name,
+              description: desc,
+              input: block.input,
+              result: result
+            });
+          }
+        }
+        lastRole = 'assistant';
+      }
+    }
+    return flat;
+  }
+
+  // ── Render a single step to DOM ────────────────────────────────────────────
+  function renderStep(step) {
+    const div = document.createElement('div');
+    div.className = 'step';
+
+    if (step.type === 'user') {
+      div.classList.add('step-user');
+      const b = document.createElement('div');
+      b.className = 'bubble';
+      b.textContent = step.content;
+      div.appendChild(b);
+      return div;
+    }
+
+    if (step.type === 'label') {
+      const lbl = document.createElement('div');
+      lbl.className = 'role-label';
+      lbl.textContent = transcript.meta?.agent || 'Assistant';
+      div.appendChild(lbl);
+      return div;
+    }
+
+    if (step.type === 'text') {
+      const t = document.createElement('div');
+      t.className = 'text-block';
+      t.innerHTML = renderMarkdown(step.content);
+      div.appendChild(t);
+      return div;
+    }
+
+    if (step.type === 'tool') {
+      const wrap = document.createElement('div');
+      wrap.className = 'tool-wrap collapsed'; // collapsed by default
+
+      // Summary header: icon + name + description
+      const desc = step.description || '';
+      const summaryHtml = `
+        <div class="tool-summary">
+          <span class="tool-icon">🔧</span>
+          <span class="tool-name">${escapeHtml(step.name || 'tool')}</span>
+          ${desc ? `<span class="tool-desc">— ${escapeHtml(desc)}</span>` : ''}
+          <span class="tool-toggle">▼</span>
+        </div>
+      `;
+      wrap.innerHTML = summaryHtml;
+      wrap.querySelector('.tool-summary').addEventListener('click', () => {
+        wrap.classList.toggle('collapsed');
+      });
+
+      // Details container (hidden when collapsed)
+      const details = document.createElement('div');
+      details.className = 'tool-details';
+
+      // Input section
+      const inputKeys = step.input ? Object.keys(step.input) : [];
+      // Filter out description/explanation from displayed input
+      const displayInput = {};
+      for (const k of inputKeys) {
+        if (k !== 'description' && k !== 'explanation' && k !== 'goal') {
+          displayInput[k] = step.input[k];
+        }
+      }
+      if (Object.keys(displayInput).length > 0) {
+        const inputDiv = document.createElement('div');
+        inputDiv.className = 'tool-input';
+        inputDiv.innerHTML = `<div class="tool-section-label">Input</div>` + renderToolInput(displayInput);
+        details.appendChild(inputDiv);
+      }
+
+      // Result section
+      if (step.result) {
+        const resultContent = (step.result.content || []).map(c =>
+          c.type === 'text' ? `<div class="result-text">${escapeHtml(c.content || '')}</div>` : ''
+        ).join('');
+        if (resultContent.trim()) {
+          const resultDiv = document.createElement('div');
+          resultDiv.className = 'tool-result';
+          resultDiv.innerHTML = `<div class="tool-section-label">Result</div>` + resultContent;
+          details.appendChild(resultDiv);
+        }
+      }
+
+      wrap.appendChild(details);
+      div.appendChild(wrap);
+      return div;
+    }
+
+    return div;
   }
 
   function renderToolInput(input) {
@@ -453,25 +709,23 @@
       return `<pre>${escapeHtml(String(input))}</pre>`;
     }
     const keys = Object.keys(input);
-    // If single key is a query/code field, render just that highlighted
     if (keys.length === 1) {
       const k = keys[0];
       const v = input[k];
-      const lang = detectLang(k, v);
+      const lang = detectLang(k);
       if (lang && typeof v === 'string') {
-        return `<div class="field-label">${escapeHtml(k)}</div><pre>${highlight(v, lang)}</pre>`;
+        return `<div class="field-label">${escapeHtml(k)}</div><pre>${highlightCode(v, lang)}</pre>`;
       }
     }
-    // Multi-field: render each, highlighting query fields
     let html = '';
     for (const k of keys) {
       const v = input[k];
-      const lang = detectLang(k, v);
+      const lang = detectLang(k);
       html += `<div class="field-label">${escapeHtml(k)}</div>`;
       if (lang && typeof v === 'string') {
-        html += `<pre>${highlight(v, lang)}</pre>`;
+        html += `<pre>${highlightCode(v, lang)}</pre>`;
       } else if (typeof v === 'object') {
-        html += `<pre>${highlight(JSON.stringify(v, null, 2), 'json')}</pre>`;
+        html += `<pre>${highlightCode(JSON.stringify(v, null, 2), 'json')}</pre>`;
       } else {
         html += `<pre>${escapeHtml(String(v))}</pre>`;
       }
@@ -479,99 +733,22 @@
     return html;
   }
 
-  function shouldStartCollapsed(input) {
-    const json = JSON.stringify(input || {}, null, 2);
-    return json.split('\n').length > 8;
-  }
-
-  function renderTurn(turn, idx) {
-    const div = document.createElement('div');
-    div.className = 'turn ' + turn.role;
-
-    if (turn.role === 'user') {
-      const b = document.createElement('div');
-      b.className = 'bubble';
-      b.textContent = turn.content || '';
-      div.appendChild(b);
-      return div;
-    }
-
-    if (turn.role === 'assistant') {
-      const label = document.createElement('div');
-      label.className = 'role-label';
-      label.textContent = transcript.meta?.agent || 'Assistant';
-      div.appendChild(label);
-
-      for (const block of (turn.blocks || [])) {
-        if (block.type === 'text') {
-          const t = document.createElement('div');
-          t.className = 'text-block';
-          t.textContent = block.content || '';
-          div.appendChild(t);
-        } else if (block.type === 'tool_use') {
-          const card = document.createElement('div');
-          card.className = 'tool-card';
-          if (shouldStartCollapsed(block.input)) card.classList.add('collapsed');
-          const collapsed = card.classList.contains('collapsed');
-          card.innerHTML = `
-            <div class="tool-header">
-              <span class="tool-icon">🔧</span>
-              <span class="tool-name">${escapeHtml(block.name || 'tool')}</span>
-              <span class="tool-label">tool call</span>
-              <span class="tool-toggle">▼</span>
-            </div>
-            <div class="tool-body">${renderToolInput(block.input)}</div>
-          `;
-          card.querySelector('.tool-header').addEventListener('click', () => {
-            card.classList.toggle('collapsed');
-          });
-          div.appendChild(card);
-        }
-      }
-      return div;
-    }
-
-    if (turn.role === 'tool') {
-      const card = document.createElement('div');
-      card.className = 'tool-card result';
-      const content = (turn.content || []).map(c =>
-        c.type === 'text' ? `<div class="result-text">${escapeHtml(c.content || '')}</div>` : ''
-      ).join('');
-      card.innerHTML = `
-        <div class="tool-header">
-          <span class="tool-icon">↳</span>
-          <span class="tool-name">${escapeHtml(turn.name || 'result')}</span>
-          <span class="tool-label">result</span>
-          <span class="tool-toggle">▼</span>
-        </div>
-        <div class="tool-body">${content}</div>
-      `;
-      card.querySelector('.tool-header').addEventListener('click', () => {
-        card.classList.toggle('collapsed');
-      });
-      return card;
-    }
-
-    return div;
-  }
-
+  // ── Rendering ──────────────────────────────────────────────────────────────
   function render() {
-    if (!transcript || !transcript.turns) {
+    if (!transcript || steps.length === 0) {
       emptyEl.style.display = 'block';
       chatEl.innerHTML = '';
-      counterEl.textContent = '0 / 0';
-      progressBar.style.width = '0%';
+      $('counter').textContent = '0 / 0';
+      $('progress-bar').style.width = '0%';
       return;
     }
     emptyEl.style.display = 'none';
     chatEl.innerHTML = '';
-    const turns = transcript.turns.slice(0, visibleTurns);
-    for (let i = 0; i < turns.length; i++) {
-      chatEl.appendChild(renderTurn(turns[i], i));
+    for (let i = 0; i < visibleSteps; i++) {
+      chatEl.appendChild(renderStep(steps[i]));
     }
-    counterEl.textContent = `${visibleTurns} / ${transcript.turns.length}`;
-    progressBar.style.width = `${(visibleTurns / transcript.turns.length) * 100}%`;
-    // Scroll latest into view
+    $('counter').textContent = `${visibleSteps} / ${steps.length}`;
+    $('progress-bar').style.width = `${(visibleSteps / steps.length) * 100}%`;
     requestAnimationFrame(() => {
       const last = chatEl.lastElementChild;
       if (last) last.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -579,45 +756,57 @@
     updateButtons();
   }
 
-  function updateButtons() {
+  function renderHeader() {
     if (!transcript) return;
-    $('btn-prev').disabled = visibleTurns <= 0;
-    $('btn-next').disabled = visibleTurns >= transcript.turns.length;
-    $('btn-reset').disabled = visibleTurns === 0;
-    $('btn-end').disabled = visibleTurns >= transcript.turns.length;
+    const m = transcript.meta || {};
+    $('title').textContent = m.title || 'Chat Replay';
+    document.title = m.title || 'Chat Replay';
+    $('agent').textContent = m.agent || '';
+    const right = [];
+    if (m.model) right.push(m.model);
+    if (m.source) right.push(m.source);
+    $('meta-right').textContent = right.join(' · ');
+  }
+
+  function updateButtons() {
+    $('btn-prev').disabled = visibleSteps <= 0;
+    $('btn-next').disabled = visibleSteps >= steps.length;
+    $('btn-reset').disabled = visibleSteps === 0;
+    $('btn-end').disabled = visibleSteps >= steps.length;
     $('btn-play').textContent = playing ? '⏸ Pause' : '▶ Play';
   }
 
-  // ---------- Navigation ----------
-  function next() {
-    if (!transcript) return;
-    if (visibleTurns < transcript.turns.length) {
-      visibleTurns++;
-      render();
-    } else {
-      stopPlay();
-    }
-  }
-  function prev() {
-    if (visibleTurns > 0) { visibleTurns--; render(); }
-  }
-  function reset() { visibleTurns = transcript ? Math.min(1, transcript.turns.length) : 0; render(); }
-  function revealAll() {
-    if (!transcript) return;
-    visibleTurns = transcript.turns.length;
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  function setTranscript(t) {
+    transcript = t;
+    steps = flattenTranscript(t);
+    visibleSteps = steps.length > 0 ? 1 : 0;
+    renderHeader();
     render();
   }
-  function togglePlay() {
-    if (playing) stopPlay();
-    else startPlay();
+
+  function next() {
+    if (visibleSteps < steps.length) { visibleSteps++; render(); }
+    else { stopPlay(); }
   }
+  function prev() {
+    if (visibleSteps > 0) { visibleSteps--; render(); }
+  }
+  function reset() {
+    visibleSteps = steps.length > 0 ? 1 : 0;
+    render();
+  }
+  function revealAll() {
+    visibleSteps = steps.length;
+    render();
+  }
+  function togglePlay() { playing ? stopPlay() : startPlay(); }
   function startPlay() {
-    if (!transcript || visibleTurns >= transcript.turns.length) return;
-    playing = true;
-    updateButtons();
+    if (visibleSteps >= steps.length) return;
+    playing = true; updateButtons();
     playTimer = setInterval(() => {
       next();
-      if (visibleTurns >= transcript.turns.length) stopPlay();
+      if (visibleSteps >= steps.length) stopPlay();
     }, PLAY_DELAY_MS);
   }
   function stopPlay() {
@@ -627,7 +816,7 @@
     updateButtons();
   }
 
-  // ---------- Theme ----------
+  // ── Theme ──────────────────────────────────────────────────────────────────
   function applyTheme(theme) {
     document.body.classList.toggle('light', theme === 'light');
     $('btn-theme').textContent = theme === 'light' ? '☀' : '☾';
@@ -640,37 +829,22 @@
     applyTheme(theme === 'light' ? 'light' : 'dark');
   }
 
-  // ---------- Drag & drop ----------
+  // ── Drag & drop ────────────────────────────────────────────────────────────
   function handleFile(file) {
     const reader = new FileReader();
     reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        setTranscript(data);
-      } catch (e) {
-        alert('Could not parse transcript JSON: ' + e.message);
-      }
+      try { setTranscript(JSON.parse(reader.result)); }
+      catch (e) { alert('Could not parse transcript JSON: ' + e.message); }
     };
     reader.readAsText(file);
   }
-  ['dragenter', 'dragover'].forEach(evt =>
-    document.addEventListener(evt, e => {
-      e.preventDefault();
-      if (dropZone) dropZone.classList.add('dragover');
-    })
-  );
-  ['dragleave', 'drop'].forEach(evt =>
-    document.addEventListener(evt, e => {
-      e.preventDefault();
-      if (dropZone) dropZone.classList.remove('dragover');
-    })
-  );
-  document.addEventListener('drop', e => {
-    const file = e.dataTransfer?.files?.[0];
-    if (file) handleFile(file);
-  });
+  ['dragenter','dragover'].forEach(evt =>
+    document.addEventListener(evt, e => { e.preventDefault(); if (dropZone) dropZone.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(evt =>
+    document.addEventListener(evt, e => { e.preventDefault(); if (dropZone) dropZone.classList.remove('dragover'); }));
+  document.addEventListener('drop', e => { const f = e.dataTransfer?.files?.[0]; if (f) handleFile(f); });
 
-  // ---------- Wire up ----------
+  // ── Wire up ────────────────────────────────────────────────────────────────
   $('btn-prev').onclick = prev;
   $('btn-next').onclick = next;
   $('btn-reset').onclick = reset;
@@ -679,12 +853,24 @@
   $('btn-theme').onclick = () =>
     applyTheme(document.body.classList.contains('light') ? 'dark' : 'light');
   $('progress').onclick = e => {
-    if (!transcript) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
-    visibleTurns = Math.max(0, Math.min(transcript.turns.length, Math.round(pct * transcript.turns.length)));
+    visibleSteps = Math.max(0, Math.min(steps.length, Math.round(pct * steps.length)));
     render();
   };
+
+  // ── Load embedded transcript ──────────────────────────────────────────────
+  function tryLoadEmbedded() {
+    const raw = $('transcript-data').textContent.trim();
+    if (raw === '"__TRANSCRIPT_JSON__"' || raw === '__TRANSCRIPT_JSON__') return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+  async function tryLoadFromUrl() {
+    const params = new URLSearchParams(location.search);
+    const src = params.get('src');
+    if (!src) return null;
+    try { return await (await fetch(src)).json(); } catch { return null; }
+  }
 
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -695,13 +881,13 @@
     else if (e.key.toLowerCase() === 'p') { e.preventDefault(); togglePlay(); }
   });
 
-  // ---------- Boot ----------
+  // ── Boot ───────────────────────────────────────────────────────────────────
   initTheme();
   (async function boot() {
     let t = tryLoadEmbedded();
     if (!t) t = await tryLoadFromUrl();
     if (t) setTranscript(t);
-    else render(); // shows empty state
+    else render();
   })();
 })();
 </script>
