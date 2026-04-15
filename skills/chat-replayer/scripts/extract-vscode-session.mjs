@@ -57,8 +57,16 @@ for (const entry of jsonlEntries) {
       }
       appendedPaths.add(pathKey);
       if (entry.v) {
-        for (const item of entry.v) {
-          target.push(item);
+        if (typeof entry.i === 'number') {
+          // Indexed append: VS Code may overwrite existing items at this index.
+          // Splice at the specified position, replacing any items that overlap.
+          const startIdx = entry.i;
+          const count = entry.v.length;
+          target.splice(startIdx, target.length - startIdx, ...entry.v);
+        } else {
+          for (const item of entry.v) {
+            target.push(item);
+          }
         }
       }
     } else if (target === undefined) {
@@ -146,6 +154,24 @@ for (const req of requests) {
     } else {
       const val = (block.value || '').trim();
       if (val) classified.push({ type: 'text', value: val });
+    }
+  }
+
+  // Dedup: when VS Code streams a response, it may write a partial text block
+  // then later overwrite it with the complete version. If two consecutive text
+  // blocks exist where the longer one starts with the shorter one's content,
+  // keep only the longer one.
+  for (let i = classified.length - 1; i > 0; i--) {
+    const cur = classified[i];
+    const prev = classified[i - 1];
+    if (cur.type === 'text' && prev.type === 'text') {
+      const shorter = cur.value.length < prev.value.length ? cur.value : prev.value;
+      const longer = cur.value.length >= prev.value.length ? cur.value : prev.value;
+      if (longer.startsWith(shorter) || longer.startsWith(shorter.substring(0, Math.min(200, shorter.length)))) {
+        // Remove the shorter one
+        const removeIdx = cur.value.length < prev.value.length ? i : i - 1;
+        classified.splice(removeIdx, 1);
+      }
     }
   }
 
