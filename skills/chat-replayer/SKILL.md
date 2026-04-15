@@ -166,6 +166,12 @@ node scripts/build.mjs ./transcript.sanitized.json --out ./<slug>.html --title "
 
 This injects the sanitized JSON into `templates/replayer.html` and writes a self-contained file. Slug defaults to a kebab-case version of the transcript title.
 
+**After a successful build, clean up intermediate files:**
+```bash
+rm -f ./transcript.json ./transcript.sanitized.json
+```
+Only `redactions.json` and the final `.html` should remain in the working directory. The transcript files are build artifacts — the HTML is self-contained.
+
 **Present the file** to the user with `present_files`. Briefly explain:
 
 - Open in any modern browser.
@@ -181,8 +187,7 @@ This injects the sanitized JSON into `templates/replayer.html` and writes a self
 The user is building this once to use across many agent demos. After the first run:
 
 - The `redactions.json` they built up is reusable — suggest they keep a master copy and copy it into each new working folder.
-- Encourage saving `transcript.json` (pre-sanitization) under version control, so they can re-sanitize with updated rules later.
-- If the user has multiple chats to convert in one session, batch them: produce all transcript.json files first, then sanitize, then build.
+- If the user has multiple chats to convert in one session, batch them: produce all transcript.json files first, then sanitize, then build. Clean up all intermediate files at the end.
 
 ---
 
