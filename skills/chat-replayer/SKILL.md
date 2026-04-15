@@ -30,6 +30,7 @@ Ask the user how they want to provide the chat. Accept any of:
 - **An exported file** (JSON, HTML, .md) — they upload it.
 - **A screenshot** — Claude is multimodal; OCR the conversation visually if needed.
 - **A description** — for hand-crafted demo chats (no real source).
+- **VS Code Copilot Chat session** — pick from the current workspace's chat history (see below).
 
 If the source isn't obvious, ask: *"Is this from Copilot Studio, Copilot Chat, ChatGPT, Claude, or something else?"* — knowing the source helps with parsing tool calls, which every platform formats differently.
 
@@ -38,6 +39,31 @@ If the source isn't obvious, ask: *"Is this from Copilot Studio, Copilot Chat, C
 - **Copilot Studio test pane**: User typically copies the visible conversation. Tool calls (Power Automate flows, knowledge sources, generative actions) often render as collapsed cards labeled "Used X" — ask the user to expand them before copying, or to describe what was called.
 - **GitHub Copilot Chat**: Tool calls appear as `🔧 tool_name` headers with collapsible JSON. Workspace search, file edits, and terminal commands are all tool calls.
 - **ChatGPT / Claude exports**: JSON exports have explicit `tool_use` and `tool_result` content blocks — easy to map.
+
+### VS Code Copilot Chat session picker
+
+When the user wants to convert a chat from their current VS Code workspace:
+
+1. **List available sessions** by running:
+   ```bash
+   node scripts/list-vscode-sessions.mjs <workspace-storage-id>
+   ```
+   The `<workspace-storage-id>` is the hash folder name under `~/Library/Application Support/Code/User/workspaceStorage/`. To find the current workspace's ID, check the `VSCODE_TARGET_SESSION_LOG` template variable — the path contains it, e.g. `.../workspaceStorage/<id>/GitHub.copilot-chat/...`.
+   
+   If the user doesn't know their workspace ID, run without arguments first to list all workspaces with sessions:
+   ```bash
+   node scripts/list-vscode-sessions.mjs
+   ```
+
+2. **Present the session list** to the user using `vscode_askQuestions` (or just show the table) and let them pick one.
+
+3. **Get the session content.** VS Code stores conversation content in an internal virtual filesystem (`vscode-chat-session://`) that is not directly accessible from disk. After the user selects a session, instruct them:
+   
+   *"Open that chat session in the Copilot Chat panel (it should be in the sidebar history), then select all the conversation text and paste it here. Alternatively, right-click in the chat and use 'Copy Chat' if available."*
+   
+   The user can also use the VS Code command palette: **"Chat: Export Session..."** if their version supports it.
+
+4. Once the user provides the content (pasted text from the selected session), proceed to Step 2 (Normalize) as usual. Treat it as a **GitHub Copilot Chat** source for parsing.
 
 ---
 

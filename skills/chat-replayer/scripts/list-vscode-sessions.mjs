@@ -8,7 +8,7 @@
 // If no workspace-storage-id is given, lists available workspace folders.
 
 import { execSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
@@ -45,17 +45,20 @@ if (!wsId) {
       const entries = Object.values(data.entries || {}).filter(e => !e.isEmpty);
       if (entries.length === 0) continue;
 
-      // Try to get workspace folder name
+      // Try to get workspace folder name from workspace.json
       let wsName = folder.name;
       try {
-        const wsRaw = execSync(
-          `sqlite3 "${dbPath}" "SELECT value FROM ItemTable WHERE key = '__\$__targetStorageMarker'" 2>/dev/null`,
-          { encoding: 'utf8', timeout: 5000 }
-        ).trim();
-        if (wsRaw) {
-          const wsMarker = JSON.parse(wsRaw);
-          const url = wsMarker.url || wsMarker;
-          wsName = typeof url === 'string' ? decodeURIComponent(url.replace(/^file:\/\//, '').split('/').pop()) : folder.name;
+        const wsJsonPath = join(storageRoot, folder.name, 'workspace.json');
+        if (existsSync(wsJsonPath)) {
+          const wsJson = JSON.parse(readFileSync(wsJsonPath, 'utf8'));
+          const url = wsJson.folder || wsJson.workspace || '';
+          const decoded = decodeURIComponent(url.replace(/^file:\/\//, ''));
+          // For .code-workspace files, use grandparent folder + filename
+          if (decoded.endsWith('.code-workspace')) {
+            wsName = decoded.split('/').slice(-2).join('/');
+          } else {
+            wsName = decoded.split('/').pop();
+          }
         }
       } catch { /* ignore */ }
 

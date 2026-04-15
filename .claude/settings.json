@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/waldo/.claude/skills/**)",
+      "Bash(rsync -a --delete ~/.claude/skills/chat-replayer/ skills/chat-replayer/)"
+    ]
+  }
+}
