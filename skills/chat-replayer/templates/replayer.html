@@ -994,9 +994,9 @@
   }
   async function playUntilNextUser() {
     if (visibleSteps >= steps.length) return;
-    // If we're sitting on a user step, reveal it first, then play the response
+    // If we're sitting on a user step, reveal it and stop — next Space plays the response
     if (steps[visibleSteps] && steps[visibleSteps].type === 'user') {
-      visibleSteps++; await appendStep();
+      visibleSteps++; await appendStep(); return;
     }
     playing = true; updateButtons();
     while (playing && visibleSteps < steps.length) {
