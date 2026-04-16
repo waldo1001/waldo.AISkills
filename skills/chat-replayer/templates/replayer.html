@@ -401,14 +401,14 @@
     <button id="btn-reset" title="Reset (Home)">⏮</button>
     <button id="btn-prev" title="Previous (←)">←</button>
     <button id="btn-play" class="primary" title="Auto-play (P)">▶ Play</button>
-    <button id="btn-next" title="Next (Space / →)">→</button>
+    <button id="btn-next" title="Next step (→)">→</button>
     <button id="btn-end" title="Reveal all (End)">⏭</button>
   </div>
   <div class="counter" id="counter">0 / 0</div>
   <div class="progress" id="progress"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
   <div class="controls">
     <button id="btn-theme" title="Toggle theme">☾</button>
-    <span class="hint">Space ▸ next · P ▸ play</span>
+    <span class="hint">Space ▸ play response · → ▸ next step · P ▸ auto-play all</span>
   </div>
 </footer>
 
@@ -992,6 +992,29 @@
     visibleSteps = steps.length;
     fullRender();
   }
+  async function playUntilNextUser() {
+    if (visibleSteps >= steps.length) return;
+    // If we're sitting on a user step, reveal it first, then play the response
+    if (steps[visibleSteps] && steps[visibleSteps].type === 'user') {
+      visibleSteps++; await appendStep();
+    }
+    playing = true; updateButtons();
+    while (playing && visibleSteps < steps.length) {
+      // Stop BEFORE the next user message
+      if (steps[visibleSteps].type === 'user') break;
+      const cur = steps[visibleSteps - 1] || null;
+      const nxt = steps[visibleSteps] || null;
+      const d = stepDelay(cur, nxt);
+      if (d > 0) {
+        await new Promise(r => { playTimer = setTimeout(r, d); });
+        if (!playing) return;
+      }
+      visibleSteps++;
+      await appendStep();
+      if (!playing) return;
+    }
+    stopPlay();
+  }
   function togglePlay() { playing ? stopPlay() : startPlay(); }
   async function startPlay() {
     if (visibleSteps >= steps.length) return;
@@ -1108,7 +1131,8 @@
 
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); next(); }
+    if (e.key === ' ') { e.preventDefault(); playUntilNextUser(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
     else if (e.key === 'Home') { e.preventDefault(); reset(); }
     else if (e.key === 'End') { e.preventDefault(); revealAll(); }
