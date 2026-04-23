@@ -7,8 +7,8 @@
 // Reads a .jsonl file from VS Code's chatSessions/ folder and produces a
 // transcript.json compatible with the chat-replayer build pipeline.
 
-import { readFileSync, writeFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 
 const args = process.argv.slice(2);
 let inputPath = null;
@@ -25,6 +25,26 @@ for (let i = 0; i < args.length; i++) {
 if (!inputPath) {
   console.error('Usage: node extract-vscode-session.mjs <session.jsonl> [--out <transcript.json>]');
   process.exit(1);
+}
+
+// ── Resolve external tool-result files ──────────────────────────────────────
+// VS Code offloads large MCP results to:
+//   <workspaceStorage>/<wsId>/GitHub.copilot-chat/chat-session-resources/<sessionId>/<toolCallId>__vscode-<ts>/content.json
+const absInput = resolve(inputPath);
+const inputSessionId = basename(absInput, '.jsonl');
+const workspaceDir = dirname(dirname(absInput)); // up from chatSessions/
+const resourcesDir = join(workspaceDir, 'GitHub.copilot-chat', 'chat-session-resources', inputSessionId);
+
+function loadExternalToolResult(toolCallId) {
+  if (!existsSync(resourcesDir)) return null;
+  let entries;
+  try { entries = readdirSync(resourcesDir); } catch { return null; }
+  const prefix = toolCallId + '__vscode-';
+  const match = entries.find(e => e.startsWith(prefix));
+  if (!match) return null;
+  const contentPath = join(resourcesDir, match, 'content.json');
+  if (!existsSync(contentPath)) return null;
+  try { return JSON.parse(readFileSync(contentPath, 'utf8')); } catch { return null; }
 }
 
 // ── Parse JSONL ──────────────────────────────────────────────────────────────
@@ -49,12 +69,13 @@ for (const entry of jsonlEntries) {
     const pathKey = entry.k.join('/');
     const target = getPath(state, entry.k);
     if (Array.isArray(target)) {
-      // If this is the first kind:2 for this path and the array was pre-populated
-      // (e.g. request object created with response[] already filled), clear it first
-      // to avoid duplicates — the incremental log re-supplies all items.
+      // If this is the first kind:2 for this path, the array was pre-populated,
+      // AND no specific index is given, clear first (the log re-supplies all items).
+      // When i is specified it's a true splice — keep items before that index.
       // Exception: the top-level `requests` array is always appended to, never re-supplied.
       const isTopLevelRequests = entry.k.length === 1 && entry.k[0] === 'requests';
-      if (!isTopLevelRequests && !appendedPaths.has(pathKey) && target.length > 0) {
+      const hasIndex = typeof entry.i === 'number';
+      if (!isTopLevelRequests && !appendedPaths.has(pathKey) && target.length > 0 && !hasIndex) {
         target.length = 0;
       }
       appendedPaths.add(pathKey);
@@ -126,6 +147,7 @@ const SKIP_TOOLS = new Set([
   'copilot_getWorkspaceStructure',
   'copilot_searchWorkspace',
   'manage_todo_list',
+  'tool_search',
 ]);
 
 let callCounter = 0;
@@ -229,7 +251,7 @@ for (const req of requests) {
         input
       });
 
-      // Extract output
+      // Extract output — first try inline resultDetails, then external content.json
       let outputText = '(no output)';
       if (rd.output) {
         const outputs = Array.isArray(rd.output) ? rd.output : [rd.output];
@@ -247,6 +269,15 @@ for (const req of requests) {
           }
         }
         outputText = parts.join('\n') || '(no output)';
+      } else {
+        // No inline output — try the external content.json sidecar file
+        const toolCallId = block.toolCallId || '';
+        if (toolCallId) {
+          const external = loadExternalToolResult(toolCallId);
+          if (external) {
+            outputText = formatToolOutput(external, toolName);
+          }
+        }
       }
 
       currentToolResults.push({
