@@ -78,6 +78,13 @@ When the user wants to convert a chat from their current VS Code workspace:
    
    This produces a complete `transcript.json` — **skip Step 2** and go directly to Step 3 (Sanitize).
 
+   **What the extractor captures** (do not regress these — the user has explicitly asked for "all details"):
+   - **File-editing tools** (`copilot_createFile`, `copilot_replaceString`, `copilot_insertEdit`, `copilot_applyPatch`, `copilot_editFile`): file path in `input.file`, and the actual edited text (with line ranges) folded in from the adjacent `textEditGroup` blocks as the tool result.
+   - **File reads / searches** (`copilot_readFile`, `copilot_listDirectory`, `copilot_findFiles`, `copilot_grep`, `copilot_searchWorkspace`): file path or query pulled from `invocationMessage` + URIs into `input.file` / `input.description`.
+   - **Terminal tools** (`run_in_terminal` and anything with `toolSpecificData.kind === 'terminal'`): full command line in `input.command` (plus `cwd`, `language`), and full stdout/stderr in the tool result, prefixed with `[exit=…, …ms]`.
+   - **Streaming artifacts**: bare ` ``` ` text blocks that VS Code emits as code-fence delimiters during streaming are filtered out (they show up as empty text blocks otherwise).
+   - **Skipped tools** (intentionally noisy and not useful for demos): `copilot_getWorkspaceStructure`, `manage_todo_list`, `tool_search`. Keep this list minimal — when in doubt, include rather than skip.
+
    **Fallback** (if the JSONL file is missing or corrupted): ask the user to open the chat session in the Copilot Chat panel and paste the content here, or use **"Chat: Export Session..."** from the command palette.
 
 4. Once extracted, proceed to Step 3 (Sanitize). The extraction script handles normalization automatically.

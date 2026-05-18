@@ -142,15 +142,66 @@ const requests = state.requests || [];
 
 // Tool names we want to skip (internal VS Code tools, not interesting for demos)
 const SKIP_TOOLS = new Set([
-  'copilot_readFile',
-  'copilot_listDirectory',
   'copilot_getWorkspaceStructure',
-  'copilot_searchWorkspace',
   'manage_todo_list',
   'tool_search',
 ]);
 
+// File-editing tools — their input/output isn't in resultDetails but in
+// invocationMessage (file path) and adjacent textEditGroup blocks (the edits).
+const FILE_EDIT_TOOLS = new Set([
+  'copilot_createFile',
+  'copilot_replaceString',
+  'copilot_insertEdit',
+  'copilot_applyPatch',
+  'copilot_editFile',
+]);
+
+// Tools whose input lives in invocationMessage (file path / search query)
+// rather than resultDetails.input.
+const INVOCATION_INPUT_TOOLS = new Set([
+  'copilot_readFile',
+  'copilot_listDirectory',
+  'copilot_searchWorkspace',
+  'copilot_findFiles',
+  'copilot_grep',
+]);
+
 let callCounter = 0;
+
+function extractInvocationText(msg) {
+  if (!msg) return '';
+  if (typeof msg === 'string') return msg;
+  if (typeof msg.value === 'string') return msg.value;
+  return '';
+}
+
+function uriToRelPath(uriLike) {
+  if (!uriLike) return '';
+  const fs = uriLike.fsPath || uriLike.path || '';
+  if (!fs) return String(uriLike);
+  const idx = fs.indexOf('/App/');
+  return idx >= 0 ? fs.substring(idx + 1) : fs;
+}
+
+function summarizeEdits(edits) {
+  // edits is an array of arrays of {text, range}
+  if (!Array.isArray(edits)) return '';
+  const lines = [];
+  for (const group of edits) {
+    if (!Array.isArray(group)) continue;
+    for (const ed of group) {
+      if (!ed || typeof ed.text !== 'string') continue;
+      const r = ed.range || {};
+      const loc = (r.startLineNumber || r.endLineNumber)
+        ? `lines ${r.startLineNumber}:${r.startColumn}–${r.endLineNumber}:${r.endColumn}`
+        : '';
+      if (loc) lines.push(`// @ ${loc}`);
+      lines.push(ed.text);
+    }
+  }
+  return lines.join('\n').trim();
+}
 
 for (const req of requests) {
   // ── User turn ──────────────────────────────────────────────────────────
@@ -164,20 +215,30 @@ for (const req of requests) {
   // split whenever a text block appears between tool calls.
   const responseBlocks = req.response || [];
 
-  // First pass: classify each block
+  // First pass: classify each block. textEditGroup blocks are attached to
+  // the most-recent file-editing tool (the actual edit payload lives there).
   const classified = [];
+  let lastFileEditTool = null;
   for (const block of responseBlocks) {
     const kind = block.kind;
     if (kind === 'toolInvocationSerialized') {
       const toolId = block.toolId || '';
-      if (SKIP_TOOLS.has(toolId)) continue;
+      if (SKIP_TOOLS.has(toolId)) { lastFileEditTool = null; continue; }
       if (!block.isComplete) continue;
-      classified.push({ type: 'tool', block });
-    } else if (kind === 'thinking' || kind === 'mcpServersStarting') {
+      const entry = { type: 'tool', block, edits: [] };
+      classified.push(entry);
+      lastFileEditTool = FILE_EDIT_TOOLS.has(toolId) ? entry : null;
+    } else if (kind === 'textEditGroup') {
+      if (lastFileEditTool) lastFileEditTool.edits.push(block);
+    } else if (kind === 'thinking' || kind === 'mcpServersStarting' ||
+               kind === 'undoStop' || kind === 'codeblockUri') {
       continue;
     } else {
       const val = (block.value || '').trim();
-      if (val) classified.push({ type: 'text', value: val });
+      // Drop streaming-artifact backtick fences ("```", "```\n```", etc.)
+      if (!val) continue;
+      if (/^`{3,}[a-z]*(\s*\n?\s*`{3,})?\s*$/i.test(val)) continue;
+      classified.push({ type: 'text', value: val });
     }
   }
 
@@ -242,6 +303,30 @@ for (const req of requests) {
         } catch { input = { raw: rd.input }; }
       }
 
+      // Terminal tools: input lives in toolSpecificData.commandLine and
+      // output in toolSpecificData.terminalCommandOutput.text.
+      const tsd = block.toolSpecificData || {};
+      const isTerminal = tsd.kind === 'terminal' || /terminal/i.test(toolId);
+      if (isTerminal && tsd.commandLine) {
+        input.command = tsd.commandLine.original || tsd.commandLine.toolEdited || tsd.commandLine.forDisplay || '';
+        if (tsd.cwd?.path) input.cwd = tsd.cwd.path;
+        if (tsd.language) input.language = tsd.language;
+        if (tsd.isBackground) input.isBackground = true;
+      }
+
+      // For built-in tools (file edits, reads, searches), the input lives in
+      // invocationMessage + URIs rather than resultDetails.input.
+      const invocText = extractInvocationText(block.invocationMessage);
+      if (FILE_EDIT_TOOLS.has(toolId) || INVOCATION_INPUT_TOOLS.has(toolId)) {
+        const uris = block.invocationMessage?.uris || {};
+        const files = Object.values(uris).map(uriToRelPath).filter(Boolean);
+        if (files.length === 1) input.file = files[0];
+        else if (files.length > 1) input.files = files;
+        if (invocText) input.description = invocText.replace(/\[\]\(file:[^)]+\)/g, '').replace(/\s+/g, ' ').trim();
+      } else if (invocText && !input.description) {
+        input.description = invocText.replace(/\s+/g, ' ').trim();
+      }
+
       const callId = `call_${String(++callCounter).padStart(2, '0')}`;
 
       currentBlocks.push({
@@ -277,6 +362,35 @@ for (const req of requests) {
           if (external) {
             outputText = formatToolOutput(external, toolName);
           }
+        }
+      }
+
+      // Terminal output lives in toolSpecificData.terminalCommandOutput.
+      if (isTerminal) {
+        const out = tsd.terminalCommandOutput?.text ?? tsd.terminalCommandOutput;
+        if (typeof out === 'string' && out.length > 0) {
+          const exit = tsd.terminalCommandState?.exitCode;
+          const dur = tsd.terminalCommandState?.duration;
+          const header = (exit != null || dur != null)
+            ? `[exit=${exit ?? '?'}${dur != null ? `, ${dur}ms` : ''}]\n`
+            : '';
+          outputText = header + out.replace(/\r\n/g, '\n');
+        }
+      }
+
+      // For file-editing tools, the actual edits live in adjacent
+      // textEditGroup blocks — fold them into the tool result.
+      if (FILE_EDIT_TOOLS.has(toolId) && item.edits.length > 0) {
+        const editLines = [];
+        for (const eg of item.edits) {
+          const f = uriToRelPath(eg.uri);
+          const body = summarizeEdits(eg.edits);
+          if (f) editLines.push(`// ${f}`);
+          if (body) editLines.push(body);
+        }
+        const joined = editLines.join('\n').trim();
+        if (joined) {
+          outputText = outputText === '(no output)' ? joined : `${outputText}\n\n${joined}`;
         }
       }
 
