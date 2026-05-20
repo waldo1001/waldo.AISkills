@@ -16,6 +16,7 @@ dist/             Packaged skill .zip files, ready to upload.
 | Skill | Description |
 |---|---|
 | [chat-replayer](skills/chat-replayer/SKILL.md) | Convert AI agent chat sessions into self-contained, sanitized HTML files that replay the chat for live presentation. |
+| [ifacto-presentation](skills/ifacto-presentation/SKILL.md) | Build HTML presentation decks styled like the iFacto.be brand — green-on-black, Poppins, one-green-word headlines, alternating dark/light slides, and a working multi-slide template with keyboard nav and step reveals. |
 
 ## Workspace-local skills
 

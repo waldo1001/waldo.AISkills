@@ -1,0 +1,4280 @@
+<!doctype html>
+<!--
+  SLIDE DENSITY — minimum text on every slide.
+  The presenter speaks. The slide is the visual anchor, not a teleprompter.
+  - Readable in < 5 seconds without the presenter
+  - One strong sentence > a paragraph
+  - Card labels are 1–3 words, not captions
+  - No bullets that read as full sentences
+  - If a slide has > ~15 visible words, split it into two slides
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>iFacto Presentation Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== iFacto.be design language ===== */
+  :root{
+    --green:#3BAF5A;
+    --green-deep:#2E8E48;
+    --green-glow:rgba(59,175,90,.55);
+    --black:#040404;
+    --ink:#212427;
+    --ink-soft:#3A3F44;
+    --bg:#FFFFFF;
+    --bg-alt:#F5F6F7;
+    --line:#DEE2E6;
+    --muted:#7A8088;
+    --on-dark:#FBFBFC;
+    --on-dark-soft:#C7CBD0;
+    --amber:#E8C156;
+    --sky:#7AB7DD;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;
+    font-family:"Poppins",system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--black);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .deck{position:fixed;inset:0}
+  .slide{
+    position:absolute;inset:0;
+    display:none;flex-direction:column;justify-content:center;
+    padding:9vh 9vw 11vh;
+    overflow:hidden;
+    opacity:0;
+    transform:translateY(20px);
+    transition:opacity .55s ease, transform .65s cubic-bezier(.2,.8,.25,1);
+  }
+  .slide.active{display:flex;opacity:1;transform:none}
+  .slide.dark{background:var(--black);color:var(--on-dark)}
+  .slide.light{background:var(--bg);color:var(--ink)}
+  .slide.alt{background:var(--bg-alt);color:var(--ink)}
+
+  /* ----- Stagger reveal ----- */
+  .slide.active .reveal{animation:revealUp .8s cubic-bezier(.2,.8,.25,1) both}
+  .slide.active .reveal:nth-child(1){animation-delay:.05s}
+  .slide.active .reveal:nth-child(2){animation-delay:.18s}
+  .slide.active .reveal:nth-child(3){animation-delay:.30s}
+  .slide.active .reveal:nth-child(4){animation-delay:.42s}
+  .slide.active .reveal:nth-child(5){animation-delay:.54s}
+  .slide.active .reveal:nth-child(6){animation-delay:.66s}
+  @keyframes revealUp{
+    0%{opacity:0;transform:translateY(28px)}
+    100%{opacity:1;transform:none}
+  }
+
+  /* ===== Top bar ===== */
+  .topbar{
+    position:absolute;top:0;left:0;right:0;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 9vw;font-weight:500;font-size:15px;z-index:5;
+  }
+  .slide.dark .topbar{color:var(--on-dark)}
+  .logo{display:flex;align-items:center;gap:14px}
+  .logo svg{width:46px;height:46px;flex:none}
+  .logo .ringPath{transform-origin:center;animation:ringSpin 28s linear infinite}
+  @keyframes ringSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .logo .word{display:flex;flex-direction:column;line-height:1}
+  .logo .word b{font-weight:700;font-size:26px;letter-spacing:-.6px}
+  .logo .word small{font-size:10px;letter-spacing:.05em;opacity:.85;margin-top:3px}
+  .topnav{display:flex;gap:24px;align-items:center;font-weight:500;font-size:14px;opacity:.9}
+  .pillbtn{
+    display:inline-flex;align-items:center;gap:8px;
+    border:2px solid var(--green);color:var(--green);
+    background:transparent;border-radius:40px;
+    padding:13px 32px;font-weight:500;font-size:15px;
+    text-decoration:none;transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .pillbtn.solid{background:var(--green);color:#fff}
+  .pillbtn:hover{transform:translateY(-2px);box-shadow:0 18px 40px -16px var(--green-glow)}
+
+  /* ===== Animated hero background (motion blur) ===== */
+  .hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#040404}
+  .hero-bg .glow1, .hero-bg .glow2, .hero-bg .glow3{
+    position:absolute;border-radius:50%;filter:blur(80px);opacity:.55;
+    will-change:transform;
+  }
+  .hero-bg .glow1{width:60vw;height:60vw;background:radial-gradient(circle,rgba(59,175,90,.55) 0%, transparent 60%);
+    right:-15vw;top:-10vw;animation:float1 14s ease-in-out infinite}
+  .hero-bg .glow2{width:48vw;height:48vw;background:radial-gradient(circle,rgba(232,193,86,.30) 0%, transparent 60%);
+    right:10vw;bottom:-10vw;animation:float2 18s ease-in-out infinite}
+  .hero-bg .glow3{width:30vw;height:30vw;background:radial-gradient(circle,rgba(46,142,72,.45) 0%, transparent 60%);
+    left:30vw;top:30vh;animation:float3 22s ease-in-out infinite}
+  @keyframes float1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,30px) scale(1.08)}}
+  @keyframes float2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-40px) scale(1.05)}}
+  @keyframes float3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,-20px) scale(1.1)}}
+
+  .speedlines{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.5}
+  .speedlines .line{
+    position:absolute;height:1px;background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+    animation:streak linear infinite;
+  }
+  @keyframes streak{
+    0%{transform:translateX(-100%);opacity:0}
+    10%{opacity:1}
+    90%{opacity:1}
+    100%{transform:translateX(120vw);opacity:0}
+  }
+
+  .hero-bg::before{
+    content:"";position:absolute;inset:0;z-index:2;
+    background:linear-gradient(90deg, rgba(4,4,4,.95) 0%, rgba(4,4,4,.55) 35%, rgba(4,4,4,.05) 70%, rgba(4,4,4,0) 100%);
+  }
+  .hero-bg::after{
+    content:"";position:absolute;inset:0;z-index:2;opacity:.18;
+    background-image:linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size:80px 80px;
+    mask-image:radial-gradient(ellipse at 60% 50%, #000 30%, transparent 80%);
+  }
+
+  .hero-content{position:relative;z-index:3;max-width:none;padding-left:0;padding-right:10vw}
+
+  /* ===== Type ===== */
+  h1,h2,h3,h4{font-family:"Poppins",sans-serif;font-weight:300;letter-spacing:-.025em;margin:0}
+  h1{font-size:clamp(46px,5.6vw,88px);line-height:.98}
+  h2{font-size:clamp(48px,6vw,92px);line-height:1.04}
+  h3{font-size:clamp(28px,2.4vw,40px);line-height:1.2;font-weight:400}
+  h4{font-size:clamp(22px,1.7vw,28px);font-weight:400;line-height:1.3}
+  p{font-family:"Poppins";font-weight:400;font-size:clamp(20px,1.55vw,28px);line-height:1.55;max-width:62ch;color:inherit;opacity:.92}
+  .lead{font-size:clamp(30px,2.3vw,42px);font-weight:400;line-height:1.5;max-width:62ch}
+  b,strong{font-weight:700}
+  .g{color:var(--green)}
+  .arrow{
+    color:var(--green);font-weight:500;text-decoration:none;
+    display:inline-flex;align-items:center;gap:10px;font-size:clamp(18px,1.3vw,22px);
+    position:relative;
+  }
+  .arrow .chev{display:inline-block;font-size:1.5em;line-height:0;transform:translateY(-2px);transition:transform .3s ease}
+  .arrow:hover .chev{transform:translate(6px,-2px)}
+
+  /* ===== Footer pager ===== */
+  .pager{
+    position:absolute;bottom:30px;left:9vw;right:9vw;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500;
+  }
+  .slide.dark .pager{color:var(--on-dark-soft)}
+
+  /* ===== Bottom nav ===== */
+  .nav{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    display:flex;gap:4px;align-items:center;background:rgba(4,4,4,.7);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.1);border-radius:40px;padding:7px;z-index:50;
+  }
+  .nav button{
+    background:transparent;border:0;color:#fff;font-family:"Poppins";font-size:14px;letter-spacing:.05em;
+    padding:10px 22px;border-radius:40px;cursor:pointer;font-weight:500;
+  }
+  .nav button:hover{background:rgba(255,255,255,.1)}
+  .nav .count{
+    color:#9aa0a6;padding:10px 14px;font-size:14px;
+    cursor:pointer;user-select:none;border-radius:40px;
+    transition:color .15s ease, background .15s ease;
+  }
+  .nav .count:hover{color:#fff;background:rgba(255,255,255,.08)}
+
+  /* ===== Slide picker ===== */
+  .picker-backdrop{
+    position:fixed;inset:0;z-index:55;
+    background:rgba(0,0,0,.55);backdrop-filter:blur(2px);
+    opacity:0;pointer-events:none;
+    transition:opacity .18s ease;
+  }
+  .picker-backdrop.open{opacity:1;pointer-events:auto}
+  .picker{
+    position:fixed;left:50%;bottom:88px;
+    transform:translateX(-50%) translateY(8px);
+    z-index:60;width:min(620px,90vw);max-height:62vh;
+    background:rgba(14,14,14,.96);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:18px;
+    box-shadow:0 24px 80px rgba(0,0,0,.6);
+    display:flex;flex-direction:column;overflow:hidden;
+    font-family:"Poppins",sans-serif;
+    opacity:0;pointer-events:none;
+    transition:opacity .18s ease, transform .22s cubic-bezier(.2,.8,.25,1);
+  }
+  .picker.open{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+  .picker-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px 12px;border-bottom:1px solid rgba(255,255,255,.08);
+    color:#9aa0a6;
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;
+  }
+  .picker-close{
+    background:transparent;border:0;color:#9aa0a6;cursor:pointer;
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+    padding:4px 10px;border-radius:6px;font-family:inherit;
+  }
+  .picker-close:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .picker-list{
+    overflow-y:auto;padding:6px 0;
+    scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;
+  }
+  .picker-list::-webkit-scrollbar{width:10px}
+  .picker-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:8px}
+  .picker-list::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}
+  .picker-topic-sep{
+    padding:14px 22px 6px;
+    font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:#7A8088;font-weight:700;
+  }
+  .picker-topic-sep:first-child{padding-top:8px}
+  .picker-item{
+    display:grid;grid-template-columns:36px 1fr;align-items:center;
+    gap:14px;padding:9px 22px;cursor:pointer;
+    color:#d7dbe0;font-size:14px;font-weight:400;
+    border-left:3px solid transparent;
+  }
+  .picker-item:hover{background:rgba(59,175,90,.10);border-left-color:rgba(59,175,90,.6)}
+  .picker-item.current{background:rgba(59,175,90,.18);border-left-color:var(--green);color:#fff;font-weight:500}
+  .picker-num{
+    color:#9aa0a6;font-variant-numeric:tabular-nums;
+    font-size:11.5px;font-weight:600;letter-spacing:.05em;
+  }
+  .picker-item.current .picker-num{color:var(--green)}
+  .picker-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .progress{position:fixed;left:0;top:0;height:3px;background:var(--green);z-index:60;transition:width .45s ease;
+    box-shadow:0 0 20px var(--green-glow)}
+
+  @media (max-width:900px){
+    .topnav{display:none}
+  }
+
+  /* =========================================================
+     TOPIC 02 — PHILOSOPHY (3 slides)
+     ========================================================= */
+
+  /* --- Slide 02.1: Provocation (two stacked headlines, dark) --- */
+  .prov-line{
+    font-size:clamp(40px,4.5vw,80px);
+    line-height:1.05;
+    font-weight:300;
+    letter-spacing:-.025em;
+    margin:0;
+    position:relative;
+    z-index:3;
+    white-space:nowrap;        /* keep each line on one line — no wrapping */
+  }
+  .prov-line + .prov-line{ margin-top:32px; }
+  /* Wrapper for the consolidated 4-line philosophy slide */
+  .philosophy-stack{ position:relative; z-index:3; }
+  /* Dim background orbs slightly so the text dominates */
+  .slide.prov .hero-bg .glow1{ opacity:.40 }
+  .slide.prov .hero-bg .glow2{ opacity:.20 }
+  .slide.prov .hero-bg .glow3{ opacity:.30 }
+  /* Line 1 reveals on slide entry (slight delay so the topbar settles first) */
+  .slide.prov.active .prov-line.line-1{ animation-delay:.35s !important; }
+  /* Line 2 is a step: hidden by default, only revealed on Next-click / Right-arrow / Space */
+  .step{
+    opacity:0;
+    transform:translateY(28px);
+  }
+  .slide.active .step.shown{
+    animation:revealUp .8s cubic-bezier(.2,.8,.25,1) forwards;
+  }
+
+  /* ===========================================================
+     Typewriter step reveal — reusable across slides.
+     Add classes  step typed  to any element that should appear
+     character-by-character when revealed by Next-click / Right-arrow / Space.
+     The JS at the bottom splits the element's text into per-char spans on load.
+     =========================================================== */
+  .step.typed{
+    opacity:0;          /* invisible until shown */
+    transform:none;     /* no fade-up slide; the chars do the work */
+  }
+  .slide.active .step.typed.shown{
+    opacity:1;
+    animation:none;     /* override the .step.shown revealUp fade */
+    transform:none;
+  }
+  .typed .char{ opacity:0; display:inline; }
+  /* Auto-typed (.typed without .step): types in when the slide becomes active,
+     with a small initial pause (250ms) so the slide entry settles first. */
+  .slide.active .typed:not(.step) .char{
+    animation:typedChar .05s linear forwards;
+    animation-delay:calc(250ms + var(--c) * 22ms);
+  }
+  /* Click-typed (.step.typed): types in immediately when .shown is added on Next-click */
+  .slide.active .step.typed.shown .char{
+    animation:typedChar .05s linear forwards;
+    animation-delay:calc(var(--c) * 22ms);
+  }
+  @keyframes typedChar{
+    from{ opacity:0 }
+    to{ opacity:1 }
+  }
+
+  /* --- Slide 02.2: Reframe (centered, light) --- */
+  .slide.reframe{ align-items:center; text-align:center; }
+  .reframe-stack{
+    position:relative;z-index:3;
+    display:flex;flex-direction:column;align-items:center;
+    max-width:30ch;
+  }
+  .reframe-headline{
+    font-size:clamp(40px,5vw,76px);
+    line-height:1.1;
+    font-weight:300;
+    letter-spacing:-.025em;
+    margin:0;
+    white-space:nowrap;
+  }
+  .reframe-headline + .reframe-headline{ margin-top:24px; }
+
+  /* --- Slide 02.3: Bridge construction (dark hero) --- */
+  .bridge-stage{
+    position:relative;z-index:3;
+    margin-top:8vh;
+    display:flex;justify-content:center;
+  }
+  .bridge{
+    position:relative;
+    width:78vw;
+    height:90px;
+    overflow:hidden;
+  }
+  .bridge-pillar{
+    position:absolute;
+    top:8px;bottom:8px;
+    width:5px;
+    border-radius:3px;
+    background:linear-gradient(180deg,rgba(59,175,90,.15) 0%,var(--green) 35%,var(--green-deep) 100%);
+    box-shadow:0 0 20px var(--green-glow), 0 0 40px rgba(59,175,90,.25);
+    opacity:0;
+    transform:scaleY(0);transform-origin:bottom;
+  }
+  .bridge-pillar.left{ left:0 }
+  .bridge-pillar.right{ right:0 }
+  .slide.active .bridge-pillar{
+    animation:pillarRise .55s cubic-bezier(.4,0,.3,1) forwards;
+  }
+  .slide.active .bridge-pillar.left{ animation-delay:1.0s; }
+  .slide.active .bridge-pillar.right{ animation-delay:1.15s; }
+  @keyframes pillarRise{
+    0%{ opacity:0;transform:scaleY(0) }
+    100%{ opacity:1;transform:scaleY(1) }
+  }
+
+  .bridge-deck{
+    position:absolute;
+    left:12px;right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    height:14px;
+    display:flex;
+    gap:3px;
+    overflow:hidden;
+    border-radius:2px;
+  }
+  .plank{
+    flex:1;
+    height:100%;
+    border-radius:2px;
+    background:linear-gradient(180deg,rgba(120,230,150,1) 0%,var(--green) 50%,var(--green-deep) 100%);
+    box-shadow:0 0 0 transparent;
+    opacity:0;
+    transform:translateY(-380%);
+  }
+  .slide.active .plank{
+    animation:plankDrop .55s cubic-bezier(.42,0,.3,1.15) forwards;
+    animation-delay:calc(1.35s + var(--i) * 85ms);
+  }
+  @keyframes plankDrop{
+    0%{ opacity:0;transform:translateY(-380%);box-shadow:0 0 0 transparent }
+    20%{ opacity:.7 }
+    60%{ opacity:1;transform:translateY(15%);box-shadow:0 0 22px var(--green-glow) }
+    82%{ transform:translateY(-4%);box-shadow:0 0 18px var(--green-glow) }
+    100%{ opacity:1;transform:translateY(0);box-shadow:0 0 6px rgba(59,175,90,.4) }
+  }
+
+  /* Shimmer wave sweeps across the completed deck */
+  .bridge-shimmer{
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:25%;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.85) 50%,transparent 100%);
+    filter:blur(3px);
+    border-radius:2px;
+    opacity:0;
+    pointer-events:none;
+    transform:translateX(-30%);
+  }
+  .slide.active .bridge-shimmer{
+    animation:bridgeShimmer 1.5s ease-in-out forwards;
+    animation-delay:2.95s;
+  }
+  @keyframes bridgeShimmer{
+    0%{ opacity:0;transform:translateX(-30%) }
+    20%{ opacity:1 }
+    80%{ opacity:1 }
+    100%{ opacity:0;transform:translateX(380%) }
+  }
+
+  /* Breathing afterglow on the deck (subtle, infinite) */
+  .bridge::after{
+    content:"";
+    position:absolute;
+    left:12px;right:12px;
+    top:50%;
+    height:14px;
+    transform:translateY(-50%);
+    border-radius:2px;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 50% 50%, rgba(59,175,90,.55) 0%, transparent 70%);
+    filter:blur(10px);
+    opacity:0;
+  }
+  .slide.active .bridge::after{
+    animation:bridgeBreathe 4.5s ease-in-out infinite;
+    animation-delay:4.0s;
+  }
+  @keyframes bridgeBreathe{
+    0%,100%{ opacity:.15 }
+    50%{ opacity:.55 }
+  }
+
+  /* =========================================================
+     TOPIC 03 — TOOLCHAIN CONCEPT (3 slides)
+     ========================================================= */
+
+  /* --- Slide 03.1: Context engineering (light) --- */
+  .slide.tc-context{
+    align-items:center;justify-content:center;text-align:center;
+  }
+  .tc-context-content{
+    position:relative;z-index:3;
+    max-width:1100px;margin:0 auto;
+    display:flex;flex-direction:column;align-items:center;gap:36px;
+  }
+  .tc-context-headline{
+    font-size:clamp(46px,5.6vw,88px);
+    font-weight:300;letter-spacing:-.025em;
+    color:var(--ink);margin:0;line-height:1;
+  }
+  .tc-context-lead{
+    font-size:clamp(24px,1.85vw,34px);
+    font-weight:400;line-height:1.4;
+    color:var(--ink-soft);
+    max-width:34ch;margin:0;
+  }
+  .tc-context-ref{
+    margin-top:20px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .tc-context-ref small{
+    font-size:clamp(13px,1.0vw,16px);
+    color:var(--muted);
+    letter-spacing:.02em;
+    font-style:italic;
+    max-width:60ch;line-height:1.4;
+  }
+
+  /* --- Slide 03.2: Toolchain map (light, six pillars; Core layer always visible, Operational layer click-revealed) --- */
+  .slide.tc-map{ align-items:center;justify-content:center; }
+  .tc-map-content{
+    position:relative;z-index:3;
+    width:100%;max-width:1400px;margin:0 auto;
+    display:flex;flex-direction:column;gap:3.5vh;
+    align-items:stretch;
+  }
+  .tc-map-block{
+    display:flex;flex-direction:column;gap:2.4vh;
+  }
+  .tc-map-headline{
+    font-size:clamp(40px,4.5vw,72px);
+    font-weight:300;letter-spacing:-.025em;
+    color:var(--ink);margin:0;line-height:1;
+  }
+  .tc-aka{
+    font-size:clamp(15px,1.3vw,22px);
+    font-weight:400;color:var(--muted);
+    letter-spacing:0;margin-left:.5em;
+    vertical-align:middle;
+    font-style:italic;
+  }
+  .tc-map-row{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:4vw;width:100%;
+  }
+  .tc-map-col{ flex:1;text-align:center; }
+  .tc-map-generic{
+    font-size:clamp(40px,4.6vw,72px);
+    font-weight:300;letter-spacing:-.025em;
+    line-height:1;color:var(--ink);
+  }
+  .tc-map-caption{
+    font-size:clamp(15px,1.15vw,20px);
+    font-weight:400;color:var(--muted);
+    margin-top:14px;line-height:1.45;
+    max-width:22ch;
+    margin-left:auto;margin-right:auto;
+  }
+  .tc-map-divider{
+    display:block;
+    width:1px;height:38px;
+    margin:0 auto 22px;
+    background:linear-gradient(180deg,transparent 0%,var(--green) 100%);
+    position:relative;
+  }
+  .tc-map-divider::after{
+    content:"";
+    position:absolute;
+    bottom:-3px;left:50%;
+    width:7px;height:7px;border-radius:50%;
+    background:var(--green);
+    transform:translateX(-50%);
+    box-shadow:0 0 10px var(--green-glow);
+  }
+  .tc-map-efico{
+    font-size:clamp(22px,2.0vw,34px);
+    font-weight:500;color:var(--green);
+    letter-spacing:-.01em;line-height:1.2;
+  }
+
+  /* --- Slide 03.2: Pillar boxes (same visual treatment as MCP slide boxes) --- */
+  .tc-pillars{ align-items:stretch; }
+  .tc-pillar{
+    flex:1 1 0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px 24px;
+    text-align:center;
+    box-shadow:0 12px 24px -22px rgba(0,0,0,.15);
+    transition:transform .3s cubic-bezier(.2,.8,.25,1),
+                box-shadow .3s ease,
+                border-color .3s ease,
+                background .35s ease;
+  }
+  /* Hover: green-tinted top-down gradient + inset top glow + lifted ring shadow + zoom.
+     Reads as a soft "spotlight from above" with a clear scale-up to mark focus.
+     `!important` on transform is required because the entry animation
+     (`.slide.tc-map.active .tc-pillar { animation: tcPillarSnap ... both }`)
+     uses `animation-fill-mode: both`, which persists the animation's final
+     `transform: scale(1)` and would otherwise outrank a regular :hover rule. */
+  .tc-pillar:hover{
+    transform:translateY(-4px) scale(1.08) !important;
+    z-index:10;
+    border-color:var(--green);
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.11) 0%,
+      rgba(59,175,90,.035) 42%,
+      #fff 100%);
+    box-shadow:
+      inset 0 50px 60px -45px rgba(59,175,90,.38),
+      0 24px 44px -22px rgba(59,175,90,.48),
+      0 0 0 1px rgba(59,175,90,.18);
+  }
+  .tc-pillar-name{
+    font-size:clamp(32px,3.6vw,54px);
+    font-weight:300;letter-spacing:-.025em;
+    color:var(--ink);
+    line-height:1;
+    margin-bottom:14px;
+  }
+  .tc-pillar-caption{
+    font-size:clamp(18px,1.4vw,24px);
+    font-weight:400;color:var(--muted);
+    line-height:1.4;
+    max-width:22ch;
+    margin:0 auto;
+  }
+  /* Snap-in on slide entry — both pillar rows are visible immediately.
+     Core (top row) snaps first with the original stagger; operational (bottom row)
+     follows a beat later so the two layers read as a sequence, not a flash. */
+  .slide.tc-map.active .tc-pillar{
+    animation:tcPillarSnap .55s cubic-bezier(.34,1.56,.64,1) backwards;
+  }
+  .slide.tc-map.active .tc-map-block:nth-of-type(1) .tc-pillar:nth-child(1){ animation-delay:.30s; }
+  .slide.tc-map.active .tc-map-block:nth-of-type(1) .tc-pillar:nth-child(2){ animation-delay:.42s; }
+  .slide.tc-map.active .tc-map-block:nth-of-type(1) .tc-pillar:nth-child(3){ animation-delay:.54s; }
+  .slide.tc-map.active .tc-map-block:nth-of-type(2) .tc-pillar:nth-child(1){ animation-delay:.70s; }
+  .slide.tc-map.active .tc-map-block:nth-of-type(2) .tc-pillar:nth-child(2){ animation-delay:.82s; }
+  .slide.tc-map.active .tc-map-block:nth-of-type(2) .tc-pillar:nth-child(3){ animation-delay:.94s; }
+
+  /* One click reveals BOTH example rows together.
+     The first example row carries `.step` (advances on click).
+     The second example row carries `.tc-sync` and rides the same reveal via :has(). */
+  .slide.tc-map .tc-map-row.tc-sync{
+    opacity:0;
+    transform:translateY(28px);
+  }
+  .slide.tc-map.active:has(.step.shown) .tc-map-row.tc-sync{
+    animation:revealUp .8s cubic-bezier(.2,.8,.25,1) forwards;
+  }
+  @keyframes tcPillarSnap{
+    0%  { opacity:0;transform:scale(.85) }
+    60% { opacity:1;transform:scale(1.05) }
+    100%{ opacity:1;transform:scale(1) }
+  }
+  /* Name flash — light-green pulse 220ms after each box settles */
+  .slide.tc-map.active .tc-pillar .tc-pillar-name{
+    animation:tcPillarNameFlash .5s ease both;
+  }
+  .slide.tc-map.active .tc-pillar:nth-child(1) .tc-pillar-name{ animation-delay:.55s; }
+  .slide.tc-map.active .tc-pillar:nth-child(2) .tc-pillar-name{ animation-delay:.67s; }
+  .slide.tc-map.active .tc-pillar:nth-child(3) .tc-pillar-name{ animation-delay:.79s; }
+  @keyframes tcPillarNameFlash{
+    0%  { color:var(--ink);text-shadow:none }
+    50% { color:#7ed79a;text-shadow:0 0 18px rgba(59,175,90,.55) }
+    100%{ color:var(--ink);text-shadow:none }
+  }
+
+  /* --- Slide 03.3: Demo (black) --- */
+  .slide.tc-demo{
+    align-items:center;justify-content:center;
+    background:#000;
+  }
+  .tc-demo-center{ position:relative;z-index:3;text-align:center; }
+  .tc-demo-word{
+    font-size:clamp(120px,17vw,280px);
+    font-weight:300;letter-spacing:-.03em;
+    color:var(--on-dark);
+    line-height:1;margin:0;white-space:nowrap;
+  }
+  /* Slow the per-char delay for impact on this slide (overrides default 22ms) */
+  .slide.tc-demo.active .typed:not(.step) .char{
+    animation-delay: calc(400ms + var(--c) * 110ms);
+  }
+  /* Demo launch link — fades in after the typewriter completes */
+  .tc-demo-launch{
+    display:inline-flex;
+    margin-top:48px;
+    font-size:clamp(20px,1.45vw,26px);
+    opacity:0;
+    transform:translateY(8px);
+    transition:transform .25s ease, color .25s ease;
+  }
+  .tc-demo-launch:hover{ transform:translateY(8px); color:#7ed79a }
+  .slide.tc-demo.active .tc-demo-launch{
+    animation: tcDemoLaunchFade .8s ease 1.6s forwards;
+  }
+  @keyframes tcDemoLaunchFade{
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:none; }
+  }
+
+  /* ============================================================
+     TOPIC — MCPs (the missing leg) · folder 16-mcps
+     1 slide, light surface, 4 click-reveals.
+     Headline:  MCP  → expands to "MCP — Model Context Protocol"
+     Metaphor:  USB-C for agents.
+     Boxes:     Standardized · Universal · Pluggable
+     Chips:     9 MCPs we plug in (Playbook install list + BC Telemetry)
+     ============================================================ */
+  .slide.mcp{
+    align-items:center;justify-content:center;
+  }
+  .mcp-content{
+    width:100%;max-width:none;
+    display:flex;flex-direction:column;align-items:center;
+    gap:36px;
+    text-align:center;
+  }
+  .mcp-headline{
+    font-size:clamp(64px,8.5vw,140px);
+    font-weight:300;letter-spacing:-.025em;
+    color:var(--ink);
+    line-height:1;margin:0;
+    white-space:nowrap;
+  }
+  .mcp-acronym{ font-weight:400; }
+  .mcp-expand{
+    font-size:clamp(36px,4.4vw,72px);
+    font-weight:300;letter-spacing:-.015em;
+    color:var(--muted);
+    margin-left:.1em;
+  }
+  /* Inherit the global typewriter behaviour from .step.typed — chars start
+     hidden, then animate in once .shown is added on Next-click. */
+  .mcp-metaphor{
+    font-size:clamp(34px,3.4vw,56px);
+    font-weight:300;letter-spacing:-.015em;
+    color:var(--ink);
+    line-height:1.1;margin:0;
+  }
+  .mcp-boxes{
+    display:flex;gap:28px;width:100%;
+    justify-content:center;align-items:stretch;
+    flex-wrap:wrap;
+  }
+  .mcp-box{
+    flex:1 1 0;min-width:240px;max-width:340px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px 26px;
+    text-align:left;
+    box-shadow:0 12px 24px -22px rgba(0,0,0,.15);
+    transition:transform .3s cubic-bezier(.2,.8,.25,1),
+                box-shadow .3s ease,
+                border-color .3s ease,
+                background .35s ease;
+    /* Paint above .mcp-spokes (z:1) so the dashed lines that extend upward
+       into the box area stop visually at the box edge. */
+    position:relative;
+    z-index:2;
+  }
+  /* Hover: same green-tinted spotlight effect as .tc-pillar — top-down gradient,
+     inset top glow, lifted ring shadow, plus a clear scale-up. Canonical "box hover" treatment.
+     `!important` on transform — entry animation `mcpBoxSnap` uses `animation-fill-mode: forwards`,
+     which persists `transform: scale(1)` and outranks plain :hover rules. */
+  .mcp-box:hover{
+    transform:translateY(-4px) scale(1.08) !important;
+    z-index:10;
+    border-color:var(--green);
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.11) 0%,
+      rgba(59,175,90,.035) 42%,
+      #fff 100%);
+    box-shadow:
+      inset 0 50px 60px -45px rgba(59,175,90,.38),
+      0 24px 44px -22px rgba(59,175,90,.48),
+      0 0 0 1px rgba(59,175,90,.18);
+  }
+  .mcp-box-eyebrow{
+    font-size:clamp(11px,.85vw,13px);
+    font-weight:600;letter-spacing:.18em;
+    color:var(--green);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .mcp-box-text{
+    font-size:clamp(19px,1.55vw,26px);
+    font-weight:400;line-height:1.35;
+    color:var(--ink);
+    letter-spacing:-.005em;
+  }
+  .mcp-chips{
+    display:flex;flex-wrap:wrap;justify-content:center;
+    gap:10px 14px;
+    max-width:980px;
+    margin-top:6px;
+  }
+  .mcp-chip{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:8px 18px 8px 14px;border-radius:40px;
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    font-size:clamp(15px,1.1vw,18px);
+    font-weight:500;color:var(--ink-soft);
+    letter-spacing:-.003em;
+    white-space:nowrap;
+    position:relative;z-index:2; /* sit above the spokes SVG */
+  }
+
+  /* =====================================================================
+     MCP slide animations — A + B + C + D + E
+     ===================================================================== */
+
+  /* Ensure speedlines sit behind, content sits above */
+  .slide.mcp .mcp-speedlines{
+    position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  }
+  .slide.mcp .mcp-speedlines .line{
+    position:absolute;height:1px;left:-220px;
+    background:linear-gradient(90deg,
+      rgba(59,175,90,0) 0%,
+      rgba(59,175,90,.55) 50%,
+      rgba(59,175,90,0) 100%);
+    opacity:.10;
+    animation:mcpSpeedDrift linear infinite;
+  }
+  @keyframes mcpSpeedDrift{
+    from{ transform:translateX(0) }
+    to  { transform:translateX(calc(100vw + 240px)) }
+  }
+  /* The content must sit above speedlines */
+  .slide.mcp .mcp-content{
+    position:relative;z-index:2;
+  }
+  .slide.mcp .topbar, .slide.mcp .pager{ z-index:5; }
+
+  /* ---- D · Acronym + word-unfold (replaces typewriter) ---- */
+  .mcp-expand{
+    display:inline-flex;align-items:baseline;
+    margin-left:.05em;
+  }
+  .mcp-expand .mcp-dash,
+  .mcp-expand .mcp-word{
+    display:inline-block;
+    margin-left:.32em;
+    opacity:0;
+    transform:translateX(-14px);
+    /* Override the .step parent's fade — children manage their own entrance */
+  }
+  /* The .step parent keeps opacity:1 once shown; the parent transform won't add a translate since we override children. */
+  .slide.mcp.active .mcp-expand.step.shown{
+    animation:none;             /* don't run the global revealUp on the parent — children animate individually */
+    opacity:1;
+    transform:none;
+  }
+  .slide.mcp.active .mcp-expand.step .mcp-dash,
+  .slide.mcp.active .mcp-expand.step .mcp-word{
+    opacity:0;transform:translateX(-14px);
+  }
+  .slide.mcp.active .mcp-expand.step.shown .mcp-dash,
+  .slide.mcp.active .mcp-expand.step.shown .mcp-word{
+    animation:mcpWordSlide .55s cubic-bezier(.2,.8,.25,1) forwards;
+  }
+  .slide.mcp.active .mcp-expand.step.shown .mcp-dash               { animation-delay:0ms; }
+  .slide.mcp.active .mcp-expand.step.shown .mcp-word:nth-of-type(1){ animation-delay:110ms; }
+  .slide.mcp.active .mcp-expand.step.shown .mcp-word:nth-of-type(2){ animation-delay:230ms; }
+  .slide.mcp.active .mcp-expand.step.shown .mcp-word:nth-of-type(3){ animation-delay:350ms; }
+  @keyframes mcpWordSlide{
+    from{ opacity:0;transform:translateX(-14px) }
+    to  { opacity:1;transform:none }
+  }
+
+  /* ---- C · Boxes snap into place with overshoot + eyebrow color flash ---- */
+  /* `:not(.shown)` scope so this hidden-state rule stops applying once .shown is added
+     — otherwise it would drag the box back to opacity:0 / scale(.85) after the entry
+     animation completes (with `backwards` fill below). */
+  .slide.mcp.active .mcp-boxes.step:not(.shown) .mcp-box{
+    opacity:0;transform:scale(.85);
+  }
+  .slide.mcp.active .mcp-boxes.step.shown{
+    animation:none;             /* parent does not fade-up; children do the work */
+    opacity:1;transform:none;
+  }
+  /* `backwards` instead of `forwards`: only holds the initial keyframe state
+     during animation-delay. After the animation completes, the property reverts
+     to the regular cascade (no transform), letting :hover transforms apply freely. */
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box{
+    animation:mcpBoxSnap .55s cubic-bezier(.34,1.56,.64,1) backwards;
+  }
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box:nth-child(1){ animation-delay:0ms; }
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box:nth-child(2){ animation-delay:120ms; }
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box:nth-child(3){ animation-delay:240ms; }
+  @keyframes mcpBoxSnap{
+    0%  { opacity:0;transform:scale(.85) }
+    60% { opacity:1;transform:scale(1.05) }
+    100%{ opacity:1;transform:scale(1) }
+  }
+  .slide.mcp.active .mcp-boxes.step .mcp-box .mcp-box-eyebrow{
+    color:var(--muted);
+  }
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box .mcp-box-eyebrow{
+    animation:mcpEyebrowFlash .5s ease forwards;
+  }
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box:nth-child(1) .mcp-box-eyebrow{ animation-delay:260ms; }
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box:nth-child(2) .mcp-box-eyebrow{ animation-delay:380ms; }
+  .slide.mcp.active .mcp-boxes.step.shown .mcp-box:nth-child(3) .mcp-box-eyebrow{ animation-delay:500ms; }
+  @keyframes mcpEyebrowFlash{
+    0%  { color:var(--muted);text-shadow:none }
+    50% { color:#7ed79a;text-shadow:0 0 14px rgba(59,175,90,.55) }
+    100%{ color:var(--green);text-shadow:none }
+  }
+
+  /* ---- B · Hub-and-spoke draw-in ---- */
+  .mcp-chips{ position:relative; padding-top:60px; margin-top:-12px; }
+  .mcp-spokes{
+    position:absolute;
+    top:-90px;left:0;right:0;
+    width:100%;height:220px;
+    pointer-events:none;
+    opacity:0;
+    z-index:1;
+  }
+  .mcp-spokes .spoke{
+    stroke:var(--green);
+    stroke-width:1;
+    stroke-linecap:round;
+    stroke-dasharray:260;
+    stroke-dashoffset:260;
+    opacity:.55;
+    fill:none;
+    vector-effect:non-scaling-stroke;
+  }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes{
+    animation:mcpSpokesShow 1.6s ease forwards;
+  }
+  @keyframes mcpSpokesShow{
+    0%  { opacity:0 }
+    15% { opacity:1 }
+    70% { opacity:.7 }
+    100%{ opacity:0 }
+  }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke{
+    animation:mcpSpokeDraw .8s cubic-bezier(.2,.8,.25,1) forwards;
+  }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(1){ animation-delay:0ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(2){ animation-delay:60ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(3){ animation-delay:120ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(4){ animation-delay:180ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(5){ animation-delay:240ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(6){ animation-delay:300ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(7){ animation-delay:360ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(8){ animation-delay:420ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-spokes .spoke:nth-child(9){ animation-delay:480ms; }
+  @keyframes mcpSpokeDraw{
+    from{ stroke-dashoffset:260 }
+    to  { stroke-dashoffset:0 }
+  }
+
+  /* ---- A · Chips as live ports — LED dot, stagger-on then slow breathing ---- */
+  .mcp-chip::before{
+    content:'';
+    width:8px;height:8px;border-radius:50%;
+    background:var(--green);
+    opacity:0;
+    box-shadow:0 0 0 0 rgba(59,175,90,0);
+    flex:none;
+  }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip::before{
+    animation:
+      mcpLedOn .45s ease forwards,
+      mcpLedBreath 2.6s ease-in-out infinite;
+  }
+  /* Chips are :nth-child(2..10) of .mcp-chips because the .mcp-spokes <svg> is :nth-child(1). */
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(2)::before{ animation-delay:0ms,    600ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(3)::before{ animation-delay:60ms,   660ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(4)::before{ animation-delay:120ms,  720ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(5)::before{ animation-delay:180ms,  780ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(6)::before{ animation-delay:240ms,  840ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(7)::before{ animation-delay:300ms,  900ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(8)::before{ animation-delay:360ms,  960ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(9)::before{ animation-delay:420ms, 1020ms; }
+  .slide.mcp.active .mcp-chips.step.shown .mcp-chip:nth-child(10)::before{ animation-delay:480ms,1080ms; }
+  @keyframes mcpLedOn{
+    0%  { opacity:0;transform:scale(.4);box-shadow:0 0 0 0 rgba(59,175,90,0) }
+    60% { opacity:1;transform:scale(1.5);box-shadow:0 0 10px 4px rgba(59,175,90,.55) }
+    100%{ opacity:1;transform:scale(1);  box-shadow:0 0 6px 1px rgba(59,175,90,.45) }
+  }
+  @keyframes mcpLedBreath{
+    0%,100%{ box-shadow:0 0 4px 1px rgba(59,175,90,.30) }
+    50%    { box-shadow:0 0 10px 2px rgba(59,175,90,.65) }
+  }
+
+  /* =========================================================
+     TOPIC — BCCompanyGuidelines + BC Code Intelligence
+     (folder 05-bc-company-guidelines)
+     Slide 08 — title-only opener. Receives the morph from
+     slide 7's BC Code Intel chip via View Transitions API.
+     Browsers without VT API fall back to a clean instant swap.
+  ========================================================= */
+  .slide.bcci{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+  }
+  .bcci-content{
+    flex:1;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .bcci-hero{
+    display:inline-flex;
+    align-items:center;
+    gap:22px;
+    padding:30px 72px 30px 60px;
+    border-radius:140px;
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-weight:300;
+    letter-spacing:-.02em;
+    font-size:clamp(48px, 7vw, 110px);
+    line-height:1;
+    white-space:nowrap;
+  }
+  .bcci-hero::before{
+    content:'';
+    width:18px;height:18px;border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 18px 4px rgba(59,175,90,.45);
+    flex:none;
+  }
+
+  /* The content column — flex with gap; unshown steps collapse so the
+     hero stays vertically centred for stages 0–1 (then shifts up via :has()). */
+  .slide.bcci .bcci-content{
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:28px;
+  }
+  /* Hero transitions when stage 2 (level stack) reveals — shrinks + rounds. */
+  .bcci-hero{
+    transition:font-size 800ms cubic-bezier(.2,.8,.25,1),
+               padding 800ms cubic-bezier(.2,.8,.25,1),
+               border-radius 800ms cubic-bezier(.2,.8,.25,1),
+               gap 800ms cubic-bezier(.2,.8,.25,1);
+  }
+  .slide.bcci:has(.bcci-stack-area.shown) .bcci-hero{
+    font-size:clamp(26px, 3vw, 48px);
+    padding:14px 36px 14px 28px;
+    border-radius:80px;
+    gap:14px;
+  }
+  .slide.bcci:has(.bcci-stack-area.shown) .bcci-hero::before{
+    width:12px; height:12px;
+    box-shadow:0 0 10px 2px rgba(59,175,90,.45);
+  }
+  /* Collapse unshown direct-step children so they don't reserve space —
+     keeps the hero genuinely centred until the user clicks forward. */
+  .slide.bcci.active .bcci-content > .step{
+    max-height:0;
+    overflow:hidden;
+    margin-top:-28px;       /* cancel the parent gap when collapsed */
+    transition:max-height 800ms cubic-bezier(.2,.8,.25,1),
+               margin-top 800ms cubic-bezier(.2,.8,.25,1);
+  }
+  .slide.bcci.active .bcci-content > .step.shown{
+    max-height:80vh;
+    margin-top:0;
+  }
+
+  /* ---- Stage 1: tagline ---- */
+  .bcci-tagline{
+    margin:0;
+    font-size:clamp(28px, 2.6vw, 44px);
+    font-weight:300;
+    letter-spacing:-.015em;
+    color:var(--ink);
+    text-align:center;
+    line-height:1.2;
+  }
+
+  /* ---- Stage 2: vertical level stack ---- */
+  .bcci-stack-area{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .bcci-stack-row{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .bcci-level{
+    width:480px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:11px 28px;
+    border-radius:10px;
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    font-size:clamp(15px, 1.2vw, 22px);
+    color:var(--ink-soft);
+    opacity:.4;
+    position:relative;
+    transition:opacity 500ms ease;
+  }
+  /* Company level — same dimensions as the others; only difference is
+     bold weight + green decoration (border, LED, soft glow). */
+  .bcci-level.company{
+    background:rgba(59,175,90,.08);
+    border:2px solid var(--green);
+    padding:10px 28px;   /* 10 + 2px border ≈ 11 + 1px border on the others */
+    color:var(--ink);
+    font-weight:700;
+    opacity:1;
+    box-shadow:0 0 18px 3px rgba(59,175,90,.16);
+    isolation:isolate;   /* own stacking context — lets the trunk sit behind text */
+  }
+  .bcci-level.company > span{
+    position:relative;
+    z-index:2;           /* text in front of the trunk */
+  }
+  .bcci-level.company::before{
+    content:'';
+    position:absolute;
+    left:18px;top:50%;
+    width:8px;height:8px;
+    border-radius:50%;
+    background:var(--green);
+    transform:translateY(-50%);
+    box-shadow:0 0 10px 2px rgba(59,175,90,.6);
+    animation:bcciCompanyBreath 2.6s ease-in-out infinite;
+    z-index:2;           /* LED in front of the trunk too */
+  }
+  /* Trunk: short horizontal line emerging from the Company-level box's
+     RIGHT edge (at vertical centre), extending 18px to the T-junction at
+     mid-gap. Hidden until stage 3 reveals the categories. Stays entirely
+     outside the box so it never crosses the "Company level" text. */
+  .bcci-level.company::after{
+    content:'';
+    position:absolute;
+    left:100%;
+    top:50%;
+    width:18px;
+    height:1px;
+    background:var(--green);
+    opacity:0;
+    transform:translateY(-50%);
+    transition:opacity 700ms cubic-bezier(.2,.8,.25,1);
+    pointer-events:none;
+  }
+  .slide.bcci:has(.bcci-categories.shown) .bcci-level.company::after{
+    opacity:.55;
+  }
+  @keyframes bcciCompanyBreath{
+    0%,100%{ box-shadow:0 0 10px 2px rgba(59,175,90,.45); }
+    50%    { box-shadow:0 0 18px 4px rgba(59,175,90,.8); }
+  }
+  .bcci-levels-caption{
+    margin:6px 0 0 0;
+    font-size:clamp(15px, 1.15vw, 22px);
+    color:var(--muted);
+    text-align:center;
+  }
+  .bcci-levels-caption .bcci-emph{
+    color:var(--green);
+    font-weight:500;
+  }
+  /* Inline link that opens BCCompanyGuidelines in VS Code */
+  .bcci-levels-caption .bcci-repo-link{
+    color:inherit;
+    text-decoration:underline;
+    text-decoration-thickness:1.5px;
+    text-underline-offset:4px;
+    text-decoration-color:currentColor;
+    transition:text-decoration-color .2s ease;
+  }
+  .bcci-levels-caption .bcci-repo-link:hover{
+    text-decoration-color:var(--green);
+  }
+
+  /* ---- Stage 3: Knowledge + Personas chips attached to the company layer ---- */
+  .bcci-categories{
+    position:absolute;
+    left:calc(100% + 36px);
+    top:50%;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  /* Override the default .step animation so the absolute Y-centring isn't lost */
+  .slide.bcci.active .bcci-categories.step{
+    opacity:0;
+    transform:translateY(-50%) translateX(24px);
+    animation:none;
+    transition:opacity 700ms cubic-bezier(.2,.8,.25,1),
+               transform 700ms cubic-bezier(.2,.8,.25,1);
+  }
+  .slide.bcci.active .bcci-categories.step.shown{
+    opacity:1;
+    transform:translateY(-50%) translateX(0);
+  }
+  .bcci-category{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    padding:14px 22px 14px 24px;
+    border-radius:14px;
+    background:rgba(59,175,90,.06);
+    border:1px solid var(--green);
+    min-width:260px;
+    position:relative;
+  }
+  .bcci-cat-name{
+    font-size:clamp(18px, 1.4vw, 24px);
+    font-weight:500;
+    color:var(--ink);
+    letter-spacing:-.005em;
+    line-height:1.1;
+  }
+  .bcci-cat-desc{
+    font-size:clamp(13px, 1vw, 17px);
+    color:var(--muted);
+    line-height:1.3;
+    margin-top:4px;
+  }
+  /* Connector branch: short horizontal line from the T-junction (mid-gap)
+     to the category's left edge. The T-junction sits at -18px. */
+  .bcci-category::before{
+    content:'';
+    position:absolute;
+    left:-18px;
+    top:50%;
+    width:18px;
+    height:1px;
+    background:var(--green);
+    opacity:.55;
+    transform:translateY(-50%);
+  }
+  /* Vertical line at the T-junction connecting the two categories. Drawn
+     as two pieces — one from each category extending half-gap toward the
+     other — so they meet seamlessly in the middle of the 12px gap. */
+  .bcci-category:first-child::after{
+    content:'';
+    position:absolute;
+    left:-18px;
+    top:50%;
+    height:calc(50% + 6px);
+    width:1px;
+    background:var(--green);
+    opacity:.55;
+  }
+  .bcci-category:last-child::after{
+    content:'';
+    position:absolute;
+    left:-18px;
+    bottom:50%;
+    height:calc(50% + 6px);
+    width:1px;
+    background:var(--green);
+    opacity:.55;
+  }
+
+  /* Morph token — chip on slide 7 + hero on slide 8 share this name */
+  [data-morph="bcci"]{
+    view-transition-name: bcci-token;
+  }
+  /* The shared-element morph (chip → hero) — the GROUP controls the
+     transform interpolation (position/size). old/new inherit from it
+     by default, so this single rule slows the whole morph. */
+  ::view-transition-group(bcci-token){
+    animation-duration: 2000ms;
+    animation-timing-function: cubic-bezier(.2,.8,.25,1);
+  }
+  /* Snapshot cross-fade (old image fades out, new fades in) —
+     keep it shorter than the transform so the pill is mostly
+     'in place' before the text identity fully resolves. */
+  ::view-transition-old(bcci-token),
+  ::view-transition-new(bcci-token){
+    animation-duration: 1400ms;
+    animation-timing-function: cubic-bezier(.2,.8,.25,1);
+  }
+  /* The surrounding slide chrome crossfade — kept in sync so the
+     topbar/pager don't snap-cut while the pill is still gliding. */
+  ::view-transition-group(root){
+    animation-duration: 2000ms;
+    animation-timing-function: cubic-bezier(.2,.8,.25,1);
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root){
+    animation-duration: 2000ms;
+    animation-timing-function: cubic-bezier(.2,.8,.25,1);
+  }
+
+  /* =========================================================
+     TOPIC 06 — OUR AGENTS (6 slides: 09-14)
+     09: The Team (dark hero, 3+2 grid, bridge-mini)
+     10-12: Chain agents (alt light/dark/light) — chain bar morphs via View Transitions
+     13-14: Off-chain agents (dark/light) — no chain bar, no skills row
+     ========================================================= */
+
+  /* ----- Slide 09: The Team ----- */
+  .agents-team .agents-team-content{
+    position:relative; z-index:3;
+    width:100%; max-width:1280px; margin:0 auto;
+    display:flex; flex-direction:column; gap:30px;
+  }
+  .agents-team .team-head{ text-align:center; padding-top:10px; }
+  .agents-team .team-head h2{
+    font-size:clamp(56px,6.5vw,100px); line-height:.98; font-weight:300;
+  }
+  .agents-team .team-head .sub{
+    font-size:clamp(26px,2.1vw,40px);
+    font-weight:300; color:var(--on-dark-soft);
+    margin:14px 0 0; max-width:none; opacity:.95;
+  }
+
+  .agents-team .team-grid{
+    display:flex; flex-direction:column; gap:28px;
+    width:100%; max-width:1340px; margin:0 auto;
+  }
+  .agents-team .team-row{
+    display:flex; gap:18px; align-items:stretch; justify-content:center;
+    width:100%;
+  }
+  .agents-team .team-row.bottom{
+    gap:28px;
+    /* full grid width — bottom cards get more room since there are only 2 */
+  }
+
+  .agents-team .agent-card{
+    flex:1 1 0; min-width:0;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.13);
+    border-radius:16px;
+    padding:28px 30px 26px;
+    display:flex; flex-direction:column; gap:8px;
+    transition:transform .35s ease, border-color .35s ease, background-color .35s ease, box-shadow .35s ease;
+    position:relative;
+    will-change:transform;
+  }
+  .agents-team .agent-card:hover{
+    z-index:5;
+    transform:translateY(-8px) scale(1.06);
+    border-color:var(--green);
+    background:rgba(59,175,90,.12);
+    box-shadow:
+      0 0 0 1px rgba(59,175,90,.40),
+      0 40px 90px -20px var(--green-glow),
+      0 0 70px -10px rgba(59,175,90,.50);
+  }
+  .agents-team .agent-card .ac-name{
+    font-weight:600; font-size:clamp(18px,1.35vw,25px);
+    color:var(--on-dark); letter-spacing:-.005em;
+  }
+  .agents-team .agent-card .ac-role{
+    font-size:clamp(15px,1.1vw,20px);
+    color:var(--on-dark-soft); font-weight:400; opacity:.92;
+  }
+  .agents-team .agent-card.anchor{
+    border-color:var(--green);
+    background:linear-gradient(180deg, rgba(59,175,90,.13), rgba(59,175,90,.04));
+    box-shadow:0 16px 36px -18px var(--green-glow);
+  }
+  .agents-team .agent-card.anchor .ac-name{ color:#fff; }
+  .agents-team .agent-card .ac-aster{
+    color:var(--green); font-weight:700; margin-left:1px;
+  }
+  .agents-team .team-arrow{
+    display:flex; align-items:center;
+    color:var(--green); font-size:28px; font-weight:300;
+    min-width:20px; opacity:.85;
+  }
+  .agents-team .team-footnote{
+    text-align:center;
+    font-size:16px;
+    color:var(--on-dark-soft);
+    letter-spacing:.01em;
+    margin-top:8px;
+  }
+  .agents-team .team-footnote b{ color:var(--green); font-weight:600; }
+
+  /* Bridge-mini — 3 labelled planks, Orchestration glows (slide 09 corner) */
+  .bridge-mini{
+    position:absolute; right:9vw; bottom:90px;
+    display:flex; gap:14px; align-items:flex-end;
+    opacity:0; transition:opacity .8s ease, transform .8s ease;
+    transform:translateY(8px);
+    z-index:4;
+  }
+  .slide.active .bridge-mini{ opacity:1; transform:none; transition-delay:1.5s; }
+  .bm-leg{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .bm-plank{
+    width:46px; height:6px; border-radius:1.5px;
+    background:rgba(255,255,255,.18);
+  }
+  .bm-leg.active .bm-plank{
+    background:var(--green);
+    box-shadow:0 0 18px var(--green-glow);
+    animation:bmOrchPulse 2.6s ease-in-out 1.8s infinite;
+  }
+  .bm-label{
+    font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--on-dark-soft); font-weight:600; opacity:.7;
+  }
+  .bm-leg.active .bm-label{ color:var(--green); opacity:1; }
+  @keyframes bmOrchPulse{
+    0%,100%{ box-shadow:0 0 18px var(--green-glow); }
+    50%{ box-shadow:0 0 28px var(--green-glow); }
+  }
+
+  /* ----- Slides 10-14: Agent detail layout ----- */
+  .agents-detail .agent-detail{
+    display:flex; flex-direction:column; gap:22px;
+    width:100%; max-width:1280px; margin:0 auto;
+    position:relative; z-index:3;
+    padding-top:30px;
+  }
+
+  /* Chain strip — bottom-of-slide "you are here" on slides 10-12.
+     Mirrors the chain visualization from slide 09. Same card style, smaller. */
+  .chain-strip{
+    position:absolute;
+    left:9vw; right:9vw; bottom:84px;
+    z-index:4;
+    display:flex; flex-direction:column; gap:10px; align-items:center;
+  }
+  .cs-label{
+    font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--muted); font-weight:700; opacity:.55;
+  }
+  .slide.dark .cs-label{ color:var(--on-dark-soft); opacity:.5; }
+  .cs-row{
+    display:flex; gap:14px; align-items:stretch; justify-content:center;
+    width:100%; max-width:880px;
+  }
+  .cs-card{
+    flex:1 1 0; min-width:0;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:12px;
+    padding:12px 16px 11px;
+    display:flex; flex-direction:column; gap:3px;
+    transition:transform .35s ease, border-color .35s ease, background .35s ease, opacity .35s ease, box-shadow .35s ease;
+    opacity:.6;
+  }
+  .slide.light .cs-card{
+    background:#fff;
+    border-color:var(--line);
+    opacity:.6;
+  }
+  .cs-card .cs-name{
+    font-weight:600; font-size:13px;
+    color:var(--on-dark); letter-spacing:-.005em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .slide.light .cs-card .cs-name{ color:var(--ink); }
+  .cs-card .cs-role{
+    font-size:11px;
+    color:var(--on-dark-soft); font-weight:400; opacity:.88;
+  }
+  .slide.light .cs-card .cs-role{ color:var(--muted); }
+  .cs-card.active{
+    opacity:1;
+    border:2px solid var(--green);
+    background:rgba(59,175,90,.08);
+    box-shadow:0 0 0 4px rgba(59,175,90,.12), 0 14px 28px -16px var(--green-glow);
+    transform:translateY(-2px);
+  }
+  .cs-card.active .cs-name{ color:var(--ink); }
+  .slide.dark .cs-card.active .cs-name{ color:#fff; }
+  .cs-card:not(.active):hover{
+    opacity:1;
+    border-color:rgba(59,175,90,.5);
+    background:rgba(59,175,90,.07);
+    transform:translateY(-2px);
+  }
+  .cs-arrow{
+    display:flex; align-items:center;
+    color:var(--green);
+    font-size:22px; font-weight:300;
+    opacity:.7;
+    min-width:16px;
+  }
+
+  /* Slides 10-12 have a chain-strip at the bottom — leave room for it */
+  .slide.agents-detail:has(.chain-strip) .agent-detail{
+    padding-bottom:130px;
+  }
+
+  /* Off-chain label */
+  .offchain-label{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:7px 16px;
+    border-radius:40px;
+    border:1px dashed rgba(255,255,255,.22);
+    font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--on-dark-soft);
+    font-weight:600;
+    align-self:flex-start;
+  }
+  .slide.light .offchain-label{
+    border-color:var(--line);
+    color:var(--muted);
+  }
+  .offchain-label::before{
+    content:""; width:7px; height:7px; border-radius:50%;
+    background:var(--green);
+  }
+
+  /* Agent headline + model badge */
+  .agent-headline{
+    display:flex; justify-content:space-between; align-items:baseline;
+    flex-wrap:wrap; gap:16px;
+  }
+  .agent-headline h2{
+    font-size:clamp(40px,4.6vw,72px);
+    line-height:1; font-weight:300;
+    letter-spacing:-.025em;
+  }
+  .agent-headline h2 .hl-aster{
+    color:var(--green); font-weight:600;
+    font-size:.6em; vertical-align:super; margin-left:2px;
+  }
+  .agent-role{
+    font-size:clamp(20px,1.55vw,28px);
+    font-weight:300; color:var(--muted);
+    max-width:60ch; margin-top:2px; opacity:.95;
+  }
+  .slide.dark .agent-role{ color:var(--on-dark-soft); }
+
+  /* Specialist chip — represents personas the agent consults (waldo, Alex, Sam, etc.).
+     Same shape as mcp-chip, but amber circle dot (vs mcp's green square) so people
+     visually parse as "human" rather than "tool". */
+  .spec-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 15px 8px 12px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);
+    font-weight:500; font-size:17px;
+    color:var(--on-dark);
+    white-space:nowrap;
+  }
+  .slide.light .spec-chip{
+    border-color:var(--line); background:#fff; color:var(--ink);
+  }
+  .spec-chip::before{
+    content:"";
+    width:8px; height:8px; border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 6px rgba(232,193,86,.45);
+    flex:none;
+  }
+
+  /* Model chip — sits in the toolbelt as a tb-row like MCPs/Knowledge/Skills.
+     Matches mcp-chip shape exactly, only the dot color varies per model family. */
+  .model-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 15px 8px 12px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);
+    font-weight:500; font-size:17px;
+    color:var(--on-dark);
+    white-space:nowrap;
+  }
+  .slide.light .model-chip{
+    border-color:var(--line); background:#fff; color:var(--ink);
+  }
+  .model-chip::before{
+    content:""; width:8px; height:8px; border-radius:50%;
+    background:var(--green); flex:none;
+  }
+  .model-chip.opus::before{ background:#B07AFF; box-shadow:0 0 8px rgba(176,122,255,.55); }
+  .model-chip.sonnet::before{ background:#3BAF5A; box-shadow:0 0 8px rgba(59,175,90,.55); }
+  .model-chip.gpt::before{ background:#5BBED0; box-shadow:0 0 8px rgba(91,190,208,.55); }
+
+  /* Toolbelt */
+  .toolbelt{
+    display:flex; flex-direction:column;
+    gap:14px; margin-top:6px;
+  }
+  .tb-row{
+    display:flex; gap:18px; align-items:center;
+    flex-wrap:wrap;
+  }
+  .tb-label{
+    font-size:13px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--muted); font-weight:700;
+    min-width:110px;
+  }
+  .slide.dark .tb-label{ color:var(--on-dark-soft); opacity:.8; }
+  .tb-chips{
+    display:flex; gap:8px; flex-wrap:wrap;
+    align-items:center;
+  }
+
+  /* MCP chips */
+  .mcp-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 15px 8px 12px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);
+    font-weight:500; font-size:17px;
+    color:var(--on-dark);
+    white-space:nowrap;
+    transition:transform .25s cubic-bezier(.2,.8,.25,1),
+                box-shadow .25s ease,
+                border-color .25s ease,
+                background .3s ease,
+                color .25s ease;
+  }
+  .slide.light .mcp-chip{
+    border-color:var(--line); background:#fff; color:var(--ink);
+  }
+  .mcp-chip::before{
+    content:""; width:8px; height:8px;
+    border-radius:2px; background:var(--green);
+    flex:none;
+  }
+
+  /* Hover: scaled-down version of the box "spotlight" effect — same recipe
+     (top-down gradient + inset top glow + lifted ring shadow), proportioned for a chip. */
+  .slide.light .mcp-chip:hover{
+    transform:translateY(-2px) scale(1.12);
+    position:relative; z-index:10;
+    border-color:var(--green);
+    color:var(--green-deep);
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.15) 0%,
+      rgba(59,175,90,.05) 60%,
+      #fff 100%);
+    box-shadow:
+      inset 0 10px 14px -10px rgba(59,175,90,.35),
+      0 10px 22px -10px rgba(59,175,90,.42),
+      0 0 0 1px rgba(59,175,90,.22);
+  }
+  .slide.dark .mcp-chip:hover{
+    transform:translateY(-2px) scale(1.12);
+    position:relative; z-index:10;
+    border-color:var(--green);
+    color:#fff;
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.22) 0%,
+      rgba(59,175,90,.08) 60%,
+      rgba(255,255,255,.04) 100%);
+    box-shadow:
+      inset 0 10px 14px -10px rgba(59,175,90,.45),
+      0 10px 22px -10px rgba(59,175,90,.55),
+      0 0 0 1px rgba(59,175,90,.30);
+  }
+
+  /* Slide 07 only — larger chips for the MCP "hub" visual */
+  .slide.mcp .mcp-chip{
+    gap:11px;
+    padding:13px 22px 13px 18px;
+    font-size:22px;
+  }
+  .slide.mcp .mcp-chip::before{
+    width:11px; height:11px;
+  }
+
+  /* Knowledge chip — stack icon (three lines) */
+  .kn-chip{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:8px 15px 8px 12px;
+    border-radius:8px;
+    border:1px solid rgba(59,175,90,.35);
+    background:rgba(59,175,90,.10);
+    font-weight:500; font-size:17px;
+    color:var(--on-dark);
+    white-space:nowrap;
+    transition:transform .25s cubic-bezier(.2,.8,.25,1),
+                box-shadow .25s ease,
+                border-color .25s ease,
+                background .3s ease,
+                color .25s ease;
+  }
+  .slide.light .kn-chip{
+    background:rgba(59,175,90,.06);
+    border-color:rgba(59,175,90,.32);
+    color:var(--ink);
+  }
+  /* Hover: intensified green spotlight (already green-tinted by default) */
+  .kn-chip:hover{
+    transform:translateY(-2px) scale(1.12);
+    position:relative; z-index:10;
+    border-color:var(--green);
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.24) 0%,
+      rgba(59,175,90,.10) 60%,
+      rgba(59,175,90,.08) 100%);
+    box-shadow:
+      inset 0 10px 14px -10px rgba(59,175,90,.50),
+      0 10px 22px -10px rgba(59,175,90,.55),
+      0 0 0 1px rgba(59,175,90,.32);
+  }
+  .slide.light .kn-chip:hover{
+    color:var(--green-deep);
+  }
+  .kn-icon{
+    width:14px; height:14px; flex:none;
+    display:inline-block; position:relative;
+  }
+  .kn-icon::before, .kn-icon::after, .kn-icon span{
+    position:absolute; left:0; right:0; height:2.5px;
+    background:var(--green); border-radius:1.5px;
+    content:"";
+  }
+  .kn-icon::before{ top:1.5px; }
+  .kn-icon span{ top:5.5px; display:block; }
+  .kn-icon::after{ top:9.5px; }
+
+  /* Skill cards — NEW visual element (introduced in Topic 06) */
+  .skill-card{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:9px 16px 9px 11px;
+    border-radius:10px;
+    border:1.5px solid var(--green);
+    background:rgba(59,175,90,.10);
+    font-weight:500; font-size:17px;
+    color:var(--on-dark);
+    transition:transform .25s ease, box-shadow .25s ease;
+    white-space:nowrap;
+  }
+  .slide.light .skill-card{
+    background:rgba(59,175,90,.06);
+    color:var(--ink);
+  }
+  .skill-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 24px -10px var(--green-glow);
+  }
+  .skc-icon{
+    width:22px; height:22px; flex:none;
+    border-radius:5px;
+    background:var(--green);
+    position:relative;
+  }
+  .skc-icon::before, .skc-icon::after, .skc-icon span{
+    content:""; position:absolute;
+    height:1.5px; background:#fff; border-radius:1px;
+  }
+  .skc-icon::before{ top:6px; left:5px; width:12px; }
+  .skc-icon span{ position:absolute; display:block; top:10px; left:5px; width:12px; }
+  .skc-icon::after{ top:14px; left:5px; width:7px; }
+  .skill-card code{
+    font-family:ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size:16px;
+    background:transparent;
+    color:inherit;
+  }
+
+  /* Hand-off line */
+  .handoff{
+    display:inline-flex; align-items:center; gap:10px;
+    font-size:17px;
+    color:var(--on-dark-soft);
+    font-weight:500;
+    letter-spacing:.02em;
+    padding:4px 0;
+  }
+  .slide.light .handoff{ color:var(--muted); }
+  .handoff .ho-arrow{
+    color:var(--green); font-size:22px; font-weight:400;
+  }
+  .handoff .ho-arrow.return::before{ content:"↩"; }
+  .handoff .ho-target{
+    color:var(--on-dark); font-weight:600;
+  }
+  .slide.light .handoff .ho-target{ color:var(--ink); }
+  .handoff .ho-aside{
+    color:var(--muted); font-style:italic; font-weight:400;
+    margin-left:6px; font-size:15px;
+  }
+  .slide.dark .handoff .ho-aside{ color:var(--on-dark-soft); opacity:.7; }
+
+  /* Footnote at bottom */
+  .agent-footnote{
+    font-size:17px;
+    color:var(--on-dark-soft);
+    letter-spacing:.01em;
+    margin-top:14px;
+  }
+  .slide.light .agent-footnote{ color:var(--muted); }
+  .agent-footnote b{ color:var(--green); font-weight:600; }
+
+  /* =========================================================
+     TOPIC 07 — OUR DEVELOPMENT FLOW (2 slides: 16-17, LIGHT)
+     The cr-route classes below are now used by a Topic 06 slide (slide 13 —
+     iFacto.PullRequest prompt, dark theme). Kept here for proximity to df-*
+     classes since they share the "agent badge over a stop" visual language.
+     ========================================================= */
+
+  /* Bridge-mini in light theme — base styles were tuned for dark */
+  .slide.light .bm-plank{ background:rgba(0,0,0,.10); }
+  .slide.light .bm-label{ color:var(--muted); opacity:.85; }
+  .slide.light .bm-leg.active .bm-label{ color:var(--green-deep); opacity:1; }
+  .slide.light .bm-leg.active .bm-plank{ background:var(--green); }
+
+  /* ----- Slide 15: Hero (centered intro on white) ----- */
+  .df-hero{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:40px;
+    padding:0 6vw;
+  }
+  .df-hero h1{ margin:0; max-width:20ch; line-height:1.05; }
+  .df-hero .lead{
+    max-width:42ch; color:var(--muted); margin:0;
+    font-size:clamp(28px, 2.1vw, 38px); font-weight:400;
+    line-height:1.45;
+  }
+
+  /* ----- Slide 16: Timeline (centerpiece) ----- */
+  .df-day{ padding-top:11vh; }
+  .df-day > h2{
+    margin:0 0 6vh; font-size:clamp(48px, 5.4vw, 80px); font-weight:300;
+    letter-spacing:-0.02em; line-height:1.05;
+  }
+  .df-timeline-wrap{
+    position:relative;
+    width:100%;
+    flex:1;
+    display:flex; align-items:center; justify-content:center;
+    padding-top:2vh;
+  }
+  .df-timeline{
+    position:relative;
+    width:100%;
+    height:320px;
+  }
+  /* The spine line */
+  .df-spine{
+    position:absolute; left:2%; right:2%; top:50%;
+    height:3px;
+    background:linear-gradient(90deg, transparent, var(--line) 6%, var(--line) 94%, transparent);
+    transform:translateY(-50%);
+    z-index:0;
+  }
+  /* Stops row — flex, evenly spaced */
+  .df-stops{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    width:100%; height:100%;
+  }
+  .df-stop{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    flex:1 1 0;
+    height:100%;
+    min-width:0;
+  }
+  .df-dot{
+    width:14px; height:14px; border-radius:50%;
+    background:#fff; border:2px solid var(--muted);
+    box-shadow:0 0 0 5px rgba(255,255,255,.95);
+    position:relative; z-index:3;
+  }
+  .df-label{
+    position:absolute; top:calc(50% + 24px);
+    font-size:17px; font-weight:500; color:var(--muted);
+    white-space:nowrap; letter-spacing:.02em;
+  }
+  .df-sublabel{
+    position:absolute; top:calc(50% + 50px);
+    font-size:14px; font-weight:400; color:var(--muted);
+    opacity:.65; white-space:nowrap; font-style:italic;
+  }
+  /* PR stop — visually stressed (bigger green dot, accent halo, bolder label) */
+  .df-stop.df-pr .df-dot{
+    width:22px; height:22px;
+    background:var(--green); border-color:var(--green);
+    box-shadow:0 0 0 8px rgba(59,175,90,.16), 0 0 0 14px rgba(59,175,90,.06);
+    animation:dfPrPulse 3s ease-in-out 1.5s infinite;
+  }
+  @keyframes dfPrPulse{
+    0%,100%{ box-shadow:0 0 0 8px rgba(59,175,90,.16), 0 0 0 14px rgba(59,175,90,.06); }
+    50%{    box-shadow:0 0 0 10px rgba(59,175,90,.22), 0 0 0 18px rgba(59,175,90,.08); }
+  }
+  .df-stop.df-pr .df-label{
+    color:var(--ink); font-weight:600; font-size:19px;
+    top:calc(50% + 28px);
+    letter-spacing:.04em;
+  }
+  /* Deploy stop — slow pulse, deliberately badge-less */
+  .df-stop.df-deploy .df-dot{ animation:dfDeployPulse 3s ease-in-out 1s infinite; }
+  @keyframes dfDeployPulse{
+    0%,100%{ box-shadow:0 0 0 5px rgba(255,255,255,.95); }
+    50%{    box-shadow:0 0 0 5px rgba(255,255,255,.95), 0 0 0 12px rgba(59,175,90,.10); }
+  }
+
+  /* Plug-in badges floating above their stops */
+  .df-badge{
+    position:absolute; bottom:calc(50% + 28px);
+    left:50%; transform:translateX(-50%) translateY(14px);
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 16px;
+    box-shadow:0 14px 30px -18px rgba(0,0,0,.20), 0 2px 6px -2px rgba(0,0,0,.06);
+    font-size:16px; font-weight:500;
+    color:var(--ink);
+    white-space:nowrap;
+    display:inline-flex; align-items:center; gap:8px;
+    opacity:0;
+    transition:opacity .45s ease, transform .55s cubic-bezier(.2,.8,.25,1);
+  }
+  .df-badge.shown{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+  /* Override the global `.slide.active .step.shown { animation: revealUp ... forwards }`
+     rule for badges: it persists `transform: none` after the entry animation, which
+     fights both the centering (`translateX(-50%)`) and the :hover scale. Switching to
+     `backwards` only holds the initial keyframe during animation-delay; after the
+     animation completes, the cascade falls back to `.df-badge.shown`'s transform —
+     and :hover can then apply its own. */
+  .slide.active .df-badge.step.shown{
+    animation:revealUp .8s cubic-bezier(.2,.8,.25,1) backwards;
+  }
+  /* Hover: green-tinted spotlight + zoom — same recipe as `.chip` / `.mcp-chip`,
+     scaled for a slightly larger badge. translateX(-50%) is preserved so the
+     badge stays anchored over its timeline stop. !important on transform
+     because the shown-state rule above already sets transform and would
+     otherwise win the cascade on hover. */
+  .df-badge.shown:hover{
+    transform:translateX(-50%) translateY(0) scale(1.12) !important;
+    z-index:20;
+    border-color:var(--green);
+    color:var(--green-deep);
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.12) 0%,
+      rgba(59,175,90,.04) 60%,
+      #fff 100%);
+    box-shadow:
+      0 18px 36px -16px rgba(59,175,90,.50),
+      0 0 0 1px rgba(59,175,90,.25);
+  }
+  /* The arrow pointer matches the new border colour */
+  .df-badge.shown:hover::after{
+    border-right-color:var(--green);
+    border-bottom-color:var(--green);
+  }
+  /* Pointer arrow under the badge */
+  .df-badge::after{
+    content:''; position:absolute; left:50%; bottom:-5px;
+    width:9px; height:9px; background:#fff;
+    border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+    transform:translateX(-50%) rotate(45deg);
+  }
+  .df-badge .df-mark{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--green); flex:none;
+  }
+  .df-badge .df-tag{
+    color:var(--muted); font-style:italic; font-weight:400;
+    font-size:13px; margin-left:4px;
+  }
+  /* PR prompt badge — reuses Topic 06 skill-card visual language (green border) */
+  .df-badge.df-skill{
+    border-color:var(--green);
+    border-width:1.5px;
+    color:var(--green-deep);
+    box-shadow:0 16px 36px -18px rgba(59,175,90,.40), 0 2px 6px -2px rgba(59,175,90,.10);
+  }
+  .df-badge.df-skill::after{ border-color:var(--green); }
+  .df-badge.df-skill .df-mark{
+    width:8px; height:8px; border-radius:2.5px; background:var(--green);
+  }
+  /* Prompt-tier elevation: sits BEFORE the dot (anchored to left edge of stop)
+     and raised higher than agent badges to signal "this is a prompt, not an agent". */
+  .df-stop.df-pr .df-badge.df-skill{
+    left:0;                              /* anchor at the left edge of the PR stop, so center sits between push & PR dots */
+    bottom:calc(50% + 105px);            /* raised well above standard agent-badge elevation (28px) and the elevated tier (70px) to clear the AI Codereview badge it was overlapping (Waldo flagged 2026-05-17) */
+  }
+  /* The under-arrow would point into empty space at this position — hide it.
+     Visual association is carried by proximity (badge sits just left of the PR dot). */
+  .df-stop.df-pr .df-badge.df-skill::after{ display:none; }
+  /* Generic elevated tier — same vertical level as the PR-stop prompt badge.
+     Used for agent badges that should sit ABOVE a pipeline-step badge at the
+     same stop (e.g., iFacto.CodeReviewer above the "AI Codereview" CI step). */
+  .df-badge.df-elev{ bottom:calc(50% + 70px); }
+  .df-badge.df-elev::after{ display:none; }
+  /* Below-spine variant — mirrors the badge below the timeline, arrow points UP
+     at the dot above. Used to visually couple an agent with the one directly
+     above it (e.g., CodeReviewer paired with ALCoder for the auto-fix loop). */
+  .df-badge.df-below{
+    top:calc(50% + 58px); bottom:auto;
+    transform:translateX(-50%) translateY(-14px);
+  }
+  .df-badge.df-below.shown{
+    transform:translateX(-50%) translateY(0);
+  }
+  /* Hover for the below-spine variant — same scale as above-spine, but the
+     arrow lives on the top edge, so its hover-tinted borders are top + left. */
+  .df-badge.df-below.shown:hover{
+    transform:translateX(-50%) translateY(0) scale(1.12) !important;
+  }
+  .df-badge.df-below.shown:hover::after{
+    border-top-color:var(--green);
+    border-left-color:var(--green);
+    border-right-color:transparent;
+    border-bottom-color:transparent;
+  }
+  .df-badge.df-below::after{
+    top:-5px; bottom:auto;
+    border-top:1px solid var(--line);
+    border-left:1px solid var(--line);
+    border-right:0; border-bottom:0;
+  }
+  /* CodeReviewer badge — small gate icon */
+  .df-badge .df-gate-ico{
+    display:inline-block; width:10px; height:10px;
+    border:1.6px solid var(--green); border-radius:2px;
+    position:relative; flex:none;
+  }
+  .df-badge .df-gate-ico::before{
+    content:''; position:absolute; left:50%; top:-3px;
+    width:6px; height:5px; border:1.6px solid var(--green); border-bottom:0;
+    border-radius:3px 3px 0 0; transform:translateX(-50%);
+  }
+
+  /* Footnote line under the timeline */
+  .df-footnote{
+    margin-top:2vh;
+    font-size:18px; color:var(--muted);
+    text-align:center;
+    letter-spacing:.01em;
+  }
+  .df-footnote b{ color:var(--ink); font-weight:600; }
+
+
+  /* ----- Slide 13: iFacto.PullRequest prompt (CodeReviewer routes) -----
+     Lives inside .agent-detail (Topic 06 rhythm). Don't add padding-top here —
+     the agent-detail container handles top/bottom spacing including the
+     chain-strip room (:has(.chain-strip) bumps padding-bottom to 130px). */
+  .cr-route-stage{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:0;
+    padding:2vh 0 1vh;
+  }
+  /* Verdict card */
+  .cr-verdict{
+    background:#fff;
+    border:1.5px solid var(--green);
+    border-radius:18px;
+    padding:16px 38px 20px;
+    box-shadow:0 22px 50px -22px rgba(59,175,90,.30),
+               0 4px 10px -4px rgba(0,0,0,.06);
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    min-width:280px;
+  }
+  .cr-verdict-label{
+    font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--muted); font-weight:600;
+  }
+  .cr-verdict-stars{ display:inline-flex; gap:10px; }
+
+  /* Star — CSS-drawn 5-point, solid green by default */
+  .cr-star{
+    display:inline-block; width:26px; height:26px;
+    background:var(--green);
+    clip-path:polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    flex:none;
+  }
+  .cr-star.sm{ width:16px; height:16px; }
+  .cr-star.hollow{ background:rgba(0,0,0,.18); }
+
+  /* Y-fork connector */
+  .cr-fork-wrap{
+    width:720px; max-width:90%;
+    height:80px;
+    margin:0;
+  }
+  .cr-fork{ width:100%; height:100%; display:block; }
+
+  /* Branches row */
+  .cr-branches{
+    display:flex; justify-content:center; gap:280px;
+    align-items:flex-start;
+  }
+  .cr-branch{
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    min-width:220px;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .55s ease, transform .55s cubic-bezier(.2,.8,.25,1);
+  }
+  .cr-branch.shown{ opacity:1; transform:none; }
+
+  /* Rating pill above each action */
+  .cr-rating{
+    display:inline-flex; align-items:center; gap:7px;
+    padding:6px 14px;
+    background:#fff; border:1px solid var(--line); border-radius:99px;
+    font-size:13px; font-weight:500; color:var(--muted);
+    letter-spacing:.04em;
+  }
+  .cr-rating-tag{ color:var(--ink); font-weight:600; margin-left:4px; }
+  .cr-high-rating{
+    border-color:var(--green); color:var(--green-deep);
+    box-shadow:0 6px 18px -10px rgba(59,175,90,.30);
+  }
+
+  /* Action pill (ALCoder / PullRequest) */
+  .cr-action{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:12px 22px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    font-size:18px; font-weight:500; color:var(--ink);
+    box-shadow:0 14px 30px -18px rgba(0,0,0,.20), 0 2px 6px -2px rgba(0,0,0,.06);
+  }
+  .cr-action-mark{
+    width:8px; height:8px; border-radius:50%; background:var(--green); flex:none;
+  }
+  .cr-pullreq{
+    border-color:var(--green); border-width:1.5px;
+    color:var(--green-deep);
+    box-shadow:0 16px 36px -18px rgba(59,175,90,.40), 0 2px 6px -2px rgba(59,175,90,.10);
+  }
+  .cr-pullreq .cr-action-mark{
+    width:9px; height:9px; border-radius:3px; background:var(--green);
+  }
+  .cr-action-tag{
+    color:var(--muted); font-style:italic; font-weight:400;
+    font-size:13px; margin-left:4px;
+  }
+
+  /* Actor footer — small caps tag indicating who acts */
+  .cr-actor{
+    font-size:12px; letter-spacing:.18em; text-transform:uppercase;
+    font-weight:600;
+    margin-top:2px;
+  }
+  .cr-agent{ color:var(--muted); }
+  .cr-dev{ color:var(--green-deep); }
+
+  /* Fork stroke is driven by currentColor so each theme controls it */
+  .cr-fork{ color:#DEE2E6; }
+  .slide.dark .cr-fork{ color:rgba(255,255,255,.18); }
+
+  /* --- Dark-theme overrides (slide 13 — iFacto.PullRequest prompt) ---
+     h2 now lives inside .agent-headline so it inherits the Topic 06 sizing/color
+     automatically; only the cr-* components below need dark variants. */
+  .slide.dark .cr-verdict{
+    background:rgba(255,255,255,.04);
+    border-color:var(--green);
+    box-shadow:0 22px 50px -22px rgba(59,175,90,.45),
+               0 4px 10px -4px rgba(0,0,0,.30);
+  }
+  .slide.dark .cr-verdict-label{ color:rgba(255,255,255,.55); }
+  .slide.dark .cr-star.hollow{ background:rgba(255,255,255,.22); }
+  .slide.dark .cr-rating{
+    background:rgba(255,255,255,.04);
+    border-color:rgba(255,255,255,.18);
+    color:rgba(255,255,255,.65);
+  }
+  .slide.dark .cr-rating-tag{ color:#fff; }
+  .slide.dark .cr-high-rating{
+    border-color:var(--green); color:var(--green);
+    box-shadow:0 6px 18px -10px rgba(59,175,90,.55);
+  }
+  .slide.dark .cr-action{
+    background:rgba(255,255,255,.05);
+    border-color:rgba(255,255,255,.18);
+    color:#fff;
+    box-shadow:0 14px 30px -18px rgba(0,0,0,.45), 0 2px 6px -2px rgba(0,0,0,.20);
+  }
+  .slide.dark .cr-pullreq{
+    border-color:var(--green); color:var(--green);
+    box-shadow:0 16px 36px -18px rgba(59,175,90,.55), 0 2px 6px -2px rgba(59,175,90,.20);
+  }
+  .slide.dark .cr-action-tag{ color:rgba(255,255,255,.55); }
+  .slide.dark .cr-actor.cr-agent{ color:rgba(255,255,255,.55); }
+  .slide.dark .cr-actor.cr-dev{ color:var(--green); }
+
+
+  /* ====================================================================
+     TOPIC 08 — THE PLAYBOOK VS CODE EXTENSION (slide 21, DARK) — moved 2026-05-17 from display #08 to #11; landing slide stayed in this CSS section for proximity to the bridge-stage components, even though it now renders after the Pipeline Analyzer block
+     The bridge motif at full scale: left bank = Agents / Skills / MCPs,
+     right bank = YOU (the developer), bridge deck = iFacto Playbook.
+     ==================================================================== */
+
+  /* Headline placement on Topic 08 slides — keep h1/h2 above the stage */
+  .slide.pb-hero h1,
+  .slide.pb-planks h2{
+    position:relative; z-index:3;
+    margin: 0 0 4vh; max-width: 64ch;
+  }
+
+  /* Three-column stage: left bank | bridge | right bank */
+  .pb-stage{
+    position:relative; z-index:3;
+    display:grid;
+    grid-template-columns: minmax(150px, 13vw) 1fr minmax(190px, 16vw);
+    gap: 3vw;
+    align-items:center;
+    width:100%;
+  }
+
+  /* Shared bank label (under each bank) */
+  .pb-bank-label{
+    margin-top: 18px; text-align:center;
+    font-size: 10px; letter-spacing:.22em; text-transform:uppercase;
+    color: var(--on-dark-soft); opacity:.55; font-weight:700;
+  }
+
+  /* ----- Left bank: 3 stacked tiles ----- */
+  .pb-left{ display:flex; flex-direction:column; gap:12px; }
+  .pb-tile{
+    position:relative;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:10px;
+    padding:14px 16px 14px 22px;
+    font-weight:500; font-size: clamp(15px, 1.05vw, 19px);
+    color:var(--on-dark);
+    letter-spacing:.005em;
+  }
+  .pb-tile::before{
+    content:""; position:absolute;
+    left:9px; top:22%; bottom:22%; width:3px;
+    background:var(--green); border-radius:3px;
+  }
+
+  /* ----- Right bank: a VS Code window with "YOU" ----- */
+  .pb-right{ display:flex; flex-direction:column; align-items:center; }
+  .pb-vscode{
+    width:100%; max-width:260px;
+    background:#1E1E1E;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:10px;
+    box-shadow: 0 22px 60px -22px rgba(0,0,0,.6);
+    overflow:hidden;
+  }
+  .pb-vscode-bar{
+    display:flex; gap:6px; padding:9px 12px;
+    background:#252526; border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .pb-vscode-bar .dot{ width:9px; height:9px; border-radius:50%; }
+  .pb-vscode-bar .dot.r{ background:#ff5f56; }
+  .pb-vscode-bar .dot.y{ background:#ffbd2e; }
+  .pb-vscode-bar .dot.g{ background:#27c93f; }
+  .pb-vscode-body{
+    height: 130px;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 50%, #2A2A2A 0%, #1A1A1A 70%);
+  }
+  .pb-you{
+    font-size: clamp(34px, 3.2vw, 52px);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--green);
+  }
+
+  /* ----- The bridge itself ----- */
+  .pb-bridge{
+    position:relative;
+    height: 180px;
+  }
+  .pb-bridge .pillar{
+    position:absolute;
+    top: 30px; bottom: 30px;
+    width: 5px;
+    border-radius: 3px;
+    background: linear-gradient(180deg,
+      rgba(59,175,90,.15) 0%, var(--green) 35%, var(--green-deep) 100%);
+    box-shadow: 0 0 20px var(--green-glow), 0 0 40px rgba(59,175,90,.25);
+  }
+  .pb-bridge .pillar.l{ left: -2px; }
+  .pb-bridge .pillar.r{ right: -2px; }
+
+  /* Suspension cable arc — subtle catenary above the deck */
+  .pb-bridge .cable{
+    position:absolute; left:0; right:0; top:18px; width:100%; height:80px;
+    pointer-events:none;
+  }
+
+  /* Deck — unified container.
+     Default state: 64px tall, holds the "iFacto Playbook" label (hero moment).
+     Step-revealed state: expands to 140px and unfolds the 7 labelled planks.
+     The transition fires when .pb-deck-planks gets .shown via the .step mechanism. */
+  .pb-deck{
+    position:absolute;
+    left: 14px; right: 14px;
+    top:50%; transform: translateY(-50%);
+    height: 64px;
+    border-radius: 8px;
+    background: linear-gradient(180deg,
+      rgba(59,175,90,.18) 0%, rgba(59,175,90,.06) 100%);
+    border: 1px solid rgba(59,175,90,.40);
+    box-shadow:
+      0 18px 48px -14px rgba(59,175,90,.40),
+      inset 0 1px 0 rgba(255,255,255,.08);
+    overflow: visible;       /* number badges sit above deck top */
+    transition: height .6s cubic-bezier(.4,1.35,.5,1),
+                background .4s ease;
+  }
+  /* Expanded deck — when the planks step is shown */
+  .pb-bridge:has(.pb-deck-planks.step.shown) .pb-deck{
+    height: 140px;
+    background: linear-gradient(180deg,
+      rgba(59,175,90,.12) 0%, rgba(59,175,90,.03) 100%);
+  }
+
+  /* Label layer — visible by default, fades when planks unfold */
+  .pb-deck-label{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size: clamp(22px, 2vw, 30px);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: #FFFFFF;
+    z-index: 3;
+    pointer-events:none;
+    transition: opacity .35s ease;
+  }
+  .pb-deck-label .g{ color: var(--green); font-weight: 600; }
+  .pb-bridge:has(.pb-deck-planks.step.shown) .pb-deck-label{
+    opacity: 0;
+  }
+
+  /* Planks layer — sits inside the deck, hidden until the step is shown */
+  .pb-deck-planks{
+    position:absolute; inset:0;
+    display: flex; align-items: stretch;
+    z-index: 2;
+  }
+  /* Override the global .step (opacity:0; translateY(28px)) — we let the
+     individual cells handle the animation themselves. */
+  .pb-deck-planks.step{
+    opacity: 0;
+    transform: none;
+    pointer-events: none;
+    transition: opacity .25s ease .1s;
+  }
+  .slide.active .pb-deck-planks.step.shown{
+    animation: none;        /* don't run the global revealUp fade */
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  /* Breathing afterglow under the deck — height tracks the deck */
+  .pb-bridge::after{
+    content:""; position:absolute;
+    left:14px; right:14px; top:50%; height:64px;
+    transform: translateY(-50%);
+    border-radius: 8px;
+    pointer-events:none;
+    background: radial-gradient(ellipse at 50% 50%, rgba(59,175,90,.45) 0%, transparent 70%);
+    filter: blur(14px);
+    opacity: 0;
+    transition: height .6s cubic-bezier(.4,1.35,.5,1);
+  }
+  .slide.active .pb-bridge::after{
+    animation: pbBreathe 4.5s ease-in-out 1.5s infinite;
+  }
+  .pb-bridge:has(.pb-deck-planks.step.shown)::after{
+    height: 140px;
+  }
+  @keyframes pbBreathe{
+    0%,100%{ opacity:0; }
+    50%{ opacity:.65; }
+  }
+
+  /* Plank cells — divided columns inside the planks layer.
+     Each cell drops down + fades in with a per-cell delay. */
+  .pb-plank-cell{
+    flex: 1 1 0;
+    position: relative;
+    border-right: 1px solid rgba(59,175,90,.22);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 18px 6px 12px;
+    text-align: center;
+    gap: 4px;
+    min-width:0;
+
+    /* Hidden until the parent .pb-deck-planks gets .shown */
+    opacity: 0;
+    transform: translateY(-40%);
+    transition: opacity .4s ease,
+                transform .55s cubic-bezier(.34,1.56,.64,1),
+                background .35s ease,
+                box-shadow .35s ease,
+                border-radius .35s ease,
+                border-color .35s ease;
+  }
+  .pb-plank-cell:last-child{ border-right: none; }
+  .pb-deck-planks.step.shown .pb-plank-cell{
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Hover: zoom the whole feature ~2x and float it above its neighbours.
+     Background is fully opaque so the text on the bridge label / deck
+     underneath doesn't bleed through. Per-cell transform-origin so the
+     leftmost / rightmost cells scale inward (not off the bridge edge). */
+  .pb-deck-planks.step.shown .pb-plank-cell:hover{
+    transform: scale(2);
+    z-index: 20;
+    border-right-color: transparent;
+    border-radius: 12px;
+    /* Two-layer background: green-tinted gradient on top, solid dark base below.
+       The base makes the cell opaque; the gradient gives the "spotlight" feel. */
+    background:
+      linear-gradient(180deg,
+        rgba(59,175,90,.30) 0%,
+        rgba(59,175,90,.12) 55%,
+        rgba(0,0,0,.05) 100%),
+      #0f2418;
+    box-shadow:
+      0 30px 60px -28px rgba(59,175,90,.65),
+      0 0 0 1px rgba(59,175,90,.45),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  /* Anchor the scale so edge cells don't extend past the bridge */
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(1):hover{ transform-origin: 20% center; transform: scale(2); }
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(7):hover{ transform-origin: 80% center; transform: scale(2); }
+  /* Stagger the plank reveals — delay starts after the deck has finished expanding */
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(1){ transition-delay: .25s, .25s; }
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(2){ transition-delay: .32s, .32s; }
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(3){ transition-delay: .39s, .39s; }
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(4){ transition-delay: .46s, .46s; }
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(5){ transition-delay: .53s, .53s; }
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(6){ transition-delay: .60s, .60s; }
+  .pb-deck-planks.step.shown .pb-plank-cell:nth-child(7){ transition-delay: .67s, .67s; }
+
+  .pb-plank-num{
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--green); color: #000;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(59,175,90,.5);
+  }
+  .pb-plank-lbl{
+    font-size: clamp(11px, .85vw, 13.5px);
+    font-weight: 600;
+    color: var(--on-dark);
+    line-height: 1.2;
+    margin-top: 4px;
+  }
+  .pb-plank-sub{
+    font-size: clamp(9px, .7vw, 11px);
+    font-weight: 400;
+    color: var(--on-dark-soft);
+    opacity: .7;
+    line-height: 1.3;
+    padding: 0 2px;
+  }
+
+  /* Lead under the bridge on slide 17 */
+  .slide.pb-hero .pb-lead{
+    position:relative; z-index:3;
+    margin-top: 5vh;
+    max-width: 60ch;
+    color: var(--on-dark-soft);
+  }
+
+
+  /* ====================================================================
+     TOPIC 09 — CI/CD · AI CODE REVIEW (slide 18, LIGHT) — display position changed to #08 on 2026-05-17 (was #09)
+     Three-node storyline: Every PR → Claude reads the diff → Comments on the PR.
+     Seven rule chips swarm under the Claude node when it lights up.
+     Step reveals: 3 steps (one per node). Chips animate in when n2 has .shown.
+     ==================================================================== */
+
+  .cr-slide{ padding: 9vh 7vw 11vh; }
+  .cr-slide h2{
+    margin: 0 0 2vh;
+    position: relative; z-index: 3;
+    max-width: 26ch;
+  }
+
+  .cr-eyebrow{
+    font-size: clamp(12px, .85vw, 14px);
+    letter-spacing: .22em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+    margin-bottom: 1.4vh;
+    position: relative; z-index: 3;
+  }
+
+  /* Stage: 3-column grid */
+  .cr-stage{
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1.6fr 1fr;
+    align-items: start;
+    gap: 3vw;
+    margin: 5vh auto 0;
+    width: 100%;
+    max-width: 1280px;
+    padding-top: 20px;
+  }
+
+  /* Connecting line behind the icons */
+  .cr-line{
+    position: absolute;
+    left: 14%; right: 14%;
+    top: 80px; /* centers on icons (non-hero center=20+60=80, hero center=0+80=80) */
+    height: 2px;
+    background: var(--line);
+    z-index: 0;
+  }
+
+  /* A node — muted by default, lights up when .shown */
+  .cr-node{
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    opacity: .32;
+    transition: opacity .55s ease;
+  }
+  .cr-node.shown{ opacity: 1; }
+
+  .cr-icon{
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 28px -16px rgba(0,0,0,.16);
+    transition: border-color .55s ease, box-shadow .55s ease;
+  }
+  .cr-node.shown .cr-icon{
+    border-color: var(--green);
+    box-shadow: 0 18px 44px -14px var(--green-glow);
+  }
+  .cr-icon svg{ width: 54px; height: 54px; }
+  .cr-icon .stroke{ stroke: var(--muted); fill: none; transition: stroke .55s ease; }
+  .cr-icon .fill{ fill: var(--muted); transition: fill .55s ease; }
+  .cr-node.shown .cr-icon .stroke{ stroke: var(--green); }
+  .cr-node.shown .cr-icon .fill{ fill: var(--green); }
+
+  .cr-label{
+    font-size: clamp(16px, 1.25vw, 22px);
+    font-weight: 400; color: var(--ink-soft); opacity: .8;
+    letter-spacing: -.005em;
+  }
+  .cr-node.shown .cr-label{ color: var(--ink); opacity: 1; font-weight: 500; }
+
+  /* Hero variant for Claude node — bigger circle, slight pulse */
+  .cr-n2{ margin-top: -20px; }
+  .cr-n2 .cr-icon{ width: 160px; height: 160px; margin-bottom: 22px; }
+  .cr-n2 .cr-icon svg{ width: 78px; height: 78px; }
+  .cr-n2.shown .cr-icon{
+    animation: cr-pulse 2.8s ease-in-out infinite;
+  }
+  @keyframes cr-pulse{
+    0%, 100%{ box-shadow: 0 18px 44px -14px var(--green-glow); }
+    50%{ box-shadow: 0 24px 58px -8px var(--green-glow); }
+  }
+
+  /* Rules swarm under Claude — inline flow, opacity-gated */
+  .cr-rules{
+    margin: 22px auto 0;
+    width: 100%;
+    max-width: 560px;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity .35s ease;
+  }
+  .cr-n2.shown .cr-rules{ opacity: 1; }
+
+  .cr-chip{
+    padding: 7px 14px;
+    background: rgba(59,175,90,.06);
+    border: 1px solid rgba(59,175,90,.35);
+    color: var(--ink);
+    border-radius: 999px;
+    font-size: clamp(11px, .85vw, 14px);
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(8px) scale(.92);
+    transition:transform .25s cubic-bezier(.2,.8,.25,1),
+                box-shadow .25s ease,
+                border-color .25s ease,
+                background .3s ease,
+                color .25s ease;
+  }
+  .cr-n2.shown .cr-chip{
+    animation: cr-chip-in .45s cubic-bezier(.2,.8,.25,1) forwards;
+  }
+  /* Hover: intensified green spotlight (the entry animation lands first, then hover takes over) */
+  .cr-n2.shown .cr-chip:hover{
+    transform:translateY(-2px) scale(1.12);
+    position:relative; z-index:10;
+    border-color:var(--green);
+    color:var(--green-deep);
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.22) 0%,
+      rgba(59,175,90,.09) 60%,
+      rgba(59,175,90,.06) 100%);
+    box-shadow:
+      inset 0 8px 12px -8px rgba(59,175,90,.45),
+      0 8px 20px -8px rgba(59,175,90,.50),
+      0 0 0 1px rgba(59,175,90,.30);
+  }
+  .cr-n2.shown .cr-chip:nth-child(1){ animation-delay: .15s; }
+  .cr-n2.shown .cr-chip:nth-child(2){ animation-delay: .22s; }
+  .cr-n2.shown .cr-chip:nth-child(3){ animation-delay: .29s; }
+  .cr-n2.shown .cr-chip:nth-child(4){ animation-delay: .36s; }
+  .cr-n2.shown .cr-chip:nth-child(5){ animation-delay: .43s; }
+  .cr-n2.shown .cr-chip:nth-child(6){ animation-delay: .50s; }
+  .cr-n2.shown .cr-chip:nth-child(7){ animation-delay: .57s; }
+  .cr-n2.shown .cr-chip:nth-child(8){ animation-delay: .64s; }
+  @keyframes cr-chip-in{
+    to{ opacity: 1; transform: none; }
+  }
+
+  /* Example / live-demo link — bottom-left, just above the pager's left label.
+     Canonical pattern; lives in the iFacto presentation skill. */
+  .example-link{
+    position: absolute;
+    bottom: 60px; left: 9vw;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+    font-weight: 600; color: var(--green);
+    text-decoration: none;
+    padding: 4px 0;
+    transition: color .25s ease;
+    z-index: 6;
+  }
+  .example-link .chev{
+    display: inline-block;
+    font-weight: 700; font-size: 14px;
+    transition: transform .25s ease;
+  }
+  .example-link:hover{ color: var(--green-deep); }
+  .example-link:hover .chev{ transform: translateX(3px); }
+
+  /* =========================================================
+     TOPIC 10 — DOCUMENTATION (DARK 3-node storyline)
+     Mirrors Topic 09 .cr-stage but on dark.
+     ========================================================= */
+  .doc-slide{ padding: 9vh 7vw 11vh; }
+  .doc-slide h2{ margin: 0 0 2vh; max-width: 26ch; position:relative; z-index:3; }
+  .doc-eyebrow{
+    font-size: clamp(12px,.85vw,14px);
+    letter-spacing:.22em; text-transform:uppercase;
+    color: var(--on-dark-soft); font-weight:600;
+    margin-bottom:1.4vh;
+    position:relative; z-index:3;
+  }
+  /* Outer stage now: left storyline + right list */
+  .doc-stage{
+    position:relative;
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    align-items:center; gap:5vw;
+    margin:4vh auto 0; width:100%; max-width:1280px;
+  }
+  /* Left side — the 2-node storyline */
+  .doc-flow{
+    position:relative;
+    display:grid;
+    grid-template-columns:1fr 1.4fr;
+    align-items:start; gap:3vw;
+    padding-top:20px;
+  }
+  .doc-line{
+    position:absolute; left:21%; right:29%;
+    top:80px; height:2px;
+    background:rgba(255,255,255,.10); z-index:0;
+  }
+  /* Right side — vertical list, fades + slides in when Node 2 lights up */
+  .doc-list-wrap{
+    align-self:center;
+  }
+  .doc-list-eyebrow{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--on-dark-soft); font-weight:600;
+    margin-bottom:14px;
+    opacity:0; transition:opacity .35s ease;
+  }
+  .doc-stage:has(.doc-n2.shown) .doc-list-eyebrow{ opacity:.85; }
+  .doc-list{
+    list-style:none; padding:0; margin:0;
+    display:flex; flex-direction:column; gap:11px;
+  }
+  .doc-list li{
+    display:flex; align-items:center; gap:14px;
+    font-size:clamp(15px,1.1vw,19px);
+    line-height:1.35;
+    color:var(--on-dark);
+    opacity:0; transform:translateX(14px);
+  }
+  .doc-list li::before{
+    content:""; width:10px; height:10px; border-radius:50%;
+    background:rgba(59,175,90,.20);
+    border:1.5px solid var(--green);
+    box-shadow:0 0 0 4px rgba(59,175,90,.06);
+    flex:none;
+  }
+  .doc-stage:has(.doc-n2.shown) .doc-list li{
+    animation: doc-li-in .55s cubic-bezier(.2,.8,.25,1) forwards;
+  }
+  .doc-stage:has(.doc-n2.shown) .doc-list li:nth-child(1){ animation-delay:.12s; }
+  .doc-stage:has(.doc-n2.shown) .doc-list li:nth-child(2){ animation-delay:.20s; }
+  .doc-stage:has(.doc-n2.shown) .doc-list li:nth-child(3){ animation-delay:.28s; }
+  .doc-stage:has(.doc-n2.shown) .doc-list li:nth-child(4){ animation-delay:.36s; }
+  .doc-stage:has(.doc-n2.shown) .doc-list li:nth-child(5){ animation-delay:.44s; }
+  .doc-stage:has(.doc-n2.shown) .doc-list li:nth-child(6){ animation-delay:.52s; }
+  .doc-stage:has(.doc-n2.shown) .doc-list li:nth-child(7){ animation-delay:.60s; }
+  @keyframes doc-li-in{
+    to{ opacity:1; transform:none; }
+  }
+  .doc-node{
+    position:relative; z-index:2;
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center;
+    opacity:.32;
+    transition:opacity .55s ease;
+  }
+  .doc-node.shown{ opacity:1; }
+  .doc-icon{
+    width:120px; height:120px; border-radius:50%;
+    background:#0c0d0f; border:2px solid rgba(255,255,255,.14);
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px;
+    transition:border-color .55s ease, box-shadow .55s ease;
+  }
+  .doc-node.shown .doc-icon{
+    border-color:var(--green);
+    box-shadow:0 18px 44px -14px var(--green-glow);
+  }
+  .doc-icon svg{ width:54px; height:54px; }
+  .doc-icon .stroke{ stroke:rgba(255,255,255,.5); fill:none; transition:stroke .55s ease; }
+  .doc-icon .fill{ fill:rgba(255,255,255,.5); transition:fill .55s ease; }
+  .doc-node.shown .doc-icon .stroke{ stroke:var(--green); }
+  .doc-node.shown .doc-icon .fill{ fill:var(--green); }
+  .doc-label{
+    font-size:clamp(16px,1.25vw,22px);
+    font-weight:400; color:var(--on-dark-soft); opacity:.7;
+  }
+  .doc-node.shown .doc-label{ color:var(--on-dark); opacity:1; font-weight:500; }
+  .doc-n2{ margin-top:-20px; }
+  .doc-n2 .doc-icon{ width:160px; height:160px; margin-bottom:22px; }
+  .doc-n2 .doc-icon svg{ width:78px; height:78px; }
+  .doc-n2.shown .doc-icon{ animation: cr-pulse 2.8s ease-in-out infinite; }
+  .doc-rules{
+    margin:22px auto 0; width:100%; max-width:580px;
+    display:flex; flex-wrap:wrap; justify-content:center; gap:8px;
+    opacity:0; transition:opacity .35s ease;
+  }
+  .doc-n2.shown .doc-rules{ opacity:1; }
+  .doc-chip{
+    padding:7px 14px;
+    background:rgba(59,175,90,.10);
+    border:1px solid rgba(59,175,90,.40);
+    color:var(--on-dark);
+    border-radius:999px;
+    font-size:clamp(11px,.85vw,14px); font-weight:500;
+    white-space:nowrap;
+    opacity:0; transform:translateY(8px) scale(.92);
+    transition:transform .25s cubic-bezier(.2,.8,.25,1),
+                box-shadow .25s ease,
+                border-color .25s ease,
+                background .3s ease,
+                color .25s ease;
+  }
+  .doc-n2.shown .doc-chip{ animation: cr-chip-in .45s cubic-bezier(.2,.8,.25,1) forwards; }
+  /* Hover: intensified green spotlight (dark theme — brighter glow than light chips) */
+  .doc-n2.shown .doc-chip:hover{
+    transform:translateY(-2px) scale(1.12);
+    position:relative; z-index:10;
+    border-color:var(--green);
+    color:#fff;
+    background:linear-gradient(180deg,
+      rgba(59,175,90,.28) 0%,
+      rgba(59,175,90,.12) 60%,
+      rgba(59,175,90,.10) 100%);
+    box-shadow:
+      inset 0 8px 12px -8px rgba(59,175,90,.55),
+      0 8px 20px -8px rgba(59,175,90,.60),
+      0 0 0 1px rgba(59,175,90,.40);
+  }
+  .doc-n2.shown .doc-chip:nth-child(1){ animation-delay:.15s; }
+  .doc-n2.shown .doc-chip:nth-child(2){ animation-delay:.22s; }
+  .doc-n2.shown .doc-chip:nth-child(3){ animation-delay:.29s; }
+  .doc-n2.shown .doc-chip:nth-child(4){ animation-delay:.36s; }
+  .doc-n2.shown .doc-chip:nth-child(5){ animation-delay:.43s; }
+  .doc-n2.shown .doc-chip:nth-child(6){ animation-delay:.50s; }
+  .doc-n2.shown .doc-chip:nth-child(7){ animation-delay:.57s; }
+  .doc-detail{
+    margin-top:14px;
+    font-size:clamp(11px,.85vw,13px);
+    letter-spacing:.14em; text-transform:uppercase;
+    color:var(--on-dark-soft); opacity:0;
+    transition:opacity .55s ease;
+    max-width:34ch;
+    text-align:center;
+  }
+  .doc-n3.shown .doc-detail{ opacity:.85; }
+  .doc-detail .sep{ color:var(--green); font-weight:700; margin:0 6px; }
+
+  /* =========================================================
+     TOPIC 11 — PIPELINE ANALYZER (LIGHT, before/after panes)
+     ========================================================= */
+  .pa-slide{ padding: 9vh 7vw 11vh; }
+  .pa-eyebrow{
+    font-size: clamp(12px,.85vw,14px);
+    letter-spacing:.22em; text-transform:uppercase;
+    color: var(--muted); font-weight:600;
+    margin-bottom:1.4vh;
+    position:relative; z-index:3;
+  }
+  .pa-slide h2{ margin: 0 0 2vh; max-width: 22ch; position:relative; z-index:3; }
+  /* Title variant — the prompt name is longer than the original question,
+     so scale h2 down and drop the max-width so it fits on one line. */
+  .pa-slide h2.pa-title{
+    font-size: clamp(36px, 3.6vw, 56px);
+    max-width: none;
+    margin: 0 0 0.6vh;
+  }
+  /* Subtitle — the original question now lives below the title at .lead-ish weight. */
+  .pa-slide .pa-sub{
+    font-size: clamp(28px, 2.6vw, 44px);
+    font-weight: 400;
+    color: var(--muted);
+    margin: 0 0 2vh;
+    max-width: 28ch;
+    line-height: 1.15;
+    position: relative; z-index: 3;
+  }
+  .pa-stage{
+    display:grid; grid-template-columns:1fr 96px 1fr;
+    align-items:stretch; gap:2vw;
+    margin:4vh auto 0; width:100%; max-width:1280px;
+  }
+  .pa-pane{
+    border-radius:18px;
+    position:relative; overflow:hidden;
+    min-height:42vh;
+  }
+  .pa-pane.left{
+    background:#0c0d0f; color:#cfd2d6;
+    font-family:"SF Mono","Menlo","Consolas",monospace;
+    border:1px solid rgba(255,255,255,.06);
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.25);
+    padding:18px 22px 60px;
+  }
+  .pa-pane.left::after{
+    content:""; position:absolute; left:0; right:0; bottom:0; height:55%;
+    background:linear-gradient(180deg,transparent 0%,rgba(12,13,15,.85) 60%,#0c0d0f 100%);
+    pointer-events:none;
+  }
+  .pa-pane.left .top{
+    display:flex; gap:6px; margin-bottom:14px;
+  }
+  .pa-pane.left .top span{
+    width:10px; height:10px; border-radius:50%;
+  }
+  .pa-pane.left .top span:nth-child(1){background:#ff5f56;}
+  .pa-pane.left .top span:nth-child(2){background:#ffbd2e;}
+  .pa-pane.left .top span:nth-child(3){background:#27c93f;}
+  .pa-pane.left .body{
+    font-size:12px; line-height:1.65;
+    white-space:nowrap; overflow:hidden;
+  }
+  .pa-line{ display:block; opacity:.55; }
+  .pa-line.dim{ opacity:.30; }
+  .pa-line.err{ color:#ff7676; opacity:.95; }
+  .pa-line.warn{ color:#e8c156; opacity:.85; }
+  .pa-line.head{ color:#9aa0a6; opacity:.85; }
+  .pa-stamp{
+    position:absolute; bottom:14px; left:22px; right:22px; z-index:2;
+    font-family:"Poppins",sans-serif; color:#e1e3e6;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; letter-spacing:.18em; text-transform:uppercase;
+  }
+  .pa-stamp b{ color:#ff7676; font-weight:700; }
+  .pa-stamp .right{ color:#9aa0a6; font-weight:500; }
+  .pa-bridge{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px;
+  }
+  .pa-bridge .pb-line{
+    width:2px; flex:1;
+    background:linear-gradient(180deg,transparent,var(--green) 30%,var(--green) 70%,transparent);
+    opacity:.6;
+  }
+  .pa-bridge .pb-disc{
+    width:46px; height:46px; border-radius:50%;
+    background:rgba(59,175,90,.10); border:2px solid var(--green);
+    display:grid; place-items:center;
+    color:var(--green); font-weight:700; font-size:22px;
+    box-shadow:0 0 0 8px rgba(59,175,90,.05);
+    animation: pa-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes pa-pulse{
+    0%,100%{ box-shadow:0 0 0 8px rgba(59,175,90,.05); }
+    50%{ box-shadow:0 0 0 16px rgba(59,175,90,.02); }
+  }
+  .pa-bridge .pb-cap{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--green); font-weight:700;
+  }
+  .pa-pane.right{
+    background:#fff; border:1px solid var(--line);
+    border-radius:18px; padding:22px 26px 26px;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,.18);
+    display:flex; flex-direction:column;
+  }
+  .pa-chathead{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:14px; padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .pa-avatar{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(59,175,90,.10);
+    border:1px solid rgba(59,175,90,.45);
+    display:grid; place-items:center;
+    color:var(--green); font-weight:700; font-size:13px;
+    flex:none;
+  }
+  .pa-name{ font-weight:600; color:var(--ink); font-size:14px; letter-spacing:-.005em; }
+  .pa-name small{ color:var(--muted); font-weight:400; margin-left:8px; font-size:12px; }
+  .pa-msg p{
+    font-size:clamp(15px,1.05vw,18px); line-height:1.55;
+    color:var(--ink); margin:0 0 10px; max-width:none;
+  }
+  .pa-msg p:last-child{ margin-bottom:0; }
+  .pa-msg .culprit{
+    background:rgba(232,193,86,.20); padding:1px 7px; border-radius:5px;
+    font-family:"SF Mono",monospace; font-size:.88em; color:#7a5a10;
+  }
+  .pa-msg .fix{ color:var(--green); font-weight:700; }
+  /* .red-word — works in h2 or in the .pa-sub paragraph (broadened 2026-05-17
+     when the "Why is the build red?" line moved from the title to the subtitle slot). */
+  .pa-slide .red-word{
+    color:#e5484d;
+    position:relative;
+    display:inline-block;
+  }
+  .pa-slide .red-word::after{
+    content:""; position:absolute; left:-2px; right:-2px; bottom:-2px; height:.18em;
+    background:#e5484d; opacity:.18; border-radius:2px;
+  }
+
+  /* =========================================================
+     TOPIC 12 — CSP PORTAL (DARK, hub-and-spokes)
+     ========================================================= */
+  .csp-slide{ padding: 9vh 7vw 11vh; }
+  .csp-slide .csp-eyebrow{
+    font-size: clamp(12px,.85vw,14px);
+    letter-spacing:.22em; text-transform:uppercase;
+    color: var(--on-dark-soft); font-weight:600;
+    margin-bottom:1.4vh;
+    position:relative; z-index:3;
+  }
+  .csp-slide h2{ max-width:22ch; margin:0 0 1vh; position:relative; z-index:3; }
+  .csp-slide .csp-lead{
+    color:var(--on-dark-soft); max-width:54ch;
+    margin:0; position:relative; z-index:3;
+  }
+  .csp-stage{
+    position:relative;
+    margin: 3.5vh auto 0;
+    width:100%; max-width:1180px;
+    height:42vh; min-height:340px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .csp-hub{
+    position:relative; z-index:3;
+    width:220px; height:220px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, rgba(59,175,90,.45), rgba(59,175,90,.08) 60%, transparent 80%);
+    border:2px solid var(--green);
+    box-shadow:0 0 0 12px rgba(59,175,90,.06), 0 30px 80px -20px var(--green-glow);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    animation: cspHub 4.5s ease-in-out infinite;
+  }
+  @keyframes cspHub{
+    0%,100%{ box-shadow:0 0 0 12px rgba(59,175,90,.06), 0 30px 80px -20px var(--green-glow); }
+    50%{ box-shadow:0 0 0 22px rgba(59,175,90,.03), 0 36px 100px -10px var(--green-glow); }
+  }
+  .csp-hub-name{
+    font-size:clamp(20px,1.7vw,28px); font-weight:500; color:#fff;
+    letter-spacing:-.01em; line-height:1.1;
+  }
+  .csp-hub-sub{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:rgba(255,255,255,.65); margin-top:8px;
+  }
+  .csp-spokes{
+    position:absolute; inset:0; pointer-events:none;
+  }
+  .csp-spokes line{
+    stroke:rgba(59,175,90,.30); stroke-width:1.2; stroke-dasharray:4 6;
+    animation: cspSpoke 6s linear infinite;
+  }
+  @keyframes cspSpoke{
+    to{ stroke-dashoffset:-100; }
+  }
+  .csp-cap{
+    position:absolute; z-index:2;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    padding:12px 16px;
+    color:var(--on-dark);
+    font-size:clamp(12px,.95vw,15px); font-weight:500;
+    backdrop-filter:blur(8px);
+    transition: border-color .35s ease, transform .35s ease;
+  }
+  .csp-cap:hover{ border-color:var(--green); transform:translateY(-2px); }
+  .csp-cap small{
+    display:block; font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--on-dark-soft); font-weight:600; margin-bottom:4px;
+  }
+  /* 6 capability cards positioned around the hub */
+  .csp-cap.c1{ top:6%;   left:8%; }
+  .csp-cap.c2{ top:6%;   right:8%; text-align:right; }
+  .csp-cap.c3{ top:46%;  left:0; transform:translateY(-50%); }
+  .csp-cap.c4{ top:46%;  right:0; transform:translateY(-50%); text-align:right; }
+  .csp-cap.c5{ bottom:6%; left:8%; }
+  .csp-cap.c6{ bottom:6%; right:8%; text-align:right; }
+  .csp-stats{
+    margin-top:2.5vh;
+    display:flex; justify-content:center; gap:34px;
+    color:var(--on-dark-soft); font-size:12px;
+    letter-spacing:.18em; text-transform:uppercase; font-weight:600;
+  }
+  .csp-stats b{ color:var(--green); font-weight:700; margin-right:4px; }
+
+  /* =========================================================
+     TOPIC 13 — TELEMETRY BUDDY (LIGHT, chat transcript demo intro)
+     ========================================================= */
+  .tb-slide{ padding: 9vh 7vw 11vh; }
+  .tb-eyebrow{
+    font-size: clamp(12px,.85vw,14px);
+    letter-spacing:.22em; text-transform:uppercase;
+    color: var(--green); font-weight:700;
+    margin-bottom:1.4vh;
+    position:relative; z-index:3;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .tb-eyebrow::before{
+    content:""; width:8px; height:8px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 0 4px rgba(59,175,90,.20);
+    animation: tbDot 1.6s ease-in-out infinite;
+  }
+  @keyframes tbDot{
+    0%,100%{ opacity:1; box-shadow:0 0 0 4px rgba(59,175,90,.20); }
+    50%{ opacity:.6; box-shadow:0 0 0 8px rgba(59,175,90,.05); }
+  }
+  .tb-slide h2{ max-width:24ch; margin:0 0 1vh; position:relative; z-index:3; }
+  .tb-slide .tb-lead{
+    color:var(--ink-soft); max-width:48ch;
+    margin:0 0 4vh; position:relative; z-index:3;
+    font-size: clamp(20px,1.4vw,26px);
+  }
+  .tb-stage{
+    display:flex; flex-direction:column; gap:14px;
+    max-width:880px; margin:0 auto;
+    position:relative; z-index:3;
+  }
+  .tb-bubble{
+    border-radius:16px;
+    padding:16px 22px;
+    font-size:clamp(15px,1.1vw,20px);
+    line-height:1.45;
+    max-width:80%;
+    transition: transform .35s ease, box-shadow .35s ease;
+  }
+  .tb-bubble.q{
+    background:#fff; border:1px solid var(--line);
+    color:var(--ink);
+    align-self:flex-start;
+    border-bottom-left-radius:4px;
+    box-shadow:0 14px 30px -22px rgba(0,0,0,.15);
+  }
+  .tb-bubble.a{
+    background:rgba(59,175,90,.08); border:1px solid rgba(59,175,90,.35);
+    color:var(--ink);
+    align-self:flex-end; margin-left:auto;
+    border-bottom-right-radius:4px;
+  }
+  .tb-bubble.a b{ color:var(--green); font-weight:700; }
+  .tb-bubble small{
+    display:block; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; margin-bottom:6px;
+  }
+  .tb-cta{
+    margin-top:3vh;
+    display:flex; align-items:center; gap:18px;
+    color:var(--ink-soft);
+    font-size:13px; letter-spacing:.06em;
+    justify-content:center;
+  }
+  .tb-cta .pillbtn{ font-weight:600; }
+  .tb-cta-note{ color:var(--muted); }
+
+  /* =========================================================
+     TOPIC 14 — WHAT WE'RE WORKING ON (DARK, roadmap cards)
+     ========================================================= */
+  .rm-slide{ padding: 9vh 7vw 11vh; }
+  .rm-slide h2{ max-width:22ch; margin:0 0 1vh; position:relative; z-index:3; }
+  .rm-slide .rm-lead{
+    color:var(--on-dark-soft); max-width:50ch;
+    margin:0 0 4vh; position:relative; z-index:3;
+  }
+  .rm-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:18px;
+    max-width:1280px; margin:0 auto; width:100%;
+    position:relative; z-index:3;
+  }
+  .rm-card{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:18px;
+    padding:24px 22px 22px;
+    display:flex; flex-direction:column;
+    transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease, background-color .35s ease;
+    position:relative; overflow:hidden;
+    will-change: transform;
+  }
+  .rm-card::before{
+    content:""; position:absolute; left:0; top:0; height:3px; width:100%;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+    opacity:.4;
+    transition: opacity .35s ease, height .35s ease;
+  }
+  .rm-card:hover{
+    z-index:5;
+    transform:translateY(-8px) scale(1.06);
+    border-color:var(--green);
+    background:rgba(59,175,90,.10);
+    box-shadow:
+      0 0 0 1px rgba(59,175,90,.40),
+      0 40px 90px -20px var(--green-glow),
+      0 0 70px -10px rgba(59,175,90,.50);
+  }
+  .rm-card:hover::before{
+    opacity:1;
+    height:4px;
+  }
+  .rm-when{
+    display:inline-block;
+    font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    font-weight:700; color:var(--green);
+    background:rgba(59,175,90,.10);
+    border:1px solid rgba(59,175,90,.30);
+    border-radius:999px;
+    padding:4px 12px;
+    margin-bottom:14px;
+    align-self:flex-start;
+  }
+  .rm-name{
+    font-size:clamp(20px,1.5vw,24px);
+    font-weight:500; color:#fff;
+    letter-spacing:-.01em; line-height:1.18;
+    margin-bottom:10px;
+  }
+  .rm-name .g{ color:var(--green); }
+  .rm-why{
+    font-size:clamp(13px,.95vw,16px);
+    color:var(--on-dark-soft); line-height:1.5;
+    margin:0;
+  }
+  .rm-foot{
+    margin-top:3vh;
+    text-align:center;
+    color:var(--on-dark-soft);
+    font-size:13px; letter-spacing:.18em; text-transform:uppercase;
+    font-weight:600;
+  }
+  .rm-foot .g{ color:var(--green); }
+
+  /* =========================================================
+     TOPIC 15 — EXPECTATIONS & CONTRIBUTE (LIGHT, contract)
+     ========================================================= */
+  .exp-slide{ padding: 9vh 7vw 11vh; }
+  .exp-slide h2{ margin:0 0 1vh; position:relative; z-index:3; max-width:26ch; }
+  .exp-lead{
+    color:var(--ink-soft); max-width:54ch;
+    margin:0 0 4vh; position:relative; z-index:3;
+  }
+  .exp-cols{
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:34px; max-width:1180px; margin:0 auto;
+    position:relative; z-index:3;
+  }
+  .exp-col{
+    background:#fff; border:1px solid var(--line);
+    border-radius:18px;
+    padding:26px 28px 28px;
+    position:relative;
+    box-shadow:0 18px 50px -30px rgba(0,0,0,.15);
+  }
+  .exp-col-head{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:18px; padding-bottom:16px;
+    border-bottom:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .exp-col-tag{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--green); font-weight:700;
+    background:rgba(59,175,90,.08);
+    border:1px solid rgba(59,175,90,.30);
+    border-radius:999px;
+    padding:4px 12px;
+  }
+  .exp-col-title{
+    font-size:clamp(22px,1.6vw,28px);
+    font-weight:500; color:var(--ink);
+    letter-spacing:-.01em;
+  }
+  .exp-col-title .g{ color:var(--green); }
+  .exp-list{
+    list-style:none; margin:0; padding:0;
+  }
+  .exp-list li{
+    display:flex; align-items:flex-start; gap:14px;
+    padding:12px 0;
+    font-size:clamp(15px,1.05vw,18px);
+    line-height:1.45; color:var(--ink);
+    border-bottom:1px solid var(--line);
+  }
+  .exp-list li:last-child{ border-bottom:none; }
+  .exp-list .check{
+    flex:none; width:22px; height:22px; border-radius:50%;
+    background:rgba(59,175,90,.12);
+    border:1px solid var(--green);
+    display:grid; place-items:center;
+    color:var(--green); font-weight:700; font-size:12px;
+    margin-top:1px;
+  }
+  .exp-list b{ color:var(--ink); font-weight:700; }
+  .exp-strip{
+    margin-top:3vh;
+    display:flex; align-items:center; justify-content:center;
+    gap:14px; flex-wrap:wrap;
+    position:relative; z-index:3;
+  }
+  .exp-strip-label{
+    font-size:13px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--muted); font-weight:600;
+    margin-right:8px;
+  }
+  .exp-pill{
+    padding:9px 18px;
+    background:rgba(59,175,90,.06);
+    border:1px solid rgba(59,175,90,.40);
+    color:var(--ink);
+    border-radius:999px;
+    font-size:14px; font-weight:500;
+    transition: transform .25s ease, border-color .25s ease;
+  }
+  .exp-pill:hover{ transform:translateY(-2px); border-color:var(--green); }
+
+  /* =========================================================
+     TOPIC 16 — CLOSING (DARK, split CTA)
+     ========================================================= */
+  .cl-slide{ padding: 9vh 7vw 11vh; }
+  .cl-stage{
+    display:grid; grid-template-columns: 1.2fr 1fr;
+    gap:6vw; align-items:center;
+    max-width:1280px; margin: 4vh auto 0;
+    position:relative; z-index:3;
+  }
+  .cl-headline{
+    font-size:clamp(46px,5.4vw,86px);
+    font-weight:300; line-height:1; letter-spacing:-.025em;
+    color:#fff; margin:0;
+  }
+  .cl-headline .g{ color:var(--green); font-weight:400; }
+  .cl-headline span.line{ display:block; }
+  .cl-sub{
+    margin-top:30px;
+    color:var(--on-dark-soft);
+    max-width:38ch;
+  }
+  .cl-panel{
+    position:relative;
+    background:linear-gradient(135deg,#0a0a0b 0%,#16181a 100%);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:24px;
+    padding:38px 36px 34px;
+    overflow:hidden;
+    min-height:340px;
+  }
+  .cl-panel::before, .cl-panel::after{
+    content:""; position:absolute; border-radius:50%;
+    filter:blur(40px); opacity:.55;
+  }
+  .cl-panel::before{
+    width:240px; height:240px;
+    background:radial-gradient(circle, rgba(59,175,90,.55), transparent 70%);
+    top:-60px; right:-60px;
+    animation: clGlow1 6s ease-in-out infinite;
+  }
+  .cl-panel::after{
+    width:200px; height:200px;
+    background:radial-gradient(circle, rgba(232,193,86,.30), transparent 70%);
+    bottom:-50px; left:-30px;
+    animation: clGlow2 8s ease-in-out infinite;
+  }
+  @keyframes clGlow1{
+    0%,100%{ transform:translate(0,0) scale(1); opacity:.55; }
+    50%{ transform:translate(-20px,18px) scale(1.1); opacity:.75; }
+  }
+  @keyframes clGlow2{
+    0%,100%{ transform:translate(0,0) scale(1); opacity:.45; }
+    50%{ transform:translate(20px,-12px) scale(1.08); opacity:.65; }
+  }
+  .cl-panel-tag{
+    position:relative; z-index:2;
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--green); font-weight:700;
+    margin-bottom:14px;
+  }
+  .cl-panel-h{
+    position:relative; z-index:2;
+    font-size:clamp(24px,2vw,32px); font-weight:400;
+    color:#fff; line-height:1.2; letter-spacing:-.01em;
+    margin:0 0 18px;
+  }
+  .cl-monday{
+    position:relative; z-index:2;
+    list-style:none; padding:0; margin:0 0 22px;
+  }
+  .cl-monday li{
+    color:var(--on-dark);
+    font-size:clamp(14px,1vw,17px);
+    padding:8px 0;
+    display:flex; align-items:center; gap:10px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .cl-monday li:last-child{ border-bottom:none; }
+  .cl-monday .num{
+    width:24px; height:24px; border-radius:50%;
+    background:rgba(59,175,90,.12);
+    border:1px solid var(--green);
+    color:var(--green); font-weight:700; font-size:12px;
+    display:grid; place-items:center;
+    flex:none;
+  }
+  .cl-channel{
+    position:relative; z-index:2;
+    display:flex; align-items:center; gap:10px;
+    color:var(--on-dark-soft);
+    font-size:13px; letter-spacing:.10em; text-transform:uppercase;
+    font-weight:600;
+  }
+  .cl-channel b{ color:var(--green); font-weight:700; }
+
+  /* =========================================================
+     CLOSING — RECAP / QUESTIONS MINDMAP (DARK)
+     One layout, used twice: slide 25 (Key takeaways), slide 26 (Questions).
+     Central node + 6 branches on a 3×2 grid, dashed green spokes behind.
+     ========================================================= */
+  .mm-slide{ padding: 7vh 6vw 9vh; }
+  .mm-slide h2{ margin:0 0 1vh; max-width:24ch; position:relative; z-index:3; }
+  .mm-slide .mm-lead{
+    color:var(--on-dark-soft); max-width:60ch;
+    margin:0 0 3vh; position:relative; z-index:3;
+    font-size:clamp(16px,1.2vw,20px);
+  }
+
+  .mm-canvas{
+    position:relative;
+    width:100%;
+    height:66vh;
+    max-height:680px;
+    margin:0 auto;
+    z-index:2;
+  }
+
+  /* SVG spokes — pure layout, painted behind nodes. */
+  .mm-lines{
+    position:absolute; inset:0; width:100%; height:100%;
+    pointer-events:none; overflow:visible;
+  }
+  .mm-lines line{
+    stroke:rgba(59,175,90,.32);
+    stroke-width:1.4;
+    stroke-dasharray:5 6;
+    stroke-linecap:round;
+    vector-effect:non-scaling-stroke;
+  }
+  /* Continuous "energy flowing outward" along the dashed spokes.
+     Period = dash + gap (5 + 6 = 11), so animating the offset by exactly
+     -11 over the duration gives a seamless infinite loop. */
+  .slide.active .mm-lines line{
+    stroke-dasharray:5 6;
+    animation: mmFlow 0.7s linear infinite;
+    animation-delay:.4s;
+  }
+  @keyframes mmFlow{
+    from{ stroke-dashoffset:0;   }
+    to  { stroke-dashoffset:-11; }
+  }
+
+  .mm-center{
+    position:absolute;
+    left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    z-index:5;
+    text-align:center;
+    /* Opaque base under the green tint so dashed spokes stop at the pill edge. */
+    background:
+      linear-gradient(135deg, rgba(59,175,90,.20), rgba(59,175,90,.04)),
+      #0a0a0b;
+    border:1.5px solid var(--green);
+    border-radius:999px;
+    padding:22px 44px;
+    color:#fff;
+    font-weight:600;
+    font-size:clamp(24px,2vw,32px);
+    letter-spacing:-.01em;
+    box-shadow:0 20px 60px -20px var(--green-glow), inset 0 0 0 1px rgba(255,255,255,.04);
+    white-space:nowrap;
+  }
+  .mm-center small{
+    display:block;
+    color:var(--on-dark-soft);
+    font-weight:500;
+    font-size:.55em;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    margin-top:8px;
+  }
+
+  /* Branches: pill anchors on the line endpoint; leaves fan outward.
+     Top row uses column-reverse + translate(-50%,-100%) so the pill's BOTTOM
+     sits at (left,top). Bottom row uses column + translate(-50%,0) so the
+     pill's TOP sits at (left,top). */
+  .mm-branch{
+    position:absolute;
+    z-index:4;
+    display:flex; align-items:center;
+    gap:10px;
+    width:280px;
+  }
+  .mm-branch-name{
+    /* Opaque base + subtle white tint — lines vanish under the pill. */
+    background:
+      linear-gradient(rgba(255,255,255,.05), rgba(255,255,255,.05)),
+      #0a0a0b;
+    border:1px solid rgba(59,175,90,.55);
+    border-radius:999px;
+    padding:11px 24px;
+    color:#fff;
+    font-weight:600;
+    font-size:clamp(16px,1.35vw,21px);
+    letter-spacing:-.005em;
+    white-space:nowrap;
+  }
+  .mm-leaves{
+    display:flex; flex-direction:column;
+    gap:5px;
+    text-align:center;
+    width:100%;
+  }
+  .mm-leaves span{
+    color:var(--on-dark-soft);
+    font-size:clamp(14px,1.1vw,17px);
+    line-height:1.35;
+  }
+
+  /* Symmetric 3×3 grid: top row at 17%, bottom row at 83% — leaves a bit more
+     breathing room top/bottom now that the labels are bigger. */
+  .mm-b1{ left:14%; top:17%; }   /* Philosophy   (top-left) */
+  .mm-b2{ left:50%; top:17%; }   /* Toolchain    (top-center) */
+  .mm-b3{ left:86%; top:17%; }   /* Agents       (top-right) */
+  .mm-b4{ left:14%; top:83%; }   /* Dev Flow     (bottom-left) */
+  .mm-b5{ left:50%; top:83%; }   /* Apps         (bottom-center) */
+  .mm-b6{ left:86%; top:83%; }   /* What's Next  (bottom-right) */
+
+  /* Top row: leaves above pill (column-reverse), anchor at pill bottom. */
+  .mm-b1, .mm-b2, .mm-b3{
+    flex-direction:column-reverse;
+    transform:translate(-50%, -100%);
+  }
+  /* Bottom row: leaves below pill (column), anchor at pill top. */
+  .mm-b4, .mm-b5, .mm-b6{
+    flex-direction:column;
+    transform:translate(-50%, 0);
+  }
+
+  /* Stagger the branch appearance. */
+  .slide.active .mm-branch{
+    opacity:0;
+    animation: mmFadeIn .6s ease-out forwards;
+  }
+  .slide.active .mm-branch.mm-b1{ animation-delay:.55s; }
+  .slide.active .mm-branch.mm-b2{ animation-delay:.65s; }
+  .slide.active .mm-branch.mm-b3{ animation-delay:.75s; }
+  .slide.active .mm-branch.mm-b4{ animation-delay:.85s; }
+  .slide.active .mm-branch.mm-b5{ animation-delay:.95s; }
+  .slide.active .mm-branch.mm-b6{ animation-delay:1.05s; }
+  @keyframes mmFadeIn{
+    from{ opacity:0; transform:translate(-50%,-50%) scale(.92); }
+    to  { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  }
+
+  /* =========================================================
+     CLOSING — QUESTIONS (DARK, single centered headline)
+     ========================================================= */
+  .q-slide{ padding: 0; justify-content:center; align-items:center; }
+  .q-stage{
+    position:relative; z-index:3;
+    display:grid; place-items:center;
+    width:100%;
+  }
+  .q-headline{
+    margin:0;
+    font-size:clamp(96px,15vw,240px);
+    font-weight:300;
+    line-height:1;
+    letter-spacing:-.035em;
+    color:#fff;
+    text-align:center;
+  }
+  .q-headline .g{ color:var(--green); font-weight:400; }
+
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <!-- ============ TOPIC 01 — WELCOME (HERO TITLE) ============ -->
+  <section class="slide dark active" data-slide="01" data-topic="01-welcome">
+    <div class="hero-bg">
+      <div class="glow1"></div>
+      <div class="glow2"></div>
+      <div class="glow3"></div>
+      <div class="speedlines" id="speedlines"></div>
+    </div>
+
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <div class="hero-content">
+      <h1 class="reveal">Your <span class="g">topic</span><br>in one headline.</h1>
+      <p class="lead reveal" style="margin-top:36px">
+        A short subtitle. Bold the <b>two or three</b> phrases that carry the slide.
+      </p>
+    </div>
+
+    <div class="pager reveal">
+      <span>Welcome</span>
+      <span>—</span>
+    </div>
+  </section>
+  <section class="slide light" data-slide="02" data-topic="02-philosophy">
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <div class="philosophy-stack">
+      <h2 class="prov-line typed">Open with a <span class="g">claim</span>.</h2>
+      <h2 class="prov-line step typed">Then the <span class="g">reframe</span>.</h2>
+      <h2 class="prov-line step typed">Then the <span class="g">implication</span>.</h2>
+      <h2 class="prov-line step typed">Then the call to action.</h2>
+    </div>
+
+    <div class="pager reveal">
+      <span>Welcome</span>
+      <span>—</span>
+    </div>
+  </section>
+  <section class="slide light tc-context" data-slide="04" data-topic="03-toolchain-concept">
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <div class="tc-context-content">
+      <h1 class="tc-context-headline reveal">A <span class="g">centered</span> intro.</h1>
+      <p class="tc-context-lead reveal">One short supporting sentence — the lede for a whole section.</p>
+
+      <div class="tc-context-ref reveal">
+        <a class="arrow" href="#">Optional reference link<span class="chev">›</span></a>
+        <small>&ldquo;Replace with a real URL or strip this block before shipping.&rdquo;</small>
+      </div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Topic 01 / 06</span>
+      <span>Section A</span>
+    </div>
+  </section>
+  <section class="slide light tc-map" data-slide="05" data-topic="03-toolchain-concept">
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <div class="tc-map-content">
+      <h2 class="tc-map-headline reveal">A <span class="g">grid</span> with chips below.</h2>
+
+      <!-- CORE LAYER — the three foundational pillars, always visible on slide entry.
+           Examples (Row 2) revealed on click 1, mapped to iFacto-wide toolchain components. -->
+      <div class="tc-map-block">
+        <div class="tc-map-row tc-pillars">
+          <div class="tc-pillar">
+            <div class="tc-pillar-name">Knowledge</div>
+            <div class="tc-pillar-caption">what it knows about your world</div>
+          </div>
+          <div class="tc-pillar">
+            <div class="tc-pillar-name">Capabilities</div>
+            <div class="tc-pillar-caption">what it can do in your world</div>
+          </div>
+          <div class="tc-pillar">
+            <div class="tc-pillar-name">Orchestration</div>
+            <div class="tc-pillar-caption">how it decides what to do when</div>
+          </div>
+        </div>
+
+        <div class="tc-map-row step">
+          <div class="tc-map-col">
+            <span class="tc-map-divider" aria-hidden="true"></span>
+            <div class="tc-map-efico">Item one</div>
+          </div>
+          <div class="tc-map-col">
+            <span class="tc-map-divider" aria-hidden="true"></span>
+            <div class="tc-map-efico">Item two</div>
+          </div>
+          <div class="tc-map-col">
+            <span class="tc-map-divider" aria-hidden="true"></span>
+            <div class="tc-map-efico">Item three</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPERATIONAL LAYER — three pillars that keep the toolchain accountable.
+           Both pillar rows are visible on slide entry. Examples for both layers reveal
+           together on the single click: the first example row carries `.step` (advances
+           on Next-click), the second carries `.tc-sync` and rides the same reveal via :has().
+           Examples map to iFacto-wide components: Code Review rules (Topic 08),
+           Playbook profiles (Topic 11), Telemetry (Topic 13). -->
+      <div class="tc-map-block">
+        <div class="tc-map-row tc-pillars">
+          <div class="tc-pillar">
+            <div class="tc-pillar-name">Guardrails</div>
+            <div class="tc-pillar-caption">what it's not allowed to do</div>
+          </div>
+          <div class="tc-pillar">
+            <div class="tc-pillar-name">Governance</div>
+            <div class="tc-pillar-caption">how it stays consistent across the team</div>
+          </div>
+          <div class="tc-pillar">
+            <div class="tc-pillar-name">Observability</div>
+            <div class="tc-pillar-caption">how you see what it's doing</div>
+          </div>
+        </div>
+
+        <div class="tc-map-row tc-sync">
+          <div class="tc-map-col">
+            <span class="tc-map-divider" aria-hidden="true"></span>
+            <div class="tc-map-efico">Item four</div>
+          </div>
+          <div class="tc-map-col">
+            <span class="tc-map-divider" aria-hidden="true"></span>
+            <div class="tc-map-efico">Item five</div>
+          </div>
+          <div class="tc-map-col">
+            <span class="tc-map-divider" aria-hidden="true"></span>
+            <div class="tc-map-efico">Item six</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Topic 02 / 06</span>
+      <span>Section B</span>
+    </div>
+  </section>
+  <section class="slide dark agents-team" data-slide="09" data-topic="06-our-agents">
+    <div class="hero-bg">
+      <div class="glow1"></div>
+      <div class="glow2"></div>
+      <div class="glow3"></div>
+    </div>
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <div class="agents-team-content">
+      <div class="team-head reveal">
+        <h2>Your <span class="g">team</span>.</h2>
+        <p class="sub typed">A short subtitle that supports the headline.</p>
+      </div>
+
+      <div class="team-grid">
+        <div class="team-row top reveal">
+          <div class="agent-card">
+            <div class="ac-name">Card one</div>
+            <div class="ac-role">What it does</div>
+          </div>
+          <div class="team-arrow">→</div>
+          <div class="agent-card">
+            <div class="ac-name">Card two</div>
+            <div class="ac-role">What it does</div>
+          </div>
+          <div class="team-arrow">→</div>
+          <div class="agent-card">
+            <div class="ac-name">Card three</div>
+            <div class="ac-role">What it does</div>
+          </div>
+        </div>
+
+        <div class="team-row bottom reveal">
+          <div class="agent-card">
+            <div class="ac-name">Card four</div>
+            <div class="ac-role">What it does</div>
+          </div>
+          <div class="agent-card">
+            <div class="ac-name">Card five</div>
+            <div class="ac-role">What it does</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-footnote reveal">
+        <b>*</b> Optional footnote — strip if not needed.
+      </div>
+    </div>
+
+    <div class="bridge-mini reveal" aria-hidden="true">
+      <div class="bm-leg"><span class="bm-plank"></span><span class="bm-label">Knowledge</span></div>
+      <div class="bm-leg"><span class="bm-plank"></span><span class="bm-label">Capabilities</span></div>
+      <div class="bm-leg active"><span class="bm-plank"></span><span class="bm-label">Orchestration</span></div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Topic 03 / 06</span>
+      <span>Section C</span>
+    </div>
+  </section>
+  <section class="slide light df-day" data-slide="16" data-topic="07-development-flow">
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <h2 class="reveal">A <span class="g">flow</span> over time.</h2>
+
+    <div class="df-timeline-wrap reveal">
+      <div class="df-timeline">
+        <div class="df-spine"></div>
+        <div class="df-stops">
+
+          <div class="df-stop">
+            <div class="df-badge step"><span class="df-mark"></span>Actor A</div>
+            <div class="df-dot"></div>
+            <div class="df-label">step 1</div>
+          </div>
+
+          <div class="df-stop">
+            <div class="df-dot"></div>
+            <div class="df-label">step 2</div>
+          </div>
+
+          <div class="df-stop">
+            <div class="df-badge step"><span class="df-mark"></span>Actor B</div>
+            <div class="df-dot"></div>
+            <div class="df-label">step 3</div>
+            <div class="df-badge df-below step"><span class="df-mark"></span>Actor C</div>
+          </div>
+
+          <div class="df-stop">
+            <div class="df-dot"></div>
+            <div class="df-label">step 4</div>
+          </div>
+
+          <div class="df-stop df-pr">
+            <div class="df-badge df-skill step"><span class="df-mark"></span>Skill D<span class="df-tag">prompt</span></div>
+            <div class="df-dot"></div>
+            <div class="df-label">step 5</div>
+          </div>
+
+          <div class="df-stop">
+            <div class="df-badge step"><span class="df-gate-ico"></span>Gate E<span class="df-tag">pipeline step</span></div>
+            <div class="df-dot"></div>
+            <div class="df-label">step 6</div>
+            <div class="df-sublabel">pre-merge · gate</div>
+          </div>
+
+          <div class="df-stop">
+            <div class="df-dot"></div>
+            <div class="df-label">step 7</div>
+          </div>
+
+          <div class="df-stop">
+            <div class="df-badge step"><span class="df-mark"></span>Stage F<span class="df-tag">pipeline stage</span></div>
+            <div class="df-dot"></div>
+            <div class="df-label">step 8</div>
+            <div class="df-sublabel">post-merge</div>
+          </div>
+
+          <div class="df-stop df-deploy">
+            <div class="df-dot"></div>
+            <div class="df-label">step 9</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="df-footnote step typed">Failure path → <b>recovery action</b>.</div>
+
+    <div class="bridge-mini reveal" aria-hidden="true">
+      <div class="bm-leg"><span class="bm-plank"></span><span class="bm-label">Knowledge</span></div>
+      <div class="bm-leg"><span class="bm-plank"></span><span class="bm-label">Capabilities</span></div>
+      <div class="bm-leg active"><span class="bm-plank"></span><span class="bm-label">Orchestration</span></div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Topic 04 / 06</span>
+      <span>Section D</span>
+    </div>
+  </section>
+  <section class="slide dark pb-hero" data-slide="20" data-topic="04-playbook-extension">
+    <div class="hero-bg">
+      <div class="glow1"></div>
+      <div class="glow2"></div>
+      <div class="glow3"></div>
+    </div>
+
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <h1 class="reveal">The <span class="g">bridge</span> is your platform.</h1>
+
+    <div class="pb-stage reveal">
+      <!-- Left bank: company toolchain -->
+      <div class="pb-left">
+        <div class="pb-tile">Agents</div>
+        <div class="pb-tile">Skills</div>
+        <div class="pb-tile">MCPs</div>
+        <div class="pb-bank-label">Company toolchain</div>
+      </div>
+
+      <!-- The bridge -->
+      <div class="pb-bridge">
+        <svg class="cable" viewBox="0 0 600 80" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M 0 18 Q 300 78 600 18" stroke="rgba(59,175,90,.10)" stroke-width="7" fill="none"/>
+          <path d="M 0 18 Q 300 78 600 18" stroke="rgba(59,175,90,.45)" stroke-width="1.5" fill="none"/>
+        </svg>
+        <span class="pillar l"></span>
+        <span class="pillar r"></span>
+        <div class="pb-deck">
+          <!-- Planks layer — hidden until the step is .shown -->
+          <div class="pb-deck-planks step">
+            <div class="pb-plank-cell">
+              <span class="pb-plank-num">1</span>
+              <span class="pb-plank-lbl">Plank one</span>
+              <span class="pb-plank-sub">short caption</span>
+            </div>
+            <div class="pb-plank-cell">
+              <span class="pb-plank-num">2</span>
+              <span class="pb-plank-lbl">Plank two</span>
+              <span class="pb-plank-sub">short caption</span>
+            </div>
+            <div class="pb-plank-cell">
+              <span class="pb-plank-num">3</span>
+              <span class="pb-plank-lbl">Plank three</span>
+              <span class="pb-plank-sub">short caption</span>
+            </div>
+            <div class="pb-plank-cell">
+              <span class="pb-plank-num">4</span>
+              <span class="pb-plank-lbl">Plank four</span>
+              <span class="pb-plank-sub">short caption</span>
+            </div>
+            <div class="pb-plank-cell">
+              <span class="pb-plank-num">5</span>
+              <span class="pb-plank-lbl">Plank five</span>
+              <span class="pb-plank-sub">short caption</span>
+            </div>
+            <div class="pb-plank-cell">
+              <span class="pb-plank-num">6</span>
+              <span class="pb-plank-lbl">Plank six</span>
+              <span class="pb-plank-sub">short caption</span>
+            </div>
+            <div class="pb-plank-cell">
+              <span class="pb-plank-num">7</span>
+              <span class="pb-plank-lbl">Plank seven</span>
+              <span class="pb-plank-sub">short caption</span>
+            </div>
+          </div>
+          <!-- Label layer — visible by default, fades when planks unfold -->
+          <div class="pb-deck-label">Your <span class="g">bridge</span></div>
+        </div>
+      </div>
+
+      <!-- Right bank: the developer -->
+      <div class="pb-right">
+        <div class="pb-vscode" aria-hidden="true">
+          <div class="pb-vscode-bar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          </div>
+          <div class="pb-vscode-body">
+            <span class="pb-you">YOU</span>
+          </div>
+        </div>
+        <div class="pb-bank-label">Developer</div>
+      </div>
+    </div>
+
+    <p class="lead reveal pb-lead">
+      Generic <span class="g">tagline</span> under the bridge.
+    </p>
+
+    <div class="pager reveal">
+      <span>Topic 05 / 06</span>
+      <span>Section E</span>
+    </div>
+  </section>
+  <section class="slide dark q-slide" data-slide="26" data-topic="15-closing">
+    <div class="hero-bg">
+      <div class="glow1"></div>
+      <div class="glow2"></div>
+      <div class="glow3"></div>
+    </div>
+
+    <div class="topbar reveal">
+      <div class="logo">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(59,175,90,.25)" stroke-width="2.5"/>
+          <circle class="ringPath" cx="30" cy="30" r="22" fill="none" stroke="#3BAF5A" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="60 200"/>
+        </svg>
+        <span class="word"><b>ifacto</b><small>level up your business</small></span>
+      </div>
+      <div class="topnav"><span>iFacto Deck · YYYY</span></div>
+    </div>
+
+    <div class="q-stage reveal">
+      <h1 class="q-headline">Questions<span class="g">?</span></h1>
+    </div>
+
+    <div class="pager reveal">
+      <span>Closing · Q&A</span>
+      <span>—</span>
+    </div>
+  </section>
+
+
+</div>
+
+<div class="nav">
+  <button id="prev">‹ Prev</button>
+  <span class="count" id="count">1 / 1</span>
+  <button id="next">Next ›</button>
+</div>
+
+<script>
+  // ----- Speed lines for hero -----
+  (function(){
+    const sl = document.getElementById('speedlines');
+    if(!sl) return;
+    for(let i=0;i<24;i++){
+      const el = document.createElement('span');
+      el.className = 'line';
+      el.style.top = (Math.random()*100)+'%';
+      el.style.width = (40 + Math.random()*180)+'px';
+      el.style.animationDuration = (3 + Math.random()*4)+'s';
+      el.style.animationDelay = (-Math.random()*6)+'s';
+      el.style.opacity = (0.2 + Math.random()*0.5);
+      sl.appendChild(el);
+    }
+  })();
+
+  // ----- Ambient speedlines for MCP slide (slower, fainter) -----
+  (function(){
+    const sl = document.getElementById('mcpSpeedlines');
+    if(!sl) return;
+    for(let i=0;i<14;i++){
+      const el = document.createElement('span');
+      el.className = 'line';
+      el.style.top = (Math.random()*100)+'%';
+      el.style.width = (60 + Math.random()*220)+'px';
+      el.style.animationDuration = (9 + Math.random()*6)+'s';
+      el.style.animationDelay = (-Math.random()*15)+'s';
+      el.style.opacity = (0.04 + Math.random()*0.10);
+      sl.appendChild(el);
+    }
+  })();
+
+  // ----- Presenter / Present mode toggle (?present=1 in URL) -----
+  if (location.search.includes('present')) document.body.classList.add('present');
+
+  // ----- Typewriter step reveal: split .typed elements into per-char spans -----
+  // Reusable across slides. Add classes  step typed  to any element you want to
+  // appear character-by-character on click. The CSS handles animation timing.
+  (function(){
+    function splitChars(element){
+      let counter = 0;
+      function walk(node){
+        const children = [...node.childNodes];
+        for(const child of children){
+          if(child.nodeType === 3){                    // text node
+            const frag = document.createDocumentFragment();
+            for(const ch of child.textContent){
+              const span = document.createElement('span');
+              span.className = 'char';
+              span.style.setProperty('--c', counter++);
+              span.textContent = ch;
+              frag.appendChild(span);
+            }
+            node.replaceChild(frag, child);
+          } else if(child.nodeType === 1){             // element — recurse, preserves <span class="g">
+            walk(child);
+          }
+        }
+      }
+      walk(element);
+    }
+    document.querySelectorAll('.typed').forEach(splitChars);
+  })();
+
+  // ----- Pager labels (single source of truth, keyed by data-topic) -----
+  // Framing slides (Welcome / Philosophy / Closing) get a label, no NN/13 counter.
+  // Content topics get "Topic NN / 13" counted in agenda order, not folder order.
+  (function(){
+    const TOTAL = 13;
+    const PAGER = {
+      '01-welcome':               { label:'Welcome',     right:'—' },
+      '02-philosophy':            { label:'Philosophy',  right:'—' },
+      '03-toolchain-concept':     { num:1,               right:'Toolchain' },
+      '16-mcps':                  { num:2,               right:'MCP' },
+      '05-bc-company-guidelines': { num:3,               right:'Knowledge' },
+      '06-our-agents':            { num:4,               right:'Orchestration' },
+      '07-development-flow':      { num:5,               right:'Orchestration' },
+      '04-playbook-extension':    { num:6,               right:'Orchestration' },
+      '08-ai-code-review':        { num:7,               right:'Orchestration' },
+      '09-ai-documentation':      { num:8,               right:'Documentation' },
+      '10-pipeline-analyzer':     { num:9,               right:'Capabilities' },
+      '11-csp-portal':            { num:10,              right:'Capabilities' },
+      '12-telemetry-buddy':       { num:11,              right:'Capabilities' },
+      '13-current-work':          { num:12,              right:'Forward' },
+      '14-expectations':          { num:13,              right:'Contract' },
+      '15-closing':               { label:'Closing',     right:'—' },
+    };
+    document.querySelectorAll('.slide').forEach(slide => {
+      const cfg = PAGER[slide.dataset.topic];
+      if(!cfg) return;
+      const pager = slide.querySelector('.pager');
+      if(!pager) return;
+      const spans = pager.querySelectorAll(':scope > span');
+      if(spans.length < 2) return;
+      spans[0].textContent = (cfg.num != null)
+        ? `Topic ${String(cfg.num).padStart(2,'0')} / ${TOTAL}`
+        : cfg.label;
+      spans[1].textContent = cfg.right;
+    });
+  })();
+
+  // ----- Slide nav with in-slide steps -----
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let i = 0;
+
+  // Reveal the next .step in the current slide. Returns true if a step was revealed,
+  // false if there were no more steps (so caller should advance to the next slide).
+  function stepNext(){
+    const next = slides[i].querySelector('.step:not(.shown)');
+    if(next){ next.classList.add('shown'); return true; }
+    return false;
+  }
+  function stepPrev(){
+    const shown = slides[i].querySelectorAll('.step.shown');
+    if(shown.length){ shown[shown.length-1].classList.remove('shown'); return true; }
+    return false;
+  }
+  function resetSteps(slide){
+    slide.querySelectorAll('.step').forEach(s => s.classList.remove('shown'));
+  }
+
+  function show(n){
+    const next = (n + total) % total;
+    if(next === i && slides[i].classList.contains('active')) return;
+
+    // --- Morph detection -----------------------------------
+    // If the slide we're leaving and the slide we're entering both
+    // contain elements with a matching [data-morph] token, wrap the
+    // swap in a View Transition so the browser auto-morphs the
+    // shared elements (size, position, snapshot cross-fade).
+    // Other transitions fall through to the original instant swap.
+    const aTokens = [...slides[i].querySelectorAll('[data-morph]')].map(e => e.dataset.morph);
+    const bTokens = [...slides[next].querySelectorAll('[data-morph]')].map(e => e.dataset.morph);
+    const hasMorph = !!document.startViewTransition && aTokens.some(t => bTokens.includes(t));
+
+    const swap = () => {
+      resetSteps(slides[i]);
+      slides[i].classList.remove('active');
+      i = next;
+      resetSteps(slides[i]);
+      slides[i].classList.add('active');
+      count.textContent = (i+1)+' / '+total;
+      progress.style.width = ((i+1)/total*100)+'%';
+    };
+
+    if (hasMorph) {
+      document.startViewTransition(swap);
+    } else {
+      resetSteps(slides[i]);                  // hide steps in the slide we're leaving
+      slides[i].classList.remove('active');
+      i = next;
+      resetSteps(slides[i]);                  // and in the slide we're entering (in case it was visited before)
+      requestAnimationFrame(()=>{
+        slides[i].classList.add('active');
+      });
+      count.textContent = (i+1)+' / '+total;
+      progress.style.width = ((i+1)/total*100)+'%';
+    }
+  }
+  document.getElementById('prev').onclick = ()=>{ if(!stepPrev()) show(i-1); };
+  document.getElementById('next').onclick = ()=>{ if(!stepNext()) show(i+1); };
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ if(!stepNext()) show(i+1); }
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){ if(!stepPrev()) show(i-1); }
+    if(e.key==='Home') show(0);
+    if(e.key==='End') show(total-1);
+    if(e.key==='p'||e.key==='P') document.body.classList.toggle('present');
+  });
+  count.textContent = '1 / '+total;
+  progress.style.width = (1/total*100)+'%';
+
+  // ----- Slide picker (click the X / Y counter to open) -----
+  (function(){
+    // Pretty-print a data-topic slug like "16-mcps" -> "MCPs"
+    const SPECIAL = {mcp:'MCP', mcps:'MCPs', ci:'CI', cd:'CD', ai:'AI', bc:'BC', csp:'CSP', al:'AL'};
+    function topicLabel(slide){
+      const raw = (slide.dataset.topic||'').replace(/^\d+-/,'');
+      if(!raw) return '';
+      return raw.split('-').map(w => SPECIAL[w.toLowerCase()] || (w.charAt(0).toUpperCase()+w.slice(1))).join(' ');
+    }
+
+    // Pull a readable label from each slide.
+    // Strategy: first real heading, fallback to pager's right span, fallback to slide number.
+    function textOf(el){
+      // Word-unfold headline (MCP slide): compose acronym + words with spaces
+      const acro = el.querySelector('.mcp-acronym');
+      const words = el.querySelectorAll('.mcp-word');
+      if(acro && words.length){
+        return acro.textContent + ' — ' + [...words].map(w => w.textContent).join(' ');
+      }
+      const clone = el.cloneNode(true);
+      clone.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+      return (clone.textContent||'').trim().replace(/\s+/g,' ').replace(/\.$/,'');
+    }
+    function labelFor(slide){
+      const sel = [
+        'h1','h2',
+        '.agent-headline','.cl-headline','.tc-context-headline',
+        '.mcp-headline','.reframe-headline','.prov-line'
+      ];
+      for(const s of sel){
+        const el = slide.querySelector(s);
+        if(!el) continue;
+        const t = textOf(el);
+        if(t) return t;
+      }
+      const pager = slide.querySelector('.pager span:last-child');
+      if(pager){ const t = pager.textContent.trim(); if(t) return t; }
+      return 'Slide '+(slide.dataset.slide||'');
+    }
+
+    // Build picker DOM
+    const backdrop = document.createElement('div');
+    backdrop.className = 'picker-backdrop';
+    const panel = document.createElement('div');
+    panel.className = 'picker';
+    panel.setAttribute('role','dialog');
+    panel.setAttribute('aria-label','Jump to slide');
+    panel.innerHTML =
+      '<div class="picker-head">' +
+        '<span>Jump to slide</span>' +
+        '<button type="button" class="picker-close" aria-label="Close">esc</button>' +
+      '</div>' +
+      '<div class="picker-list"></div>';
+    document.body.append(backdrop, panel);
+
+    const list = panel.querySelector('.picker-list');
+    const closeBtn = panel.querySelector('.picker-close');
+
+    // Populate once (slide titles don't change at runtime)
+    let lastTopic = null;
+    slides.forEach((slide, idx) => {
+      const topic = topicLabel(slide);
+      if(topic && topic !== lastTopic){
+        const sep = document.createElement('div');
+        sep.className = 'picker-topic-sep';
+        sep.textContent = topic;
+        list.appendChild(sep);
+        lastTopic = topic;
+      }
+      const row = document.createElement('div');
+      row.className = 'picker-item';
+      row.dataset.idx = idx;
+      const num = document.createElement('span');
+      num.className = 'picker-num';
+      num.textContent = String(idx+1).padStart(2,'0');
+      const title = document.createElement('span');
+      title.className = 'picker-title';
+      title.textContent = labelFor(slide);
+      row.append(num, title);
+      row.addEventListener('click', () => { show(idx); close(); });
+      list.appendChild(row);
+    });
+
+    const rows = panel.querySelectorAll('.picker-item');
+    function markCurrent(){
+      rows.forEach(r => r.classList.toggle('current', Number(r.dataset.idx) === i));
+      const cur = panel.querySelector('.picker-item.current');
+      if(cur) cur.scrollIntoView({block:'center'});
+    }
+    function open(){
+      markCurrent();
+      backdrop.classList.add('open');
+      panel.classList.add('open');
+    }
+    function close(){
+      backdrop.classList.remove('open');
+      panel.classList.remove('open');
+    }
+    function isOpen(){ return panel.classList.contains('open'); }
+
+    count.addEventListener('click', () => { isOpen() ? close() : open(); });
+    closeBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && isOpen()){ close(); e.stopPropagation(); }
+    });
+  })();
+</script>
+</body>
+</html>
