@@ -91,7 +91,10 @@ This deck carries the **full iFacto pattern engine**, re-skinned to BC TechDays 
 8. **Closing / Q&A** (coral) — giant "Questions?" with the accent on the punctuation.
 
 **Title & ender slides (recreated 1:1 from the official deck):**
-9. **Title** (`.title-photo-slide`) — the **real title artwork** exported from the PowerPoint, inlined full-bleed as a base64 JPG (`assets/title-bg.jpg`). Pixel-exact, but the text/photo are baked into the image — for a *different* talk, export a fresh title slide and swap the `src`, or use the editable hero pattern (slide 1) instead. (An editable CSS title with a `.speaker-chip` is also available as the hero pattern.)
+9. **Title slides — one real picture per talk.** Each session's title is its exported PowerPoint artwork, shown full-bleed (do **not** recreate it in CSS — that was a rejected attempt). Two ways the deck does it:
+   - **`.title-photo-slide`** — image base64-inlined for a true single-file deck. *Session 1 uses this* (`assets/title-bg.jpg`).
+   - **`.title-img-slide`** — wired to an external file via `background-image:url('title-session2.jpg')`; shows a clean "drop the file here" placeholder until `assets/title-session2.jpg` exists, then lights up full-bleed. *Session 2 (the last slide) uses this.*
+   To add a session: export its title slide from PowerPoint as a JPG, drop it in `assets/`, and point a `.title-img-slide` at it (or base64-inline like session 1 for self-containment). **Pasted-in-chat images can't be used directly — they must be saved as files first.**
 10. **Q&A ender** (`.slide.lavender`, `.qa-slide`) — lavender panel, a huge centred "Q&A" (`.bigword.qa`) with an "Any Questions?" condensed sub-label, **scattered `.scatter` repeats** (filled + `.outline`) bleeding off the edges, a torus roster top-right + warped-grid roster bottom.
 11. **Thank-You ender** (`.slide.lavender`, `.ty-slide`) — same lavender + scatter + roster treatment, big "Thank / You".
 
