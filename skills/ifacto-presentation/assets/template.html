@@ -93,7 +93,7 @@
   .logo .word{display:flex;flex-direction:column;line-height:1}
   .logo .word b{font-weight:700;font-size:26px;letter-spacing:-.6px}
   .logo .word small{font-size:10px;letter-spacing:.05em;opacity:.85;margin-top:3px}
-  .topnav{display:flex;gap:24px;align-items:center;font-weight:500;font-size:14px;opacity:.9}
+  .topnav{display:flex;gap:24px;align-items:center;font-weight:500;font-size:18px;opacity:.9}
   .pillbtn{
     display:inline-flex;align-items:center;gap:8px;
     border:2px solid var(--green);color:var(--green);
@@ -168,7 +168,7 @@
   .pager{
     position:absolute;bottom:30px;left:9vw;right:9vw;
     display:flex;align-items:center;justify-content:space-between;
-    font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500;
+    font-size:16px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500;
   }
   .slide.dark .pager{color:var(--on-dark-soft)}
 
@@ -326,6 +326,147 @@
 
   @media (max-width:900px){
     .topnav{display:none}
+  }
+
+  /* =========================================================
+     Reusable content components
+     ---------------------------------------------------------
+     Universal building blocks you can drop into any slide:
+     - .slide-head ........ section title + sub-headline
+     - .agenda / .ag-item . numbered agenda rows
+     - .twocol .card ...... 2-column card grid (h3 + sub + ul)
+     - .threecol .card .... 3-column card grid (badge + h4 + p)
+     - .toolkit / .tk-card  grid of compact cards (num + name + source + status pill)
+     - .struct / .struct-row  key/value rows (the "k" is the bigger one)
+     - .mindset-stack / .ms-card  horizontal cards (icon + h4 + p)
+     - .ag-detail .........  two-column "profile" page (left meta, right hero img)
+     - .practice-head / .practice-body  caption-anchored figure pairs
+     Sizes are tuned for presentation reading distance and match the
+     Functioneel deck's typography scale (see commit history for rationale).
+     ========================================================= */
+
+  /* --- Slide-head: section title + optional sub-headline --- */
+  .slide-head{margin-bottom:8px}
+  .slide-head h2{font-weight:400;font-size:clamp(40px,4vw,64px);letter-spacing:-.02em}
+  .slide-head p{margin-top:14px;color:var(--muted);font-size:clamp(25px,1.8vw,31px)}
+
+  /* --- Agenda: numbered row stack --- */
+  .agenda{display:flex;flex-direction:column;gap:22px;margin-top:28px}
+  .ag-item{
+    display:grid;grid-template-columns:88px 1fr;gap:28px;align-items:start;
+    background:#fff;border:1px solid var(--line);border-left:6px solid var(--green);
+    border-radius:14px;padding:24px 28px;
+  }
+  .ag-num{font-size:48px;font-weight:300;color:var(--green);letter-spacing:-.02em;line-height:1}
+  .ag-title{font-size:clamp(24px,1.9vw,32px);font-weight:500;letter-spacing:-.015em;color:var(--ink);margin-bottom:6px}
+  .ag-sub{font-size:clamp(23px,1.64vw,26px);color:var(--muted)}
+
+  /* --- Two-column card grid --- */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:28px}
+  .twocol .card{background:#fff;border:1px solid var(--line);border-top:5px solid var(--green);border-radius:14px;padding:32px 30px}
+  .twocol .card h3{font-weight:500;font-size:clamp(24px,1.9vw,30px);letter-spacing:-.01em;margin-bottom:6px}
+  .twocol .card .sub{color:var(--green);font-weight:500;font-size:23px;letter-spacing:.04em;margin-bottom:20px}
+  .twocol .card ul{margin:0;padding-left:0;list-style:none}
+  .twocol .card li{padding:7px 0 7px 22px;position:relative;font-size:clamp(24px,1.72vw,26px);line-height:1.45;color:var(--ink-soft)}
+  .twocol .card li::before{content:"";position:absolute;left:0;top:18px;width:8px;height:2px;background:var(--green)}
+
+  /* --- Three-column card grid (badge + h4 + p) --- */
+  .threecol{display:grid;grid-template-columns:1fr 1fr 1fr;gap:30px;margin-top:32px}
+  .threecol .card{background:#fff;border:1px solid var(--line);border-top:5px solid var(--green);border-radius:14px;padding:32px 26px;display:flex;flex-direction:column;gap:18px}
+  .threecol .card .badge{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;letter-spacing:.04em;background:var(--green)}
+  .threecol .card h4{font-size:clamp(20px,1.5vw,26px);font-weight:600;color:var(--ink)}
+  .threecol .card p{font-size:clamp(23px,1.64vw,26px);color:var(--ink-soft);margin:0;max-width:none}
+
+  /* --- Toolkit: grid of compact cards. Use .mandatory/.permitted/.poc for variants --- */
+  .toolkit{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px;margin-top:22px}
+  .tk-card{
+    display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:14px;
+    background:#fff;border:1px solid var(--line);border-left:5px solid var(--green);
+    border-radius:12px;padding:14px 18px;
+  }
+  .tk-card.permitted{border-left-color:var(--sky)}
+  .tk-card.poc{border-left-color:var(--amber)}
+  .tk-num{font-size:26px;font-weight:600;color:var(--muted)}
+  .tk-body{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .tk-name{font-size:clamp(23px,1.64vw,26px);font-weight:600;color:var(--ink);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tk-source{font-size:18px;color:var(--muted)}
+  .tk-status{font-size:16px;font-weight:700;letter-spacing:.1em;padding:8px 16px;border-radius:20px;color:#fff;white-space:nowrap;background:var(--green)}
+  .tk-status.permitted{background:var(--sky)}
+  .tk-status.poc{background:var(--amber);color:#3a2900}
+
+  /* --- Struct: key/value rows. The .k label is intentionally larger than .v --- */
+  .struct{display:flex;flex-direction:column;gap:10px;margin-top:24px;max-width:1100px}
+  .struct-row{
+    display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:center;
+    background:#fff;border:1px solid var(--line);border-left:4px solid var(--green);
+    border-radius:10px;padding:13px 22px;
+  }
+  .struct-row .k{font-size:clamp(26px,2.1vw,36px);font-weight:600;color:var(--ink);letter-spacing:-.015em}
+  .struct-row .v{font-size:clamp(20px,1.64vw,26px);color:var(--muted);line-height:1.4}
+
+  /* --- Mindset stack: horizontal cards with icon + h4 + p --- */
+  .mindset-stack{display:flex;flex-direction:column;gap:22px;margin-top:24px}
+  .ms-card{
+    display:grid;grid-template-columns:78px 1fr;align-items:center;gap:24px;
+    background:#fff;border:1px solid var(--line);border-left:6px solid var(--green);
+    border-radius:14px;padding:24px 28px;
+  }
+  .ms-card .ico{width:62px;height:62px;border-radius:50%;background:rgba(59,175,90,.12);color:var(--green);font-weight:600;font-size:24px;display:flex;align-items:center;justify-content:center;letter-spacing:-.01em}
+  .ms-card h4{font-size:clamp(20px,1.6vw,26px);font-weight:600;color:var(--ink);margin-bottom:6px}
+  .ms-card p{font-size:clamp(23px,1.72vw,26px);color:var(--ink-soft);margin:0;max-width:none}
+
+  /* --- Profile/detail page: left meta column + right hero image --- */
+  .ag-detail{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;margin-top:40px;align-items:center}
+  .ag-left{display:flex;flex-direction:column;gap:12px}
+  .ag-status-row{margin-bottom:4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .ag-status{display:inline-flex;align-items:center;font-size:18px;font-weight:700;letter-spacing:.12em;padding:9px 22px;border-radius:30px;color:#fff;background:var(--green)}
+  .ag-status.permitted{background:var(--sky)}
+  .ag-status.poc{background:var(--amber);color:#3a2900}
+  .ag-name{font-size:clamp(30px,2.9vw,46px);font-weight:400;letter-spacing:-.02em;line-height:1.05;color:var(--ink)}
+  .ag-source{display:inline-flex;align-items:center;gap:10px;padding:6px 14px;background:var(--bg-alt);border:1px solid var(--line);border-radius:20px;font-size:20px;font-weight:500;color:var(--ink-soft);width:fit-content}
+  .ag-source img{width:22px;height:22px;border-radius:4px}
+  .ag-desc{font-size:clamp(24px,1.8vw,30px);line-height:1.5;color:var(--ink-soft);margin:6px 0 4px;max-width:none}
+  .ag-tag{display:inline-flex;align-items:center;background:rgba(232,193,86,.18);color:#7a5a00;border:1px solid rgba(232,193,86,.5);
+    font-size:16px;font-weight:700;letter-spacing:.12em;padding:7px 16px;border-radius:20px;width:fit-content;margin-top:2px}
+  .ag-meta{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+  .ag-meta .lbl{font-size:16px;font-weight:700;letter-spacing:.14em;color:var(--green);margin-bottom:3px}
+  .ag-meta .val{font-size:clamp(20px,1.56vw,25px);color:var(--ink);line-height:1.4}
+  .ag-right{display:flex;align-items:center;justify-content:center}
+  .ag-right img{max-width:100%;max-height:60vh;border-radius:12px;box-shadow:0 24px 60px -22px rgba(0,0,0,.25);border:1px solid var(--line)}
+
+  /* --- Practice: dark band header above a figure grid (for screenshot walkthroughs) --- */
+  .practice-head{position:absolute;top:0;left:0;right:0;background:var(--black);color:var(--on-dark);
+    display:flex;align-items:center;justify-content:space-between;padding:18px 9vw;gap:24px;z-index:4}
+  .practice-head .title{font-size:clamp(18px,1.4vw,24px);font-weight:500;letter-spacing:-.01em}
+  .practice-body{margin-top:60px;display:grid;gap:30px;height:calc(100% - 100px);align-items:center}
+  .practice-body.cols-1{grid-template-columns:1fr}
+  .practice-body.cols-2{grid-template-columns:1fr 1fr}
+  .practice-body figure{margin:0;display:flex;flex-direction:column;gap:14px;align-items:center;max-height:100%}
+  .practice-body figure img{max-width:100%;max-height:54vh;border:1px solid var(--line);border-radius:10px;box-shadow:0 24px 60px -22px rgba(0,0,0,.22)}
+  .practice-body figcaption{font-size:clamp(20px,1.56vw,25px);color:var(--ink-soft);text-align:center;line-height:1.45}
+
+  /* --- Canonical box hover spotlight, applied to all reusable card components.
+         Same recipe as .tc-pillar / .mcp-box. The revealUp keyframe (above)
+         is intentionally written to release `transform` at 100%, so author
+         hover transforms apply without needing !important here. --- */
+  .ag-item, .twocol .card, .threecol .card, .tk-card, .ms-card, .struct-row, .ag-meta > div{
+    transition: transform .3s cubic-bezier(.2,.8,.25,1),
+                box-shadow .3s ease, border-color .3s ease, background .35s ease;
+    cursor: pointer; will-change: transform;
+  }
+  .ag-item:hover, .twocol .card:hover, .threecol .card:hover, .tk-card:hover,
+  .ms-card:hover, .struct-row:hover, .ag-meta > div:hover{
+    transform: translateY(-4px) scale(1.04);
+    z-index: 10; position: relative;
+    border-color: var(--green);
+    background: linear-gradient(180deg,
+      rgba(59,175,90,.11) 0%,
+      rgba(59,175,90,.035) 42%,
+      #fff 100%);
+    box-shadow:
+      inset 0 50px 60px -45px rgba(59,175,90,.38),
+      0 24px 44px -22px rgba(59,175,90,.48),
+      0 0 0 1px rgba(59,175,90,.18);
   }
 
   /* =========================================================
@@ -4034,6 +4175,57 @@
       <span>Section E</span>
     </div>
   </section>
+
+  <!-- ============ EXAMPLE — Single picture (full-width centered) ============
+       Pattern for one screenshot per slide. Uses the `.practice-head` dark band
+       at the top + `.practice-body.cols-1` for a single centered figure. The
+       <img> automatically gets hover zoom + click-to-lightbox from the global
+       script. Swap the picsum.photos URL with your own asset path:
+         <img src="assets/your-screenshot.png" alt="…">
+       ============================================================== -->
+  <section class="slide light" data-slide="24" data-topic="examples-picture-single">
+    <div class="practice-head">
+      <div class="title">Picture pattern <em>—</em> single, centered</div>
+      <span class="ag-status">EXAMPLE</span>
+    </div>
+    <div class="practice-body cols-1">
+      <figure class="reveal">
+        <img src="https://picsum.photos/seed/single/1400/800" alt="Single picture example">
+        <figcaption>One picture, centered, with a caption underneath. Click the image to open it in the lightbox; ESC or the backdrop dismisses.</figcaption>
+      </figure>
+    </div>
+    <div class="pager reveal">
+      <span>Example · picture</span>
+      <span>Single</span>
+    </div>
+  </section>
+
+  <!-- ============ EXAMPLE — Two pictures side-by-side ============
+       Pattern for paired screenshots (before/after, two angles, etc.).
+       `.practice-body.cols-2` gives a 1:1 grid. Each <figure> gets its own
+       caption. Same hover/lightbox behaviour applies automatically.
+       ============================================================== -->
+  <section class="slide light" data-slide="25" data-topic="examples-picture-pair">
+    <div class="practice-head">
+      <div class="title">Picture pattern <em>—</em> two side-by-side</div>
+      <span class="ag-status">EXAMPLE</span>
+    </div>
+    <div class="practice-body cols-2">
+      <figure class="reveal">
+        <img src="https://picsum.photos/seed/left/1200/800" alt="Left example">
+        <figcaption>Left figure: short caption explaining what the picture shows.</figcaption>
+      </figure>
+      <figure class="reveal">
+        <img src="https://picsum.photos/seed/right/1200/800" alt="Right example">
+        <figcaption>Right figure: pair it with a complementary caption (e.g., before / after, two views).</figcaption>
+      </figure>
+    </div>
+    <div class="pager reveal">
+      <span>Example · picture</span>
+      <span>Pair</span>
+    </div>
+  </section>
+
   <section class="slide dark q-slide" data-slide="26" data-topic="15-closing">
     <div class="hero-bg">
       <div class="glow1"></div>
