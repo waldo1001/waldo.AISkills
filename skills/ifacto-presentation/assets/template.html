@@ -64,9 +64,19 @@
   .slide.active .reveal:nth-child(4){animation-delay:.42s}
   .slide.active .reveal:nth-child(5){animation-delay:.54s}
   .slide.active .reveal:nth-child(6){animation-delay:.66s}
+  /* IMPORTANT: 100% intentionally omits `transform`.
+     Combined with `animation-fill-mode: both` on `.slide.active .reveal`,
+     specifying `transform: none` here would persist after the animation
+     ends and block any `:hover { transform: ... }` rule on a .reveal box
+     (author !important in the cascade does NOT reliably beat an animation's
+     persisted final value in Chrome/Edge for this case). By dropping the
+     property at 100% we release `transform` back to the cascade — the entry
+     animation still visually slides from `translateY(28px)` to the cascade
+     value (`none`), and hover transforms work as written. */
   @keyframes revealUp{
     0%{opacity:0;transform:translateY(28px)}
-    100%{opacity:1;transform:none}
+    99%{opacity:1;transform:translateY(0)}
+    100%{opacity:1}
   }
 
   /* ===== Top bar ===== */
@@ -241,6 +251,75 @@
   }
   .picker-item.current .picker-num{color:var(--green)}
   .picker-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ===== Image hover zoom + click-to-lightbox =====
+     Any <img> inside a .slide gets a gentle hover lift (1.05× + soft shadow)
+     and a zoom-in cursor. Clicking the image opens a fullscreen lightbox
+     (centered on a blurred backdrop, with an `esc` button top-right).
+     Dismiss with ESC, clicking the backdrop, or the close button.
+     The lightbox is built lazily by JS; no markup needed in slides. */
+  .slide img{
+    transition: transform .35s cubic-bezier(.2,.8,.25,1), box-shadow .35s ease;
+    cursor: zoom-in;
+    will-change: transform;
+  }
+  .slide img:hover{
+    transform: scale(1.05);
+    box-shadow: 0 30px 70px -25px rgba(0,0,0,.45);
+    position: relative;
+    z-index: 30;
+  }
+  .lightbox{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    padding:5vh 5vw;
+    opacity:0;pointer-events:none;
+    transition:opacity .25s ease;
+    cursor:zoom-out;
+  }
+  .lightbox.open{opacity:1;pointer-events:auto}
+  .lightbox img{
+    max-width:100%;max-height:100%;border-radius:14px;
+    box-shadow:0 40px 120px rgba(0,0,0,.65);
+    transform:scale(.92);
+    transition:transform .3s cubic-bezier(.2,.8,.25,1);
+    cursor:default;
+  }
+  .lightbox.open img{transform:scale(1)}
+  .lightbox-close{
+    position:fixed;top:24px;right:28px;z-index:210;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);color:#fff;
+    font-family:"Poppins",sans-serif;font-size:13px;
+    letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+    padding:9px 16px;border-radius:24px;cursor:pointer;
+    backdrop-filter:blur(6px);
+  }
+  .lightbox-close:hover{background:rgba(255,255,255,.18)}
+
+  /* ===== Back-link chip ===== =
+     A subtle pill button for cross-slide navigation (e.g. "← AI Toolkit").
+     Drop anywhere with `data-target="<slide-data-topic>"` — JS wires the click.
+     Example:
+       <a class="back-link" data-target="04-toolkit" href="#">&larr; AI Toolkit</a>
+     Styled for light slides; on dark slides, override `color` + `border-color`. */
+  .back-link{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:"Poppins",sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    padding:8px 16px;border-radius:30px;
+    color:var(--ink-soft);background:transparent;
+    border:1px solid var(--line);cursor:pointer;text-decoration:none;
+    transition:color .2s ease,border-color .2s ease,background .2s ease,transform .2s ease;
+  }
+  .back-link:hover{
+    color:var(--green);border-color:var(--green);
+    background:rgba(59,175,90,.06);
+    transform:translateX(-2px);
+  }
+  .slide.dark .back-link{color:var(--on-dark-soft);border-color:rgba(255,255,255,.15)}
+  .slide.dark .back-link:hover{color:#7ed79a;border-color:rgba(126,215,154,.55);background:rgba(59,175,90,.12)}
 
   .progress{position:fixed;left:0;top:0;height:3px;background:var(--green);z-index:60;transition:width .45s ease;
     box-shadow:0 0 20px var(--green-glow)}
@@ -4167,6 +4246,68 @@
   });
   count.textContent = '1 / '+total;
   progress.style.width = (1/total*100)+'%';
+
+  // ----- Image lightbox (click any slide image to enlarge) -----
+  // Discovers every <img> inside any .slide on load and wires:
+  //   click → open lightbox with that image centered/full-size
+  //   ESC, backdrop click, or .lightbox-close button → close
+  // Clicks on the image itself inside the lightbox do NOT close (so users
+  // can interact with what's shown without a stray click dismissing it).
+  // The overlay is built lazily — no markup required in slides.
+  (function(){
+    const targets = document.querySelectorAll('.slide img');
+    if(!targets.length) return;
+
+    const lb = document.createElement('div');
+    lb.className = 'lightbox';
+    lb.setAttribute('role','dialog');
+    lb.setAttribute('aria-label','Image preview');
+    const img = document.createElement('img');
+    img.alt = '';
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'lightbox-close';
+    closeBtn.textContent = 'esc';
+    lb.append(img, closeBtn);
+    document.body.appendChild(lb);
+
+    function open(src, alt){
+      img.src = src;
+      img.alt = alt || '';
+      lb.classList.add('open');
+    }
+    function close(){ lb.classList.remove('open'); }
+
+    targets.forEach(el => {
+      el.style.cursor = 'zoom-in';
+      el.addEventListener('click', e => { e.stopPropagation(); open(el.currentSrc || el.src, el.alt); });
+    });
+    lb.addEventListener('click', e => { if(e.target === lb) close(); });
+    closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && lb.classList.contains('open')){ close(); e.stopPropagation(); }
+    });
+  })();
+
+  // ----- Back-link cross-slide navigation -----
+  // Any `<a class="back-link" data-target="<data-topic>">` jumps to the
+  // slide with that data-topic when clicked. Useful for "← Overview" chips
+  // on detail slides. Pair with the `.back-link` styles above.
+  (function(){
+    function indexByTopic(topic){
+      for(let k=0; k<slides.length; k++){
+        if(slides[k].dataset.topic === topic) return k;
+      }
+      return -1;
+    }
+    document.querySelectorAll('.back-link[data-target]').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const idx = indexByTopic(link.dataset.target);
+        if(idx >= 0) show(idx);
+      });
+    });
+  })();
 
   // ----- Slide picker (click the X / Y counter to open) -----
   (function(){
