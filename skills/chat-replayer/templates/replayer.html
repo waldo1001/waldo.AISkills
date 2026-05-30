@@ -423,7 +423,7 @@
   let playing = false;
   let playTimer = null;
   // Speed: 1 = 1×, 2 = 2×, 4 = 4×, 0 = instant (no animation)
-  let SPEED = 1;
+  let SPEED = 4;  // default playback speed: 4x
   const isInstant = () => SPEED === 0;
   const speedMul = () => (SPEED === 0 ? 1 : SPEED);
 
@@ -1131,7 +1131,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key === ' ') { e.preventDefault(); playUntilNextUser(); }
+    if (e.key === ' ') { e.preventDefault(); if (playing) { stopPlay(); } else { playUntilNextUser(); } }  // Space: play next side, or pause if mid-play
     else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
     else if (e.key === 'Home') { e.preventDefault(); reset(); }

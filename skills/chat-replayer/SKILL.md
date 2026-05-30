@@ -182,9 +182,10 @@ Only `redactions.json` and the final `.html` should remain in the working direct
 **Present the file** to the user with `present_files`. Briefly explain:
 
 - Open in any modern browser.
-- **Space** or **→** reveals the next turn (use this during presenting).
-- **←** hides the last turn. **Home** resets. **End** reveals all.
+- **Space** plays the next side (a user prompt, then that turn's responses); pressing it again **while a turn is playing pauses it**, and once more resumes (play/pause toggle).
+- **→** reveals one block at a time. **←** hides the last turn. **Home** resets. **End** reveals all.
 - **P** toggles auto-play.
+- Default playback speed is **4×** (switch to 1×/2×/⚡-instant with the speed buttons in the footer).
 - Drag-drop a different transcript JSON onto the page to swap content without rebuilding.
 
 ---

@@ -3626,6 +3626,92 @@
   .title-img-slide .title-img-hint .h{font-family:"Montagu Slab",Georgia,serif;font-weight:700;color:var(--ink);font-size:clamp(22px,2.2vw,34px)}
   .title-img-slide .title-img-hint code{font-family:ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--line);
     border-radius:8px;padding:4px 10px;color:var(--ink);font-size:.95em}
+
+  /* ===== Interactive: hover "spotlight" on cards/boxes (opt-in via .zoomable) =====
+     Add class="zoomable" to any card-like element to make it lift, scale, and glow
+     indigo on hover. Brand-aware port of the iFacto-deck pattern. */
+  .zoomable{
+    transition: transform .3s cubic-bezier(.2,.8,.25,1),
+                box-shadow .3s ease,
+                border-color .3s ease,
+                background .35s ease;
+    cursor: pointer;
+    will-change: transform;
+  }
+  .zoomable:hover{
+    transform: translateY(-4px) scale(1.04);
+    z-index: 10;
+    position: relative;
+    border-color: var(--indigo);
+    background: linear-gradient(180deg,
+      rgba(97,101,230,.11) 0%,
+      rgba(97,101,230,.035) 42%,
+      #fff 100%);
+    box-shadow:
+      inset 0 50px 60px -45px rgba(97,101,230,.38),
+      0 24px 44px -22px rgba(97,101,230,.48),
+      0 0 0 1px rgba(97,101,230,.18);
+  }
+  /* On colour panels the spotlight is white-tinted, not indigo-on-white */
+  .slide.fill .zoomable:hover{
+    background: linear-gradient(180deg,
+      rgba(255,255,255,.18) 0%,
+      rgba(255,255,255,.06) 42%,
+      rgba(255,255,255,.04) 100%);
+    border-color: rgba(255,255,255,.6);
+    box-shadow:
+      inset 0 50px 60px -45px rgba(255,255,255,.35),
+      0 24px 44px -22px rgba(0,0,0,.35),
+      0 0 0 1px rgba(255,255,255,.25);
+  }
+
+  /* ===== Interactive: zoom-on-hover images (opt-in via .zoomable-img) =====
+     Cursor turns to zoom-in; clicking opens the lightbox. Hover gently scales
+     and adds a soft shadow so the image reads as "click me". */
+  .zoomable-img{
+    transition: transform .35s cubic-bezier(.2,.8,.25,1), box-shadow .35s ease;
+    cursor: zoom-in;
+    will-change: transform;
+  }
+  .zoomable-img:hover{
+    transform: scale(1.05);
+    box-shadow: 0 30px 70px -25px rgba(0,0,0,.45);
+    position: relative;
+    z-index: 30;
+  }
+
+  /* ===== Lightbox — click any .zoomable-img to focus full-screen =====
+     A single overlay is built once by the JS at the bottom. Click backdrop
+     or press Esc to close. */
+  .lightbox{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    padding:5vh 5vw;
+    opacity:0;pointer-events:none;
+    transition:opacity .25s ease;
+    cursor:zoom-out;
+  }
+  .lightbox.open{opacity:1;pointer-events:auto}
+  .lightbox img{
+    max-width:100%;max-height:100%;
+    border-radius:14px;
+    box-shadow:0 40px 120px rgba(0,0,0,.65);
+    transform:scale(.92);
+    transition:transform .3s cubic-bezier(.2,.8,.25,1);
+    cursor:default;
+  }
+  .lightbox.open img{transform:scale(1)}
+  .lightbox-close{
+    position:fixed;top:24px;right:28px;z-index:210;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    color:#fff;
+    font-family:"Barlow Condensed",sans-serif;
+    font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+    padding:9px 16px;border-radius:24px;cursor:pointer;
+    backdrop-filter:blur(6px);
+  }
+  .lightbox-close:hover{background:rgba(255,255,255,.18)}
 </style>
 </head>
 <body>
@@ -3669,7 +3755,7 @@
       <span>—</span>
     </div>
   </section>
-  <section class="slide light" data-slide="02" data-topic="02-philosophy">
+  <section class="slide light prov" data-slide="02" data-topic="02-philosophy">
     <div class="topbar reveal">
       <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
       <div class="topnav"><span>Session 06</span></div>
@@ -3687,6 +3773,61 @@
       <span>—</span>
     </div>
   </section>
+
+  <!-- ============================================================
+       MCP HUB — light. Eyebrow + acronym expansion, three boxes,
+       a chip cluster with SVG spokes, and streaking speedlines.
+       ============================================================ -->
+  <section class="slide light mcp" data-slide="03" data-topic="03-toolchain-concept">
+    <div class="mcp-speedlines" aria-hidden="true">
+      <div class="line" style="top:18%;width:180px;animation-duration:3.2s;animation-delay:.1s"></div>
+      <div class="line" style="top:42%;width:220px;animation-duration:4.1s;animation-delay:.7s"></div>
+      <div class="line" style="top:67%;width:140px;animation-duration:2.8s;animation-delay:1.4s"></div>
+      <div class="line" style="top:81%;width:190px;animation-duration:3.7s;animation-delay:.3s"></div>
+    </div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <div class="mcp-content">
+      <h2 class="mcp-headline reveal">MCP<span class="mcp-acronym mcp-expand step typed"> &mdash; Model Context Protocol</span></h2>
+      <p class="mcp-metaphor step reveal">USB-C for <b>agents</b>.</p>
+      <div class="mcp-boxes step">
+        <div class="mcp-box zoomable">
+          <div class="mcp-box-eyebrow">Standardized</div>
+          <div class="mcp-box-text">One protocol. Any tool. Any agent.</div>
+        </div>
+        <div class="mcp-box zoomable">
+          <div class="mcp-box-eyebrow">Universal</div>
+          <div class="mcp-box-text">Same MCP works in VS Code, CLI, or CI pipeline.</div>
+        </div>
+        <div class="mcp-box zoomable">
+          <div class="mcp-box-eyebrow">Pluggable</div>
+          <div class="mcp-box-text">Drop in a server &mdash; the agent immediately has new capabilities.</div>
+        </div>
+      </div>
+      <div class="mcp-chips step">
+        <svg class="mcp-spokes" viewBox="0 0 980 200" preserveAspectRatio="none" aria-hidden="true">
+          <line class="spoke" x1="490" y1="200" x2="70" y2="200"/>
+          <line class="spoke" x1="490" y1="200" x2="200" y2="200"/>
+          <line class="spoke" x1="490" y1="200" x2="330" y2="200"/>
+          <line class="spoke" x1="490" y1="200" x2="490" y2="200"/>
+          <line class="spoke" x1="490" y1="200" x2="580" y2="200"/>
+          <line class="spoke" x1="490" y1="200" x2="710" y2="200"/>
+          <line class="spoke" x1="490" y1="200" x2="840" y2="200"/>
+        </svg>
+        <span class="mcp-chip">Tool A</span>
+        <span class="mcp-chip">Tool B</span>
+        <span class="mcp-chip">Tool C</span>
+        <span class="mcp-chip">Tool D</span>
+        <span class="mcp-chip">Tool E</span>
+        <span class="mcp-chip">Tool F</span>
+        <span class="mcp-chip">Tool G</span>
+      </div>
+    </div>
+    <div class="pager reveal"><span>Topic 03 / 06</span><span>MCP</span></div>
+  </section>
+
   <section class="slide light tc-context" data-slide="04" data-topic="03-toolchain-concept">
     <div class="topbar reveal">
       <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
@@ -3855,6 +3996,72 @@
       <span>Section C</span>
     </div>
   </section>
+
+  <!-- ============================================================
+       ANIMATED BRIDGE — fill.ink panel. Two pillars rise, planks drop in
+       sequence, a shimmer sweeps the deck, then a slow afterglow breathes.
+       Use sparingly — this is the visual climax of the deck.
+       ============================================================ -->
+  <section class="slide fill ink" data-slide="14" data-topic="06-bridge-moment">
+    <div class="mesh" aria-hidden="true"><svg class="mesh-svg" viewBox="0 0 957.745 827.733" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#bc-mesh-torus"/></svg></div>
+    <div class="wave hero" data-wave-lines="32" aria-hidden="true"></div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <div class="hero-content" style="text-align:center;max-width:none;padding:0;">
+      <p class="eyebrow reveal" style="margin-bottom:20px;">The Climax Moment</p>
+      <h1 class="reveal">Build the <span class="g">bridge</span>.</h1>
+    </div>
+
+    <div class="bridge-stage">
+      <div class="bridge">
+        <div class="bridge-pillar left"></div>
+        <div class="bridge-pillar right"></div>
+        <div class="bridge-deck">
+          <span class="plank" style="--i:0"></span>
+          <span class="plank" style="--i:1"></span>
+          <span class="plank" style="--i:2"></span>
+          <span class="plank" style="--i:3"></span>
+          <span class="plank" style="--i:4"></span>
+          <span class="plank" style="--i:5"></span>
+          <span class="plank" style="--i:6"></span>
+          <span class="plank" style="--i:7"></span>
+          <span class="plank" style="--i:8"></span>
+          <span class="plank" style="--i:9"></span>
+          <span class="plank" style="--i:10"></span>
+          <span class="plank" style="--i:11"></span>
+        </div>
+        <div class="bridge-shimmer"></div>
+      </div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Topic 04 / 06</span>
+      <span>Bridge</span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       DEMO GATE — black, centered. Big typewriter "Demo N" + sub-label.
+       Use as the transition into a live demo.
+       ============================================================ -->
+  <section class="slide tc-demo" data-slide="15" data-topic="07-demo-gate">
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <div class="tc-demo-center">
+      <h1 class="tc-demo-word typed">Demo 1</h1>
+      <p class="tc-demo-launch reveal" style="color:rgba(255,255,255,.65);">Short sub-label &mdash; what the audience is about to see</p>
+    </div>
+    <div class="pager reveal">
+      <span>Topic 05 / 06</span>
+      <span>Demo</span>
+    </div>
+  </section>
+
   <section class="slide light df-day" data-slide="16" data-topic="07-development-flow">
     <div class="topbar reveal">
       <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
@@ -4401,6 +4608,46 @@
     backdrop.addEventListener('click', close);
     document.addEventListener('keydown', e => {
       if(e.key === 'Escape' && isOpen()){ close(); e.stopPropagation(); }
+    });
+  })();
+
+  /* ----- Image lightbox -----
+     Any <img class="zoomable-img"> opens full-screen on click. Click backdrop or
+     press Esc to close. The overlay is built once and reused. */
+  (function(){
+    const targets = document.querySelectorAll('img.zoomable-img');
+    if(!targets.length) return;
+
+    const lb = document.createElement('div');
+    lb.className = 'lightbox';
+    lb.setAttribute('role','dialog');
+    lb.setAttribute('aria-label','Image preview');
+    const img = document.createElement('img');
+    img.alt = '';
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'lightbox-close';
+    closeBtn.textContent = 'esc';
+    lb.append(img, closeBtn);
+    document.body.appendChild(lb);
+
+    function open(src, alt){
+      img.src = src;
+      img.alt = alt || '';
+      lb.classList.add('open');
+    }
+    function close(){ lb.classList.remove('open'); }
+
+    targets.forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        open(el.currentSrc || el.src, el.alt);
+      });
+    });
+    lb.addEventListener('click', e => { if(e.target === lb) close(); });
+    closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && lb.classList.contains('open')){ close(); e.stopPropagation(); }
     });
   })();
 </script>
