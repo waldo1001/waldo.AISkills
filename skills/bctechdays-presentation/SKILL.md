@@ -1,6 +1,6 @@
 ---
 name: bctechdays-presentation
-description: Build HTML presentation decks styled like the BC TechDays 2026 brand — a LIGHT cool-grey canvas, RED Montagu Slab slab-serif titles (#F7514F), Corbel body, full-bleed indigo/coral/magenta colour "moment" panels, the real BC TechDays scan-line "glitch wave" + wireframe-roster motif and torn-ticket "BC/NAV TECH DAYS 2026 · mibuso.com" logo (both inlined from the official PowerPoint), and the full pattern engine (claim-stack prov, centered tc-context, six-pillar tc-map, MCP hub, animated bridge, df-day timeline, htrack stage-tracker, agents-team grid, pb-hero playbook bridge, lavender Q&A/Thank-You enders). Trigger whenever the user asks for a BC TechDays deck, BC TechDays slides, a BC TechDays-branded presentation, or a deck for a BC TechDays / mibuso session or talk. Business Central / BC / NAV conference talks default to this look.
+description: Build HTML presentation decks styled like the BC TechDays 2026 brand — a LIGHT cool-grey canvas, RED Montagu Slab slab-serif titles (#F7514F), Corbel body, full-bleed indigo/coral/magenta colour "moment" panels, the real BC TechDays scan-line "glitch wave" + wireframe-roster motif and torn-ticket "BC/NAV TECH DAYS 2026 · mibuso.com" logo (both inlined from the official PowerPoint), and the full pattern engine (claim-stack prov, centered tc-context, six-pillar tc-map, MCP hub, animated bridge, df-day timeline, htrack stage-tracker, agents-team grid, pb-hero playbook bridge, three-node storylines, pipeline analyzer, hub-and-spokes CSP, hands-up audience cards, replay overlay for embedded chat replays, narrative presenter notes, View Transitions / element morph, extended chip types, SVG zoom, lavender Q&A/Thank-You enders). Trigger whenever the user asks for a BC TechDays deck, BC TechDays slides, a BC TechDays-branded presentation, or a deck for a BC TechDays / mibuso session or talk. Business Central / BC / NAV conference talks default to this look.
 ---
 
 # BC TechDays presentation skill
@@ -107,10 +107,26 @@ This deck carries the **full pattern engine** — every pattern below is wired i
 15. **Demo gate** (`.slide.tc-demo`) — black, centered. Big "Demo N" typewriter word + a small `.tc-demo-launch` sub-label. Used as the transition into a live demo.
 16. **Closing question** (`.slide.fill.coral.q-slide`) — giant centred "Questions?" with the accent on the punctuation.
 
+### Dark-canvas content patterns (`.slide.fill` or dark variants)
+
+9. **Indigo panel** (`.slide.fill`, default) — eyebrow + headline + lead with the `.mesh` torus in the corner and a `.wave.hero` glitch wave. The brand's saturated energy.
+10. **Magenta / coral panel** (`.slide.fill.magenta`, `.slide.fill.coral`) — colour modifiers. Use coral for chapter closers, magenta for accents.
+11. **Stage tracker** (`.htrack` + `.htrack-cap`) — a horizontal row of `.htrack-box` chips with three states: `.done` (greyed), `.on` (lit indigo with `.hb-dot`), `.todo` (faint). Sits inside an indigo `.slide.fill` and shows progress through the 9-box harness across the deck. Pair with a `.htrack-cap` caption.
+12. **Animated bridge** (`.slide.fill.ink` + `.bridge-stage`) — *"Fit the harness"* moment. Two `.bridge-pillar`s rise, then `.plank`s drop in sequence, a `.bridge-shimmer` sweeps, and the deck breathes. Use sparingly — it's the visual climax.
+13. **Agent-team grid** (`.slide.fill.agents-team`) — rows of `.agent-card`s with connector `.team-arrow`s and a `.team-footnote`. Optionally end with a `.bridge-mini` breadcrumb (Knowledge → Capabilities → Orchestration).
+14. **Playbook bridge / pb-hero** (`.slide.fill.pb-hero` or `.slide.fill.ink.pb-hero`) — *"X over here is delivered, via Z, to Y over there."* Left bank of tiles (`.pb-tile` + `.pb-bank-label`) → glowing indigo `.pb-bridge` with `.pillar`, `.cable`, `.pb-deck-planks.step`, and a `.pb-deck-label` → VS Code-style `.pb-vscode` window on the right. Click expands the deck and drops in labelled planks. Hover scales individual planks.
+15. **Demo gate** (`.slide.tc-demo`) — black, centered. Big "Demo N" typewriter word + a small `.tc-demo-launch` sub-label. Used as the transition into a live demo.
+16. **Closing question** (`.slide.fill.coral.q-slide`) — giant centred "Questions?" with the accent on the punctuation.
+17. **Three-node storyline** (`.cr-stage`) — three-column grid with icon nodes that light up on step-reveal. `.cr-node.shown .cr-icon` gets an indigo glow; the centre node (`.cr-n2`) pulses. Rule chips stagger in with `animation-delay` per `:nth-child`. Use for code-review, CI, or any "before → engine → after" narrative.
+18. **Documentation storyline** — same three-node concept as CR but dark-themed with a side list. `.doc-stage` grid with `doc-flow` left and `doc-list` right. List items animate in via `:has(.doc-n2.shown)`.
+19. **Pipeline analyzer** (`.pa-stage`) — terminal-emulator left pane | bridge connector | chat-bubble right pane. `.pa-pane.left` is monospace dark; `.pa-pane.right` is white. `.pa-line.err` for red error highlights; `.red-word::after` for inline error backgrounds. The `.pb-disc` bridge pulses between panes.
+20. **CSP portal hub-and-spokes** (`.csp-hub`) — central radial-gradient hub (220×220 circle) with 6 absolutely-positioned `.csp-cap` capability cards and animated dashed `.csp-spokes` SVG lines. Each cap has `top/left` positioning around the hub.
+21. **Hands-up question cards** (`.hands-stack` + `.hand-card`) — dark glassmorphism cards for audience engagement. Each card: emoji `.hand-ico` (60px circle) + `.hand-q` question text. Use with `.step` per card for click-reveal. Great for "raise your hand if…" moments.
+
 ### Lavender enders
 
-17. **Q&A** (`.slide.lavender.qa-slide`) — lavender panel `#C8C3F5`, a huge centred "Q&A" (`.bigword.qa`) with an "Any Questions?" condensed sub-label, **scattered `.scatter` repeats** (filled + `.outline`) bleeding off the edges, a `.roster.tr` torus top-right + warped `.roster.bc` plane bottom.
-18. **Thank-You** (`.slide.lavender.ty-slide`) — same lavender + scatter + roster treatment, big "Thank / You" stacked with the second word right-aligned (`.ty1` / `.ty2`).
+22. **Q&A** (`.slide.lavender.qa-slide`) — lavender panel `#C8C3F5`, a huge centred "Q&A" (`.bigword.qa`) with an "Any Questions?" condensed sub-label, **scattered `.scatter` repeats** (filled + `.outline`) bleeding off the edges, a `.roster.tr` torus top-right + warped `.roster.bc` plane bottom.
+23. **Thank-You** (`.slide.lavender.ty-slide`) — same lavender + scatter + roster treatment, big "Thank / You" stacked with the second word right-aligned (`.ty1` / `.ty2`).
 
 Panel modifiers: `.slide.fill` is indigo by default; add `.magenta`, `.coral`, or `.ink` to vary; `.slide.lavender` is the light-purple `#C8C3F5` word-slide (black type). The wave auto-picks a palette that reads on each background. The lavender enders use the real wireframe **rosters** (`.roster.tr` torus top-right, `.roster.bc` warped plane bottom) — a more visible placement of the same mesh symbols.
 
@@ -168,6 +184,160 @@ Two opt-in patterns let the deck feel alive when the presenter mouses around. Bo
 ```
 
 Don't apply `.zoomable` to elements that already animate on hover (like `.tc-pillar` or `.agent-card.anchor`) — it'll double up. And don't put `.zoomable-img` on tiny icons; reserve it for content images the audience actually needs to read.
+
+## Extended chip types
+
+Beyond the basic grid cards, the template carries several specialised chip/card components:
+
+- **`.spec-chip`** — Specialist/persona chip with an amber dot indicator. Use for named agent roles or people. The dot is `::before { background: var(--amber) }`.
+- **`.model-chip`** — LLM model chip with colour-coded dots: `.opus` = magenta, `.sonnet` = indigo, `.gpt` = cyan. Use for listing available models.
+- **`.kn-chip`** — Knowledge-source chip with a CSS-drawn three-line stack icon (`.kn-icon`). Use for knowledge bases, documentation references, data sources.
+- **`.skill-card`** — Skill/capability card with a CSS-drawn file icon (`.skc-icon`). Larger than chips; supports a title + short caption. Use for listing agent skills or extension points.
+
+All chips share the same hover recipe: `translateY(-2px) scale(1.12)`, indigo border, inset glow. On `.slide.fill` the spotlight flips to white-tint automatically.
+
+## View Transitions / element morph
+
+The deck supports the **View Transitions API** for shared-element morphing between slides. When two slides both contain elements with a matching `data-morph` token, the transition animates the element smoothly from its position on slide N to its position on slide N+1.
+
+```html
+<!-- Slide N: a small chip -->
+<span data-morph="bcci" class="chip">BC Code Intelligence</span>
+
+<!-- Slide N+1: expanded hero -->
+<div data-morph="bcci" class="bcci-hero">
+  <h2>BC Code Intelligence</h2>
+  <p class="lead">…</p>
+</div>
+```
+
+**How it works:** On `show(n)`, the JS collects `[data-morph]` tokens from both the leaving and entering slides. If any token appears in both AND `document.startViewTransition` exists, it wraps the swap in a View Transition. Falls back to instant swap on unsupported browsers.
+
+**CSS:** Each morphed element auto-gets `view-transition-name: <token>-token`. The template provides:
+```css
+::view-transition-group(*-token){ animation-duration:2000ms; animation-timing-function:cubic-bezier(.2,.8,.25,1); }
+::view-transition-old(*-token),::view-transition-new(*-token){ animation-duration:1400ms; }
+```
+
+Use sparingly — one morph per slide transition max. Best for "chip expands into hero" or "card flies to a new position" moments.
+
+## BCCI hero shrink-on-step
+
+A hero element that smoothly transitions its size when a later step is revealed, using `:has()`:
+
+```css
+.bcci-hero { transition: font-size 800ms, padding 800ms, border-radius 800ms, gap 800ms; }
+.slide.bcci:has(.bcci-stack-area.shown) .bcci-hero {
+  font-size: clamp(26px,3vw,48px); padding: 14px 36px; border-radius: 80px;
+}
+```
+
+Unshown steps collapse via `max-height:0; overflow:hidden; margin-top:-28px` so the hero stays centred until content appears.
+
+## Replay overlay (iframe-based chat replay)
+
+Embed and play external HTML replays (from the `chat-replayer` skill) directly inside the deck without leaving the presentation.
+
+**Trigger:** Any element with `data-replay="path/to/replay.html"` and optional `data-replay-title="Label"`. Use the `.replay-link` class for the standard styled button:
+
+```html
+<a class="replay-link reveal" data-replay="replays/demo.html" data-replay-title="Full loop demo">
+  <span class="rl-ico">&#9654;</span> Play replay <span class="chev">&rsaquo;</span>
+</a>
+```
+
+**Overlay structure** (add once at end of `<body>`):
+```html
+<div class="replay-overlay" id="replayOverlay" aria-hidden="true">
+  <div class="replay-frame-bar">
+    <span class="rt" id="replayTitle">Chat replay</span>
+    <span><a id="replayOpen" href="about:blank" target="_blank" rel="noopener">Open in new tab &rsaquo;</a>
+      &nbsp;&nbsp;<button class="replay-close" id="replayClose">Close &times; (Esc)</button></span>
+  </div>
+  <div class="replay-stage"><iframe id="replayFrame" title="Chat replay" src="about:blank"></iframe><div class="replay-sheen" aria-hidden="true"></div></div>
+</div>
+```
+
+**Behaviour:**
+- Click `[data-replay]` → sets iframe `src`, opens overlay with scale-up animation
+- Injects Esc listener into iframe content document for seamless close
+- Blocks ALL deck navigation keys while overlay is open (Space, arrows, Page)
+- Supports `window.postMessage('bctb-replay-close')` from inside the iframe
+- Decorative: rotating conic-gradient border glow + sheen sweep
+
+The `.replay-link` also doubles as a regular link (`href` + `target="_blank"`) so it works if JS is disabled or for right-click → open in new tab.
+
+## SVG zoom overlay
+
+Click any `.zoomable-svg` to open its SVG full-viewport in a dark overlay. Built dynamically — just add the class to any inline `<svg>`:
+
+```html
+<svg class="zoomable-svg" viewBox="…">…</svg>
+```
+
+JS clones the SVG's `outerHTML` into a `.svg-zoom-stage` div. Esc or backdrop click closes.
+
+## Narrative presenter notes
+
+Per-slide talk-track notes accessible from the slide picker, for speaker preparation and on-stage reference.
+
+**Define notes** in a `NARRATIVES` object keyed by `data-slide`:
+```js
+const NARRATIVES = {
+  '00': [
+    'Settle the room. 90 minutes, two live demos.',
+    '› Transition: "it always starts the same way."',   // green cue
+    '! Do NOT solve anything yet.'                      // amber warning
+  ],
+  '02': ['Walk the prerequisites…'],
+};
+```
+
+**Line prefixes:** plain = talk track (white), `›` = action cue (green/indigo), `!` = warning (amber).
+
+**UI:** When building the slide picker, each slide that has narratives gets a small `ⓘ` button (`.picker-info`). Clicking it opens a centred `.narr` modal with a dark glassmorphism panel (680px wide, scrollable body, indigo border glow). The picker stays open behind the narrative overlay.
+
+**Esc priority:** Narrative closes first, then picker, then deck navigation — layered correctly.
+
+## Slide persistence
+
+Two strategies wired in the deck engine — use one or both:
+
+- **URL hash** (default): `history.replaceState(null,'','#'+(i+1))` on every slide change. Reloading the page resumes at the same slide. Shareable links (`deck.html#14`). Responds to `hashchange` for browser back/forward.
+- **localStorage** (opt-in): `localStorage.setItem('bctd-current-slide', i)` — survives reloads even without hash support. Useful for offline decks or when you don't want the hash visible.
+
+## tc-sync pattern (`:has()` sibling reveal)
+
+A row that auto-reveals when a sibling `.step` gets `.shown`, without needing its own click:
+
+```css
+.slide.tc-map .tc-map-row.tc-sync { opacity:0; transform:translateY(28px); }
+.slide.tc-map.active:has(.step.shown) .tc-map-row.tc-sync {
+  animation: revealUp .8s cubic-bezier(.2,.8,.25,1) forwards;
+}
+```
+
+Use for "appears together with the first step" elements — sync indicators, footnotes, secondary labels.
+
+## `animation-fill-mode: backwards` technique
+
+Use `backwards` instead of `forwards` when you need `:hover` transforms to override the animation's final state:
+
+```css
+.slide.mcp.active .mcp-boxes.step.shown .mcp-box {
+  animation: mcpBoxSnap .55s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+```
+
+`backwards` holds the initial keyframe during `animation-delay`, then after completion the property reverts to the regular cascade — so `:hover { transform:… }` works freely.
+
+## Topbar anti-animation fix
+
+Prevent the persistent topbar from re-animating on every slide change:
+
+```css
+.slide .topbar.reveal { animation:none; opacity:1; transform:none; }
+```
 
 ## Step reveal, typewriter & present mode
 

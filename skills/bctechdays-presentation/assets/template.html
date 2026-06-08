@@ -3712,6 +3712,193 @@
     backdrop-filter:blur(6px);
   }
   .lightbox-close:hover{background:rgba(255,255,255,.18)}
+
+  /* ===== Stage tracker (htrack) ===== */
+  .htrack-cap{
+    font-family:'Barlow Condensed',sans-serif; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase;
+    font-size:clamp(14px,1.09vw,17px); color:var(--yellow);
+    margin-top:26px; margin-bottom:10px; position:relative; z-index:3;
+  }
+  .htrack{
+    display:flex; flex-wrap:wrap; gap:8px;
+    position:relative; z-index:3; max-width:820px;
+  }
+  .htrack-box{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600; letter-spacing:.03em;
+    font-size:clamp(14px,1.09vw,18px);
+    padding:7px 12px; border-radius:8px;
+    border:1px solid rgba(255,255,255,.16);
+    color:var(--on-dark-soft);
+    display:flex; align-items:center; gap:7px;
+    transition:border-color .25s ease, background .25s ease, color .25s ease;
+  }
+  .htrack-box .hb-dot{
+    width:7px; height:7px; border-radius:50%;
+    background:rgba(255,255,255,.3); flex:0 0 auto;
+  }
+  .htrack-box.done{
+    border-color:rgba(255,255,255,.22);
+    color:rgba(255,255,255,.55);
+    background:rgba(255,255,255,.04);
+  }
+  .htrack-box.done .hb-dot{ background:var(--cyan); }
+  .htrack-box.on{
+    border-color:var(--yellow);
+    background:rgba(249,223,53,.14);
+    color:#fff;
+    box-shadow:0 0 0 1px var(--yellow), 0 6px 22px -10px rgba(249,223,53,.55);
+  }
+  .htrack-box.on .hb-dot{ background:var(--yellow); box-shadow:0 0 8px var(--yellow); }
+  .htrack-box.todo{
+    border-style:dashed; border-color:rgba(255,255,255,.12);
+    color:rgba(255,255,255,.32);
+  }
+  .htrack-box.todo .hb-dot{ background:rgba(255,255,255,.16); }
+
+  /* ===== Stage indicator (stage-ind) ===== */
+  .stage-ind{
+    position:absolute;right:38px;bottom:100px;z-index:6;
+    display:flex;flex-direction:column;gap:5px;align-items:flex-end;
+    font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+  }
+  .stage-ind b{padding:4px 13px;border-radius:13px;background:rgba(255,255,255,.85);color:#8a909a;border:1px solid rgba(0,0,0,.06)}
+  .stage-ind b.on{background:var(--indigo);color:#fff;box-shadow:0 8px 18px -8px rgba(97,101,230,.7)}
+
+  /* ===== Hands-up question cards ===== */
+  .hands-stack{
+    margin-top:40px;display:flex;flex-direction:column;gap:22px;
+    width:min(1060px,100%);
+  }
+  .hand-card{
+    display:flex;align-items:center;gap:26px;
+    padding:20px 30px;border-radius:18px;
+    background:rgba(10,12,24,.55);
+    border:1px solid rgba(255,255,255,.16);
+    backdrop-filter:blur(6px);
+    box-shadow:0 24px 60px -30px rgba(0,0,0,.8);
+  }
+  .hand-ico{
+    flex:0 0 auto;width:60px;height:60px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:29px;line-height:1;
+    background:rgba(97,101,230,.28);border:1px solid rgba(97,101,230,.6);
+  }
+  .hand-q{
+    margin:0;font-weight:600;line-height:1.18;letter-spacing:-.005em;
+    font-size:clamp(24px,2.5vw,42px);color:#fff;
+  }
+  @media (max-height:760px){
+    .hands-stack{margin-top:26px;gap:14px}
+    .hand-card{padding:14px 22px}
+    .hand-ico{width:48px;height:48px;font-size:23px}
+  }
+
+  /* ===== Replay overlay ===== */
+  .replay-link{position:absolute;left:48px;bottom:104px;z-index:7;display:inline-flex;align-items:center;gap:9px;
+    font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:10px 22px;border-radius:28px;background:var(--green);color:#fff;text-decoration:none;
+    box-shadow:0 12px 36px -10px rgba(97,101,230,.7);transition:transform .18s ease, box-shadow .18s ease}
+  .replay-link:hover{transform:translateY(-2px);box-shadow:0 20px 44px -14px rgba(97,101,230,.95)}
+  .replay-link .rl-ico{font-size:13px;line-height:1}
+  .slide.fill .replay-link{background:#fff;color:var(--indigo)}
+  .replay-overlay{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;opacity:0;visibility:hidden;
+    pointer-events:none;transition:opacity .32s ease, visibility 0s linear .32s;
+    background:radial-gradient(120% 120% at 50% 38%, rgba(22,16,44,.82), rgba(8,10,20,.92));backdrop-filter:blur(9px)}
+  .replay-overlay.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .32s ease}
+  .replay-frame-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:13px 22px;color:#fff;
+    font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.13em;font-size:14px;
+    opacity:0;transform:translateY(-8px);transition:opacity .4s ease .12s, transform .4s ease .12s}
+  .replay-overlay.open .replay-frame-bar{opacity:1;transform:none}
+  .replay-frame-bar .rt{font-weight:700}
+  .replay-frame-bar a{color:#fff;text-decoration:underline;opacity:.85}
+  .replay-close{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;
+    padding:8px 18px;border-radius:22px;cursor:pointer;font-family:"Barlow Condensed",sans-serif;
+    text-transform:uppercase;letter-spacing:.13em;font-size:13px;font-weight:700}
+  .replay-close:hover{background:rgba(255,255,255,.22)}
+  .replay-stage{position:relative;flex:1;margin:0 26px 26px;border-radius:16px;padding:3px;background:#0b0f17;
+    transform:scale(.74);opacity:0;transition:transform .55s cubic-bezier(.16,1,.3,1), opacity .4s ease;
+    animation:replayGlow 34s ease-in-out infinite}
+  .replay-overlay.open .replay-stage{transform:scale(1);opacity:1}
+  .replay-stage::before{content:"";position:absolute;z-index:0;top:50%;left:50%;width:170%;height:170%;
+    transform:translate(-50%,-50%);
+    background:conic-gradient(from 0deg, transparent 0deg 205deg, #00e5ff 262deg, #6165E6 300deg, #C944B4 330deg, #ff2bd6 348deg, transparent 360deg);
+    animation:replaySpin 26s linear infinite}
+  .replay-stage iframe{position:relative;z-index:1;width:100%;height:100%;border:0;border-radius:13px;display:block;background:#0d1117}
+  .replay-sheen{position:absolute;z-index:2;inset:3px;border-radius:13px;overflow:hidden;pointer-events:none}
+  .replay-sheen::before{content:"";position:absolute;top:-60%;left:-50%;width:55%;height:220%;transform:rotate(9deg);
+    background:linear-gradient(105deg,transparent,rgba(0,229,255,.10),rgba(201,68,180,.09),transparent);
+    animation:replaySweep 50s ease-in-out infinite}
+  @keyframes replaySpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+  @keyframes replayGlow{0%,100%{box-shadow:0 0 34px rgba(0,229,255,.22),0 0 70px rgba(97,101,230,.16)}
+    50%{box-shadow:0 0 58px rgba(0,229,255,.40),0 0 120px rgba(201,68,180,.24)}}
+  @keyframes replaySweep{0%{left:-50%}55%,100%{left:125%}}
+
+  /* ===== SVG zoom overlay ===== */
+  .svg-zoom-overlay{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;
+    background:rgba(0,0,0,.92);backdrop-filter:blur(6px);opacity:0;visibility:hidden;
+    pointer-events:none;transition:opacity .25s ease, visibility 0s linear .25s}
+  .svg-zoom-overlay.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .25s ease}
+  .svg-zoom-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:4vh}
+  .svg-zoom-stage svg{max-width:92vw;max-height:82vh}
+  .svg-zoom-close{position:absolute;top:20px;right:28px;z-index:210;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;
+    font-family:"Barlow Condensed",sans-serif;font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+    padding:9px 16px;border-radius:24px;cursor:pointer;backdrop-filter:blur(6px)}
+  .svg-zoom-close:hover{background:rgba(255,255,255,.18)}
+  .zoomable-svg{cursor:zoom-in}
+
+  /* ===== Narrative presenter notes ===== */
+  .picker-info{
+    width:22px;height:22px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);background:transparent;
+    color:#9aa0a6;cursor:pointer;
+    font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:13px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    opacity:.55;transition:opacity .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .picker-item:hover .picker-info{opacity:1}
+  .picker-info:hover{color:var(--green);border-color:var(--green)}
+  .narr-backdrop{
+    position:fixed;inset:0;z-index:70;
+    background:rgba(0,0,0,.6);backdrop-filter:blur(3px);
+    opacity:0;pointer-events:none;transition:opacity .18s ease;
+  }
+  .narr-backdrop.open{opacity:1;pointer-events:auto}
+  .narr{
+    position:fixed;left:50%;top:50%;
+    transform:translate(-50%,-50%) scale(.97);
+    z-index:75;width:min(680px,92vw);max-height:74vh;
+    background:rgba(14,14,14,.97);
+    border:1px solid rgba(97,101,230,.45);
+    border-radius:18px;
+    box-shadow:0 0 0 1px rgba(97,101,230,.15),0 24px 90px rgba(0,0,0,.65),0 0 42px rgba(97,101,230,.22);
+    display:flex;flex-direction:column;overflow:hidden;
+    font-family:"Corbel","Hanken Grotesk",sans-serif;
+    opacity:0;pointer-events:none;
+    transition:opacity .18s ease, transform .22s cubic-bezier(.2,.8,.25,1);
+  }
+  .narr.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+  .narr-head{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:14px 22px 12px;border-bottom:1px solid rgba(255,255,255,.08);
+    color:#9aa0a6;font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;
+  }
+  .narr-head .narr-slide{color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .narr-head .narr-num{color:var(--green);margin-right:10px}
+  .narr-body{
+    overflow-y:auto;padding:18px 24px 22px;
+    color:#d7dbe0;font-size:16px;line-height:1.55;
+    scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;
+  }
+  .narr-body p{margin:0 0 10px}
+  .narr-body p:last-child{margin-bottom:0}
+  .narr-body p.cue{color:var(--green);font-weight:600}
+  .narr-body p.warn{color:#f0b429;font-weight:600}
+
+  /* ===== Topbar anti-animation fix ===== */
+  .slide .topbar.reveal{animation:none;opacity:1;transform:none}
 </style>
 </head>
 <body>
@@ -4056,6 +4243,8 @@
       <h1 class="tc-demo-word typed">Demo 1</h1>
       <p class="tc-demo-launch reveal" style="color:rgba(255,255,255,.65);">Short sub-label &mdash; what the audience is about to see</p>
     </div>
+    <!-- Replay link (optional): opens an iframe overlay with a chat-replayer HTML -->
+    <a class="replay-link reveal" data-replay="replays/demo.html" data-replay-title="Demo replay" href="replays/demo.html" target="_blank" rel="noopener"><span class="rl-ico">&#9654;</span> Play replay <span class="chev">&rsaquo;</span></a>
     <div class="pager reveal">
       <span>Topic 05 / 06</span>
       <span>Demo</span>
@@ -4240,6 +4429,401 @@
       <span>Section E</span>
     </div>
   </section>
+
+  <!-- ============ STAGE TRACKER (htrack) — chapter beat on indigo panel ============ -->
+  <section class="slide fill" data-slide="21" data-topic="08-stage-tracker">
+    <div class="mesh" aria-hidden="true"><svg class="mesh-svg" viewBox="0 0 957.745 827.733" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#bc-mesh-torus"/></svg></div>
+    <div class="wave hero" data-wave-lines="28" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <span class="eyebrow reveal">Stage 3 of 5</span>
+    <h2 class="reveal">Building the <span class="g">engine</span></h2>
+
+    <div class="htrack-cap reveal">Progress</div>
+    <div class="htrack reveal">
+      <div class="htrack-box done"><span class="hb-dot"></span>Setup</div>
+      <div class="htrack-box done"><span class="hb-dot"></span>Design</div>
+      <div class="htrack-box on"><span class="hb-dot"></span>Build</div>
+      <div class="htrack-box todo"><span class="hb-dot"></span>Test</div>
+      <div class="htrack-box todo"><span class="hb-dot"></span>Ship</div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Stage Tracker</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ MAGENTA PANEL ============ -->
+  <section class="slide fill magenta" data-slide="21b" data-topic="08-magenta-panel">
+    <div class="mesh" aria-hidden="true"><svg class="mesh-svg" viewBox="0 0 957.745 827.733" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#bc-mesh-torus"/></svg></div>
+    <div class="wave hero" data-wave-lines="28" data-wave-colors="--yellow,--yellow,#fff,#fff" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <span class="eyebrow reveal">Accent moment</span>
+    <h2 class="reveal">Magenta <span class="g">panel</span></h2>
+    <p class="lead reveal">Use for mid-deck accents that differ from the indigo default.</p>
+
+    <div class="pager reveal">
+      <span>Colour Panels</span>
+      <span>Magenta</span>
+    </div>
+  </section>
+
+  <!-- ============ GENERIC GRID (2×3 cards on light) ============ -->
+  <section class="slide light" data-slide="22" data-topic="09-generic-grid">
+    <div class="wave edge" data-wave-lines="22" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <h2 class="reveal">Six <span class="g">things</span></h2>
+
+    <div class="grid-2x3 reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:4vh;max-width:1100px">
+      <div class="card zoomable" style="background:#fff;border-radius:16px;padding:28px 24px;border:1px solid var(--line)">
+        <h3 style="margin:0 0 8px;font-size:clamp(20px,1.8vw,28px)">Alpha</h3>
+        <p style="margin:0;color:var(--ink-soft);font-size:clamp(14px,1.1vw,18px)">Short caption.</p>
+      </div>
+      <div class="card zoomable" style="background:#fff;border-radius:16px;padding:28px 24px;border:1px solid var(--line)">
+        <h3 style="margin:0 0 8px;font-size:clamp(20px,1.8vw,28px)">Bravo</h3>
+        <p style="margin:0;color:var(--ink-soft);font-size:clamp(14px,1.1vw,18px)">Short caption.</p>
+      </div>
+      <div class="card zoomable" style="background:#fff;border-radius:16px;padding:28px 24px;border:1px solid var(--line)">
+        <h3 style="margin:0 0 8px;font-size:clamp(20px,1.8vw,28px)">Charlie</h3>
+        <p style="margin:0;color:var(--ink-soft);font-size:clamp(14px,1.1vw,18px)">Short caption.</p>
+      </div>
+      <div class="card zoomable" style="background:#fff;border-radius:16px;padding:28px 24px;border:1px solid var(--line)">
+        <h3 style="margin:0 0 8px;font-size:clamp(20px,1.8vw,28px)">Delta</h3>
+        <p style="margin:0;color:var(--ink-soft);font-size:clamp(14px,1.1vw,18px)">Short caption.</p>
+      </div>
+      <div class="card zoomable" style="background:#fff;border-radius:16px;padding:28px 24px;border:1px solid var(--line)">
+        <h3 style="margin:0 0 8px;font-size:clamp(20px,1.8vw,28px)">Echo</h3>
+        <p style="margin:0;color:var(--ink-soft);font-size:clamp(14px,1.1vw,18px)">Short caption.</p>
+      </div>
+      <div class="card zoomable" style="background:#fff;border-radius:16px;padding:28px 24px;border:1px solid var(--line)">
+        <h3 style="margin:0 0 8px;font-size:clamp(20px,1.8vw,28px)">Foxtrot</h3>
+        <p style="margin:0;color:var(--ink-soft);font-size:clamp(14px,1.1vw,18px)">Short caption.</p>
+      </div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Generic Grid</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ EXTENDED CHIP TYPES (spec, model, kn, skill-card) ============ -->
+  <section class="slide light" data-slide="22b" data-topic="09-chip-types">
+    <div class="wave edge" data-wave-lines="18" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <h2 class="reveal">Chip <span class="g">types</span></h2>
+
+    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:3vh;align-items:center">
+      <span class="spec-chip">Orchestrator</span>
+      <span class="spec-chip">Reviewer</span>
+      <span class="spec-chip">Designer</span>
+    </div>
+
+    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:2vh;align-items:center">
+      <span class="model-chip opus">Claude Opus</span>
+      <span class="model-chip sonnet">Claude Sonnet</span>
+      <span class="model-chip gpt">GPT-4.1</span>
+    </div>
+
+    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:2vh;align-items:center">
+      <span class="kn-chip"><span class="kn-icon"></span>BC Docs</span>
+      <span class="kn-chip"><span class="kn-icon"></span>Confluence</span>
+      <span class="kn-chip"><span class="kn-icon"></span>JIRA</span>
+    </div>
+
+    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:16px;margin-top:3vh">
+      <div class="skill-card"><div class="skc-icon"></div><strong>al-build-validation</strong><br><small style="color:var(--muted)">Iterative build & fix</small></div>
+      <div class="skill-card"><div class="skc-icon"></div><strong>impact-analysis</strong><br><small style="color:var(--muted)">Dependency risk</small></div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Chip Types</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ THREE-NODE STORYLINE (cr-stage) ============ -->
+  <section class="slide light" data-slide="23" data-topic="10-three-node">
+    <div class="wave edge" data-wave-lines="18" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <h2 class="reveal">The <span class="g">engine</span> in between</h2>
+
+    <div class="cr-stage reveal">
+      <div class="cr-line"></div>
+
+      <div class="cr-node step">
+        <div class="cr-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path class="stroke" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0"/></svg>
+        </div>
+        <span class="cr-label">Developer</span>
+      </div>
+
+      <div class="cr-node cr-n2 step">
+        <div class="cr-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path class="stroke" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/><path class="stroke" d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+        </div>
+        <span class="cr-label">AI Agent</span>
+        <div class="cr-rules">
+          <span class="cr-chip">Naming</span>
+          <span class="cr-chip">Permissions</span>
+          <span class="cr-chip">Fields</span>
+          <span class="cr-chip">Tests</span>
+          <span class="cr-chip">Security</span>
+        </div>
+      </div>
+
+      <div class="cr-node step">
+        <div class="cr-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path class="stroke" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <span class="cr-label">Validated</span>
+      </div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Three-Node Storyline</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ PIPELINE ANALYZER (pa-stage) ============ -->
+  <section class="slide fill ink" data-slide="23b" data-topic="10-pipeline-analyzer">
+    <div class="wave edge" data-wave-lines="20" data-wave-colors="--indigo,--cyan,--magenta" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <h2 class="reveal" style="margin-bottom:3vh">Before &amp; <span class="g">after</span></h2>
+
+    <div class="pa-stage reveal">
+      <div class="pa-pane left">
+        <div class="top"><span></span><span></span><span></span></div>
+        <div class="body">
+          <span class="pa-line head">$ alc /project:App</span>
+          <span class="pa-line err">error AL0118: 'Record' does not contain a definition for 'MyField'</span>
+          <span class="pa-line err">error AL0132: Variable 'Cust' is unused</span>
+          <span class="pa-line dim">Build: FAILED (2 errors)</span>
+        </div>
+        <div class="pa-stamp"><b>2 errors</b><span class="right">12:04:18</span></div>
+      </div>
+      <div class="pa-bridge">
+        <div class="pb-line"></div>
+        <div class="pb-disc step">⇢</div>
+        <div class="pb-line"></div>
+      </div>
+      <div class="pa-pane right">
+        <div class="pa-bubble step">
+          <strong>Pipeline Analyzer:</strong><br>
+          AL0118 — <span class="red-word">MyField</span> was renamed to <em>MyNewField</em> in v3.2. Update line 47.<br>
+          AL0132 — Safe to remove; variable was left from a refactor.
+        </div>
+      </div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Pipeline Analyzer</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ CSP HUB-AND-SPOKES ============ -->
+  <section class="slide fill" data-slide="24" data-topic="11-csp-hub">
+    <div class="wave edge" data-wave-lines="20" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <span class="eyebrow reveal">Architecture</span>
+    <h2 class="reveal">The <span class="g">hub</span></h2>
+
+    <div class="csp-wrap reveal" style="position:relative;width:100%;max-width:900px;height:52vh;margin-top:2vh">
+      <!-- Spokes (SVG lines connecting hub to capabilities) -->
+      <svg class="csp-spokes" style="position:absolute;inset:0;width:100%;height:100%;z-index:0" aria-hidden="true">
+        <line x1="50%" y1="50%" x2="18%" y2="15%" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <line x1="50%" y1="50%" x2="82%" y2="15%" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <line x1="50%" y1="50%" x2="10%" y2="55%" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <line x1="50%" y1="50%" x2="90%" y2="55%" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <line x1="50%" y1="50%" x2="25%" y2="88%" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <line x1="50%" y1="50%" x2="75%" y2="88%" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="4 6"/>
+      </svg>
+
+      <!-- Central hub -->
+      <div class="csp-hub" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">
+        <span class="csp-hub-name">Portal</span>
+        <span class="csp-hub-sub">Central</span>
+      </div>
+
+      <!-- Capability cards positioned around -->
+      <div class="csp-cap step" style="position:absolute;top:6%;left:8%">Telemetry</div>
+      <div class="csp-cap step" style="position:absolute;top:6%;right:8%">Monitoring</div>
+      <div class="csp-cap step" style="position:absolute;top:44%;left:0%">Licensing</div>
+      <div class="csp-cap step" style="position:absolute;top:44%;right:0%">Updates</div>
+      <div class="csp-cap step" style="position:absolute;bottom:4%;left:15%">Users</div>
+      <div class="csp-cap step" style="position:absolute;bottom:4%;right:15%">Billing</div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Hub &amp; Spokes</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ VIEW TRANSITIONS / DATA-MORPH — source slide ============ -->
+  <section class="slide light" data-slide="24b" data-topic="12-view-transitions">
+    <div class="wave edge" data-wave-lines="16" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <h2 class="reveal">Pick a <span class="g">tool</span></h2>
+    <p class="lead reveal">Click → to see the chip morph into a hero.</p>
+
+    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:14px;margin-top:4vh">
+      <span class="mcp-chip" data-morph="morph-demo" style="font-size:clamp(16px,1.3vw,22px);padding:10px 20px">BC Code Intelligence</span>
+      <span class="mcp-chip">Another tool</span>
+      <span class="mcp-chip">Third tool</span>
+    </div>
+
+    <div class="pager reveal">
+      <span>View Transitions</span>
+      <span>Source</span>
+    </div>
+  </section>
+
+  <!-- ============ VIEW TRANSITIONS / DATA-MORPH — target slide ============ -->
+  <section class="slide light bcci" data-slide="24c" data-topic="12-view-transitions">
+    <div class="wave edge" data-wave-lines="16" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <div class="bcci-content" style="display:flex;flex-direction:column;align-items:flex-start">
+      <div class="bcci-hero" data-morph="morph-demo">
+        <h2 style="margin:0">BC Code Intelligence</h2>
+      </div>
+      <p class="lead step" style="margin-top:3vh">The chip morphed into this hero via the View Transitions API.</p>
+      <p class="step" style="color:var(--muted)">The <code>data-morph="morph-demo"</code> token matched on both slides.</p>
+    </div>
+
+    <div class="pager reveal">
+      <span>View Transitions</span>
+      <span>Target</span>
+    </div>
+  </section>
+
+  <!-- ============ ZOOMABLE-IMG LIGHTBOX + SVG ZOOM DEMO ============ -->
+  <section class="slide light" data-slide="25" data-topic="13-interactive-zoom">
+    <div class="wave edge" data-wave-lines="16" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <h2 class="reveal">Click to <span class="g">zoom</span></h2>
+    <p class="lead reveal" style="margin-bottom:3vh">Images get a lightbox; SVGs get a full-viewport overlay.</p>
+
+    <div class="reveal" style="display:flex;gap:28px;align-items:center;flex-wrap:wrap">
+      <!-- Zoomable image (uses .zoomable-img class) -->
+      <img class="zoomable-img" src="assets/title-bg2.png" alt="Demo image — click to zoom" style="width:260px;border-radius:12px;border:1px solid var(--line);cursor:zoom-in"/>
+
+      <!-- Zoomable SVG (uses .zoomable-svg class) -->
+      <svg class="zoomable-svg" viewBox="0 0 200 200" style="width:180px;height:180px;border-radius:12px;background:var(--canvas-alt);padding:16px;border:1px solid var(--line)">
+        <circle cx="100" cy="100" r="70" fill="none" stroke="var(--indigo)" stroke-width="4"/>
+        <circle cx="100" cy="100" r="40" fill="none" stroke="var(--magenta)" stroke-width="3"/>
+        <text x="100" y="108" text-anchor="middle" font-size="14" fill="var(--ink)">Click me</text>
+      </svg>
+    </div>
+
+    <div class="pager reveal">
+      <span>Zoom Interactions</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ STAGE INDICATOR (stage-ind) — persistent section tracker ============ -->
+  <section class="slide fill" data-slide="25a" data-topic="13-stage-indicator">
+    <div class="wave edge" data-wave-lines="20" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <span class="eyebrow reveal">Section progress</span>
+    <h2 class="reveal">Stage <span class="g">indicator</span></h2>
+    <p class="lead reveal">A persistent pill-set showing which stage of the talk is active.</p>
+
+    <!-- Stage indicator — position:absolute right-bottom, reusable across multiple slides -->
+    <div class="stage-ind reveal" style="position:absolute;right:38px;bottom:100px;display:flex;flex-direction:column;gap:5px;align-items:flex-end;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:700" aria-hidden="true">
+      <b style="padding:4px 13px;border-radius:13px;background:rgba(255,255,255,.85);color:#8a909a;border:1px solid rgba(0,0,0,.06)">Reactive</b>
+      <b style="padding:4px 13px;border-radius:13px;background:var(--indigo);color:#fff;box-shadow:0 8px 18px -8px rgba(97,101,230,.7)">Proactive</b>
+      <b style="padding:4px 13px;border-radius:13px;background:rgba(255,255,255,.85);color:#8a909a;border:1px solid rgba(0,0,0,.06)">Autonomous</b>
+    </div>
+
+    <div class="pager reveal">
+      <span>Stage Indicator</span>
+      <span>Pattern</span>
+    </div>
+  </section>
+
+  <!-- ============ Hands-up audience engagement ============ -->
+  <section class="slide fill" data-slide="25b" data-topic="14-engagement">
+    <div class="wave edge" data-wave-lines="24" aria-hidden="true"></div>
+
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+
+    <span class="eyebrow reveal">Audience check</span>
+    <h2 class="reveal">Hands <span class="g">up</span></h2>
+
+    <div class="hands-stack">
+      <div class="hand-card step"><div class="hand-ico">&#128079;</div><p class="hand-q">Who has done <span class="g">this</span> before?</p></div>
+      <div class="hand-card step"><div class="hand-ico">&#128079;</div><p class="hand-q">Who has <span class="g">more than one</span> person who can?</p></div>
+      <div class="hand-card step"><div class="hand-ico">&#128079;</div><p class="hand-q">Who would be fine if they <span class="g">left tomorrow</span>?</p></div>
+    </div>
+
+    <div class="pager reveal">
+      <span>Engagement</span>
+      <span>—</span>
+    </div>
+  </section>
+
   <section class="slide fill coral q-slide" data-slide="26" data-topic="15-closing">
     <div class="mesh" aria-hidden="true"><svg class="mesh-svg" viewBox="0 0 957.745 827.733" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#bc-mesh-torus"/></svg></div>
       <div class="wave hero" data-wave-lines="32" aria-hidden="true"></div>
@@ -4430,6 +5014,15 @@
     });
   })();
 
+  // ----- Presenter narratives (optional) -----
+  // Define NARRATIVES keyed by data-slide value. Lines prefixed "›" = green cue, "!" = amber warning.
+  // Example:
+  // const NARRATIVES = {
+  //   '00': ['Welcome. Set the scene.', '› Click to reveal the title.', '! Stay on time.'],
+  //   '01': ['The main point.'],
+  // };
+  // If NARRATIVES is not defined, the picker's "ⓘ" buttons simply don't appear.
+
   // ----- Slide nav with in-slide steps -----
   const slides = document.querySelectorAll('.slide');
   const total = slides.length;
@@ -4600,9 +5193,66 @@
       title.className = 'picker-title';
       title.textContent = labelFor(slide);
       row.append(num, title);
+
+      // Narrative "ⓘ" button (only if NARRATIVES defined for this slide)
+      if(typeof NARRATIVES !== 'undefined'){
+        const narr = NARRATIVES[slide.dataset.slide];
+        if(narr && narr.length){
+          const info = document.createElement('button');
+          info.type = 'button';
+          info.className = 'picker-info';
+          info.textContent = 'i';
+          info.setAttribute('aria-label','Show narrative for this slide');
+          info.addEventListener('click', e => {
+            e.stopPropagation();
+            openNarr(String(idx+1).padStart(2,'0'), labelFor(slide), narr);
+          });
+          row.appendChild(info);
+        }
+      }
+
       row.addEventListener('click', () => { show(idx); close(); });
       list.appendChild(row);
     });
+
+    // ----- Narrative overlay (opened via the "i" buttons) -----
+    const narrBackdrop = document.createElement('div');
+    narrBackdrop.className = 'narr-backdrop';
+    const narrPanel = document.createElement('div');
+    narrPanel.className = 'narr';
+    narrPanel.setAttribute('role','dialog');
+    narrPanel.setAttribute('aria-label','Slide narrative');
+    narrPanel.innerHTML =
+      '<div class="narr-head">' +
+        '<span class="narr-slide"></span>' +
+        '<button type="button" class="picker-close narr-close" aria-label="Close">esc</button>' +
+      '</div>' +
+      '<div class="narr-body"></div>';
+    document.body.append(narrBackdrop, narrPanel);
+    const narrTitle = narrPanel.querySelector('.narr-slide');
+    const narrBody = narrPanel.querySelector('.narr-body');
+
+    function openNarr(numStr, label, lines){
+      narrTitle.innerHTML = '<span class="narr-num">' + numStr + '</span>' + label
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      narrBody.innerHTML = '';
+      lines.forEach(line => {
+        const p = document.createElement('p');
+        if(line.startsWith('\u203a')){ p.className = 'cue'; line = line.slice(1).trim(); }
+        else if(line.startsWith('!')){ p.className = 'warn'; line = line.slice(1).trim(); }
+        p.textContent = line;
+        narrBody.appendChild(p);
+      });
+      narrBackdrop.classList.add('open');
+      narrPanel.classList.add('open');
+    }
+    function closeNarr(){
+      narrBackdrop.classList.remove('open');
+      narrPanel.classList.remove('open');
+    }
+    function narrIsOpen(){ return narrPanel.classList.contains('open'); }
+    narrBackdrop.addEventListener('click', closeNarr);
+    narrPanel.querySelector('.narr-close').addEventListener('click', closeNarr);
 
     const rows = panel.querySelectorAll('.picker-item');
     function markCurrent(){
@@ -4625,6 +5275,7 @@
     closeBtn.addEventListener('click', close);
     backdrop.addEventListener('click', close);
     document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && narrIsOpen()){ closeNarr(); e.stopPropagation(); return; }
       if(e.key === 'Escape' && isOpen()){ close(); e.stopPropagation(); }
     });
   })();
@@ -4668,6 +5319,61 @@
       if(e.key === 'Escape' && lb.classList.contains('open')){ close(); e.stopPropagation(); }
     });
   })();
+</script>
+
+<!-- ===== Replay overlay (iframe chat replays) ===== -->
+<div class="replay-overlay" id="replayOverlay" aria-hidden="true">
+  <div class="replay-frame-bar">
+    <span class="rt" id="replayTitle">Chat replay</span>
+    <span><a id="replayOpen" href="about:blank" target="_blank" rel="noopener">Open in new tab &rsaquo;</a>
+      &nbsp;&nbsp;<button class="replay-close" id="replayClose">Close &times; (Esc)</button></span>
+  </div>
+  <div class="replay-stage"><iframe id="replayFrame" title="Chat replay" src="about:blank"></iframe><div class="replay-sheen" aria-hidden="true"></div></div>
+</div>
+<script>
+(function(){
+  var ov=document.getElementById('replayOverlay'),fr=document.getElementById('replayFrame'),
+      op=document.getElementById('replayOpen'),ti=document.getElementById('replayTitle'),
+      cl=document.getElementById('replayClose');
+  function openR(src,label){fr.src=src;op.href=src;ti.textContent=label||'Chat replay';
+    ov.classList.add('open');ov.setAttribute('aria-hidden','false');
+    setTimeout(function(){try{fr.focus();}catch(_){}} ,120);}
+  function closeR(){ov.classList.remove('open');ov.setAttribute('aria-hidden','true');fr.src='about:blank';
+    try{window.focus();}catch(_){}}
+  function injectEsc(){try{var d=fr.contentDocument||(fr.contentWindow&&fr.contentWindow.document);
+    if(d&&!d.__bctbEsc){d.__bctbEsc=1;
+      d.addEventListener('keydown',function(e){if(e.key==='Escape'||e.keyCode===27)closeR();},true);}}catch(_){}}
+  fr.addEventListener('load',injectEsc);
+  document.addEventListener('click',function(e){
+    var tr=e.target.closest('[data-replay]');
+    if(tr){e.preventDefault();e.stopPropagation();openR(tr.getAttribute('data-replay'),tr.getAttribute('data-replay-title'));return;}
+    if(e.target===ov)closeR();
+  },true);
+  cl.addEventListener('click',function(e){e.stopPropagation();closeR();});
+  window.addEventListener('message',function(e){if(e&&e.data==='bctb-replay-close')closeR();});
+  document.addEventListener('keydown',function(e){
+    if(!ov.classList.contains('open')) return;
+    if(e.key==='Escape'||e.keyCode===27){e.stopPropagation();e.preventDefault();closeR();return;}
+    var nav=[' ','Spacebar','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','PageUp','PageDown'];
+    if(nav.indexOf(e.key)>=0){e.stopPropagation();e.preventDefault();}
+  },true);
+})();
+</script>
+
+<!-- ===== SVG zoom overlay ===== -->
+<script>
+(function(){
+  var ov=document.createElement('div');ov.className='svg-zoom-overlay';
+  ov.innerHTML='<button class="svg-zoom-close" type="button">Close \u00d7 (Esc)</button><div class="svg-zoom-stage"></div>';
+  document.body.appendChild(ov);var stage=ov.querySelector('.svg-zoom-stage');
+  function close(){ov.classList.remove('open');stage.innerHTML='';}
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('.zoomable-svg');
+    if(t){e.preventDefault();e.stopPropagation();stage.innerHTML=t.outerHTML;ov.classList.add('open');return;}
+    if(e.target===ov||e.target.closest('.svg-zoom-close'))close();
+  },true);
+  document.addEventListener('keydown',function(e){if((e.key==='Escape'||e.keyCode===27)&&ov.classList.contains('open')){e.stopPropagation();e.preventDefault();close();}},true);
+})();
 </script>
 </body>
 </html>
