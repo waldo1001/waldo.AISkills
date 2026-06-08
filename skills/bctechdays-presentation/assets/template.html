@@ -4475,6 +4475,7 @@
       slides[i].classList.add('active');
       count.textContent = (i+1)+' / '+total;
       progress.style.width = ((i+1)/total*100)+'%';
+      syncHash();
     };
 
     if (hasMorph) {
@@ -4489,7 +4490,15 @@
       });
       count.textContent = (i+1)+' / '+total;
       progress.style.width = ((i+1)/total*100)+'%';
+      syncHash();
     }
+  }
+  // Persist the current slide in the URL hash so a reload stays put.
+  function syncHash(){
+    const h = '#'+(i+1);
+    if(location.hash === h) return;
+    try { history.replaceState(null,'',h); }   // no extra history entry when possible
+    catch(e){ location.hash = h; }             // file:// fallback
   }
   document.getElementById('prev').onclick = ()=>{ if(!stepPrev()) show(i-1); };
   document.getElementById('next').onclick = ()=>{ if(!stepNext()) show(i+1); };
@@ -4500,8 +4509,17 @@
     if(e.key==='End') show(total-1);
     if(e.key==='p'||e.key==='P') document.body.classList.toggle('present');
   });
-  count.textContent = '1 / '+total;
-  progress.style.width = (1/total*100)+'%';
+  // ----- Restore slide from URL hash on load -----
+  function slideFromHash(){
+    const n = parseInt((location.hash||'').replace('#',''),10);
+    return (Number.isInteger(n) && n>=1 && n<=total) ? n-1 : 0;
+  }
+  i = slideFromHash();
+  slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+  count.textContent = (i+1)+' / '+total;
+  progress.style.width = ((i+1)/total*100)+'%';
+  // Support manual hash edits / back-forward navigation.
+  window.addEventListener('hashchange', ()=>{ const n=slideFromHash(); if(n!==i) show(n); });
 
   // ----- Slide picker (click the X / Y counter to open) -----
   (function(){

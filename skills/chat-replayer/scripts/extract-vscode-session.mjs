@@ -129,6 +129,16 @@ const modelMeta = inputState.selectedModel?.metadata || {};
 const modelName = modelMeta.name || modelMeta.id || 'unknown';
 const responder = state.responderUsername || 'GitHub Copilot';
 
+// ── Credit/token cost rates (credits per million tokens) ─────────────────────
+const inputCostRate  = modelMeta.inputCost  || 0;  // e.g. 300
+const outputCostRate = modelMeta.outputCost || 0;  // e.g. 1500
+const cacheCostRate  = modelMeta.cacheCost  || 0;  // e.g. 30
+
+function calcCredits(promptTok, outputTok) {
+  if (!inputCostRate && !outputCostRate) return null;
+  return (promptTok * inputCostRate + outputTok * outputCostRate) / 1_000_000;
+}
+
 const meta = {
   title: customTitle,
   agent: responder,
@@ -138,6 +148,7 @@ const meta = {
 
 // ── Process requests into turns ──────────────────────────────────────────────
 const turns = [];
+let totalPromptTokens = 0, totalOutputTokens = 0;
 const requests = state.requests || [];
 
 // Tool names we want to skip (internal VS Code tools, not interesting for demos)
@@ -145,6 +156,9 @@ const SKIP_TOOLS = new Set([
   'copilot_getWorkspaceStructure',
   'manage_todo_list',
   'tool_search',
+  // copilot_fetchWebPage is always an empty stub — the URL + metadata lives in
+  // its paired vscode_fetchWebPage_internal block. Skip the stub.
+  'copilot_fetchWebPage',
 ]);
 
 // File-editing tools — their input/output isn't in resultDetails but in
@@ -206,8 +220,21 @@ function summarizeEdits(edits) {
 for (const req of requests) {
   // ── User turn ──────────────────────────────────────────────────────────
   const userText = req.message?.text?.trim();
+  // Extract token usage for this request (from result.metadata or completionTokens)
+  const reqMeta = req.result?.metadata || {};
+  const promptTok  = reqMeta.promptTokens  || 0;
+  const outputTok  = reqMeta.outputTokens  || req.completionTokens || 0;
+  totalPromptTokens += promptTok;
+  totalOutputTokens += outputTok;
+  const credits = calcCredits(promptTok, outputTok);
+  const usageObj = (promptTok || outputTok)
+    ? { promptTokens: promptTok, outputTokens: outputTok, ...(credits != null ? { credits } : {}) }
+    : null;
+
   if (userText) {
-    turns.push({ role: 'user', content: userText });
+    const userTurn = { role: 'user', content: userText };
+    if (usageObj) userTurn.usage = usageObj;
+    turns.push(userTurn);
   }
 
   // ── Collect semantic groups from response blocks ───────────────────────
@@ -293,6 +320,10 @@ for (const req of requests) {
       let toolName = toolId;
       const mcpMatch = toolId.match(/^mcp_[^_]+(?:_[^_]+)*__(.+)$/);
       if (mcpMatch) toolName = mcpMatch[1];
+      // vscode_fetchWebPage_internal is VS Code's internal fetch implementation.
+      // Map it to the user-facing name and extract the URL from resultDetails['0'].
+      const isFetchInternal = toolId === 'vscode_fetchWebPage_internal';
+      if (isFetchInternal) toolName = 'fetch_webpage';
 
       // Extract input
       const rd = block.resultDetails || {};
@@ -312,6 +343,23 @@ for (const req of requests) {
         if (tsd.cwd?.path) input.cwd = tsd.cwd.path;
         if (tsd.language) input.language = tsd.language;
         if (tsd.isBackground) input.isBackground = true;
+      }
+
+      // vscode_fetchWebPage_internal: URL lives in resultDetails['0'] (a URI object).
+      // The page content is never persisted to the session file by VS Code.
+      if (isFetchInternal) {
+        const uriObj = rd['0'];
+        if (uriObj && uriObj.scheme && uriObj.authority) {
+          const url = `${uriObj.scheme}://${uriObj.authority}${uriObj.path || ''}`;
+          input.url = url;
+        } else {
+          // Fall back to invocationMessage URL
+          const raw = extractInvocationText(block.invocationMessage)
+            .replace(/^Fetching\s+/i, '').trim();
+          if (raw) input.url = raw;
+        }
+        // description for the collapsed summary label
+        if (input.url) input.description = input.url.replace(/^https?:\/\//, '').substring(0, 80);
       }
 
       // For built-in tools (file edits, reads, searches), the input lives in
@@ -363,6 +411,11 @@ for (const req of requests) {
             outputText = formatToolOutput(external, toolName);
           }
         }
+      }
+
+      // vscode_fetchWebPage_internal: VS Code does not persist page content in the session.
+      if (isFetchInternal) {
+        outputText = '[Page content not stored in session by VS Code — only the URL was recorded]';
       }
 
       // Terminal output lives in toolSpecificData.terminalCommandOutput.
@@ -492,6 +545,17 @@ function formatToolOutput(parsed, toolName) {
 }
 
 // ── Write output ─────────────────────────────────────────────────────────────
+// Add session-level usage totals to meta
+const totalCredits = calcCredits(totalPromptTokens, totalOutputTokens);
+if (totalPromptTokens || totalOutputTokens) {
+  meta.usage = {
+    promptTokens: totalPromptTokens,
+    outputTokens: totalOutputTokens,
+    ...(totalCredits != null ? { credits: totalCredits } : {}),
+    ...(inputCostRate  ? { inputCostPerMillion:  inputCostRate  } : {}),
+    ...(outputCostRate ? { outputCostPerMillion: outputCostRate } : {}),
+  };
+}
 const transcript = { meta, turns };
 const outPath = outputPath || './transcript.json';
 writeFileSync(outPath, JSON.stringify(transcript, null, 2) + '\n', 'utf8');

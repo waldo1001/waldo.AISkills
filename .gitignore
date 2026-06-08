@@ -1,2 +1,5 @@
 .DS_Store
 node_modules/
+
+# Generated replay outputs (not part of the skill definition)
+skills/chat-replayer/*.html

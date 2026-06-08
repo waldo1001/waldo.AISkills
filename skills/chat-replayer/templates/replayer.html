@@ -16,6 +16,8 @@
     --assistant: #3fb950;
     --tool: #d29922;
     --tool-bg: rgba(210, 153, 34, 0.08);
+    --tool-mcp: #a371f7;
+    --tool-mcp-bg: rgba(163, 113, 247, 0.1);
     --code-bg: #010409;
     --kw: #ff7b72;
     --str: #a5d6ff;
@@ -34,6 +36,8 @@
     --assistant: #1a7f37;
     --tool: #9a6700;
     --tool-bg: rgba(154, 103, 0, 0.06);
+    --tool-mcp: #8250df;
+    --tool-mcp-bg: rgba(130, 80, 223, 0.06);
     --code-bg: #f6f8fa;
     --kw: #cf222e;
     --str: #0a3069;
@@ -64,6 +68,41 @@
   header .title { font-size: 18px; font-weight: 600; }
   header .agent { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
   header .meta-right { color: var(--text-muted); font-size: 13px; text-align: right; }
+  .usage-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2px 8px;
+    white-space: nowrap;
+    cursor: default;
+    transition: background 0.15s;
+  }
+  .usage-pill:hover { background: var(--surface); }
+  .usage-pill .credits { color: var(--tool-mcp); font-weight: 700; }
+  .step-user { position: relative; }
+  .step-user .usage-pill {
+    position: absolute;
+    bottom: -18px;
+    right: 0;
+    font-size: 10.5px;
+  }
+  .header-usage {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+    margin-left: 4px;
+  }
+  .header-usage .credits { color: var(--tool-mcp); font-weight: 700; }
   main {
     flex: 1;
     overflow-y: auto;
@@ -191,6 +230,50 @@
     border-radius: 8px;
     overflow: hidden;
   }
+  .tool-wrap.tool-mcp {
+    background: var(--tool-mcp-bg);
+    border-left: 5px solid var(--tool-mcp);
+    border-color: rgba(163, 113, 247, 0.35);
+    box-shadow: 0 0 0 1px rgba(163, 113, 247, 0.15), 0 2px 8px rgba(163, 113, 247, 0.12);
+  }
+  body.light .tool-wrap.tool-mcp {
+    border-color: rgba(130, 80, 223, 0.3);
+    box-shadow: 0 0 0 1px rgba(130, 80, 223, 0.12), 0 2px 8px rgba(130, 80, 223, 0.08);
+  }
+  .tool-wrap.tool-mcp .tool-icon { color: var(--tool-mcp); }
+  .tool-wrap.tool-mcp .tool-name {
+    background: var(--tool-mcp);
+    border-color: var(--tool-mcp);
+  }
+  .tool-service {
+    font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--tool-mcp);
+    background: var(--tool-mcp-bg);
+    border: 1px solid var(--tool-mcp);
+    border-radius: 4px;
+    padding: 2px 6px;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    white-space: nowrap;
+    opacity: 0.85;
+  }
+  body.light .tool-service {
+    opacity: 1;
+  }
+  .tool-wrap.tool-muted {
+    opacity: 0.6;
+    border-left-width: 2px;
+  }
+  .tool-wrap.tool-muted .tool-name {
+    font-weight: 600;
+    font-size: 12px;
+    background: var(--surface-2);
+    border-color: var(--border);
+    color: var(--text-muted);
+    text-shadow: none;
+  }
   .tool-summary {
     display: flex;
     align-items: center;
@@ -202,12 +285,45 @@
   }
   .tool-summary:hover { background: rgba(255,255,255,0.03); }
   body.light .tool-summary:hover { background: rgba(0,0,0,0.03); }
-  .tool-icon { font-size: 14px; color: var(--tool); }
+  .tool-icon { font-size: 18px; color: var(--tool); }
+  .tool-service {
+    font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
+    font-weight: 800;
+    color: #fff;
+    font-size: 13px;
+    background: #6f42c1;
+    border: 1px solid #6f42c1;
+    border-radius: 5px 0 0 5px;
+    padding: 3px 8px 3px 12px;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  }
+  body.light .tool-service {
+    background: #8250df;
+    border-color: #8250df;
+    color: #fff;
+  }
+  .tool-service + .tool-name {
+    border-radius: 0 5px 5px 0;
+    margin-left: -1px;
+  }
   .tool-name {
     font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
-    font-weight: 600;
-    color: var(--text);
+    font-weight: 800;
+    color: #fff;
     font-size: 13px;
+    background: var(--tool);
+    border: 1px solid var(--tool);
+    border-radius: 5px;
+    padding: 3px 12px;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  }
+  body.light .tool-name {
+    color: #fff;
+    background: var(--tool);
+    border-color: var(--tool);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
   }
   .tool-desc {
     color: var(--text-muted);
@@ -656,6 +772,122 @@
     return null;
   }
 
+  // ── Tool display helpers ───────────────────────────────────────────────────
+
+  // Parse raw tool name into { service, op }
+  // • copilot_readFile          → { service: null,           op: 'read_file' }
+  // • mcp_bc-code-intel_ask_bc_expert → { service: 'bc-code-intel', op: 'ask_bc_expert' }
+  // • run_in_terminal           → { service: null,           op: 'terminal' }
+  function parseTool(raw) {
+    const copilotMap = {
+      listDirectory: 'list_dir', readFile: 'read_file', findFiles: 'find_files',
+      findTextInFiles: 'find_in_files', grep: 'grep', searchWorkspace: 'search',
+      createFile: 'create_file', replaceString: 'replace_string', multiReplaceString: 'multi_replace',
+      insertEdit: 'insert_edit', applyPatch: 'apply_patch', editFile: 'edit_file',
+      getErrors: 'get_errors',
+    };
+    const directMap = {
+      run_in_terminal: 'terminal', terminal_last_command: 'terminal_last',
+      fetch_webpage: 'fetch', semantic_search: 'semantic_search',
+      file_search: 'file_search', grep_search: 'grep_search',
+      get_errors: 'get_errors', get_changed_files: 'git_diff',
+      al_getdiagnostics: 'al_diagnostics', al_build: 'al_build',
+      al_publish: 'al_publish', al_downloadsymbols: 'al_symbols',
+      vscode_askQuestions: 'ask_user', vscode_renameSymbol: 'rename_symbol',
+      vscode_listCodeUsages: 'find_usages',
+      vscode_fetchWebPage_internal: 'fetch_webpage',
+    };
+
+    // MCP tool: mcp_<server-name>_<operation> where server-name may contain hyphens
+    const mcpM = (raw || '').match(/^mcp_([a-z0-9](?:[a-z0-9_-]*[a-z0-9])?)_(.+)$/i);
+    if (mcpM) {
+      // Distinguish server from op: server is the shortest known-server prefix
+      // Strategy: try splitting after 1, 2 … segments until we find a known MCP server pattern
+      // Known compound server names (hyphenated):
+      const knownServers = ['bc-code-intel','al-mcp-server','mcp-server-at','mcp-server-at2',
+                            'ifacto-token','microsoft-lea'];
+      const rest = raw.slice('mcp_'.length);
+      for (const srv of knownServers) {
+        if (rest.startsWith(srv + '_')) {
+          return { service: srv, op: rest.slice(srv.length + 1) };
+        }
+      }
+      // Fallback: first underscore-delimited segment is server
+      const firstUs = rest.indexOf('_');
+      if (firstUs > 0) return { service: rest.slice(0, firstUs), op: rest.slice(firstUs + 1) };
+      return { service: null, op: rest };
+    }
+
+    // copilot_ prefix
+    if ((raw || '').startsWith('copilot_')) {
+      const bare = raw.slice('copilot_'.length);
+      return { service: null, op: copilotMap[bare] || bare };
+    }
+
+    return { service: null, op: directMap[raw] || raw || 'tool' };
+  }
+
+  function friendlyToolName(raw) {
+    const { service, op } = parseTool(raw);
+    return service ? `${service} · ${op}` : op;
+  }
+
+  function toolIcon(raw) {
+    const n = (raw || '').toLowerCase();
+    if (/bc-code-intel/.test(n))  return '🧠';
+    if (/al-mcp|al_/.test(n))     return '⚙️';
+    if (/jira/.test(n))           return '📋';
+    if (/conf_/.test(n))          return '📘';
+    if (/microsoft-lea/.test(n))  return '📖';
+    if (/ifacto-token/.test(n))   return '🪙';
+    if (/listdir|listdirectory|findfiles|createfile|readfile|replacest|multireplace|insertedit|editfile|applypatch|findtextinfiles/.test(n)) return '📄';
+    if (/grep|search|semantic/.test(n)) return '🔍';
+    if (/terminal|run_in/.test(n)) return '💻';
+    if (/fetch|http|webpage/.test(n)) return '🌐';
+    if (/git|changed/.test(n))    return '🔀';
+    if (/ask_user|askquestion/.test(n)) return '❓';
+    if (/error|diagnos/.test(n))  return '🚨';
+    if (/memory/.test(n))         return '🗒️';
+    return '🔧';
+  }
+
+  // Auto-generate a short description from tool inputs when none was provided
+  function autoDesc(name, input) {
+    if (!input) return '';
+    const n = (name || '').toLowerCase();
+    const shorten = p => {
+      if (!p) return '';
+      const s = String(p);
+      const parts = s.replace(/\\/g, '/').split('/').filter(Boolean);
+      return parts.length > 2 ? '…/' + parts.slice(-2).join('/') : s;
+    };
+    // MCP: bc-code-intel
+    if (/bc-code-intel/.test(n)) {
+      return (input.question || input.query || input.topic || input.code_context || '').substring(0, 70);
+    }
+    // MCP: Jira
+    if (/jira/.test(n)) {
+      return (input.issueKey || input.issue_key || input.path || '').substring(0, 40);
+    }
+    // File operations
+    if (/listdir|listdirectory/.test(n)) return shorten(input.path || input.dirPath || input.directory);
+    if (/readfile/.test(n))  return shorten(input.filePath || input.file || input.path);
+    if (/findfiles|findtextinfiles/.test(n)) return `"${(input.query || input.pattern || input.glob || '').substring(0, 40)}"`;
+    if (/grep/.test(n))      return `"${(input.query || input.pattern || '').substring(0, 40)}"`;
+    if (/searchworkspace|semantic_search|file_search|grep_search/.test(n))
+      return `"${(input.query || '').substring(0, 50)}"`;
+    if (/terminal|run_in/.test(n)) return (input.explanation || input.command || '').substring(0, 60);
+    if (/replacest|multireplace|insertedit|editfile|applypatch/.test(n))
+      return shorten(input.filePath || input.file || '');
+    if (/createfile/.test(n)) return shorten(input.filePath || input.file || '');
+    if (/fetch|webpage/.test(n)) {
+      const urls = input.urls;
+      if (Array.isArray(urls) && urls.length) return urls[0].replace(/^https?:\/\//, '').substring(0, 50);
+      return (input.url || '').replace(/^https?:\/\//, '').substring(0, 50);
+    }
+    return '';
+  }
+
   // ── Flatten transcript into steps ──────────────────────────────────────────
   // Each step is one unit revealed per →. Types:
   //   { type: 'user',   content }
@@ -732,6 +964,27 @@
       b.className = 'bubble';
       b.textContent = step.content;
       div.appendChild(b);
+      // Usage pill (shown below the bubble)
+      if (step.usage) {
+        const u = step.usage;
+        const pill = document.createElement('div');
+        pill.className = 'usage-pill';
+        const parts = [];
+        if (u.promptTokens) parts.push(`↑${u.promptTokens.toLocaleString()}`);
+        if (u.outputTokens) parts.push(`↓${u.outputTokens.toLocaleString()}`);
+        let html = parts.join(' ');
+        if (u.credits != null) {
+          html += ` <span class="credits" title="Copilot credits used">${u.credits.toFixed(1)} cr</span>`;
+        }
+        pill.innerHTML = html;
+        pill.title = [
+          u.promptTokens ? `Input: ${u.promptTokens.toLocaleString()} tokens` : '',
+          u.outputTokens ? `Output: ${u.outputTokens.toLocaleString()} tokens` : '',
+          u.credits != null ? `Credits used: ${u.credits.toFixed(3)}` : '',
+        ].filter(Boolean).join('\n');
+        div.appendChild(pill);
+        div.style.paddingBottom = '22px';
+      }
       return div;
     }
 
@@ -753,7 +1006,17 @@
 
     if (step.type === 'tool') {
       const wrap = document.createElement('div');
+
+      // Classify tool importance
+      const tn = (step.name || '').toLowerCase();
+      const isMcp = /^mcp_/.test(tn) || /^al_/.test(tn) || /run_in_terminal/.test(tn);
+      const isRealMcp = /^mcp_/.test(tn);  // true MCP-protocol tools — expanded + full details by default
+      const isMuted = /^copilot_(readfile|listdirectory|findfiles|findtextinfiles|getworkspacestructure|getnotebooksummary)$/.test(tn.replace(/[^a-z_]/g,''))
+        || /^vscode_fetchwebpage/.test(tn.replace(/[^a-z_]/g,''));
+      // All tools start collapsed
       wrap.className = 'tool-wrap collapsed';
+      if (isRealMcp || isMcp) wrap.classList.add('tool-mcp');
+      else if (isMuted) wrap.classList.add('tool-muted');
 
       // Summary header: icon + name + description + first-line of result
       const desc = step.description || '';
@@ -767,11 +1030,17 @@
           }
         }
       }
+      const { service, op } = parseTool(step.name);
+      const icon = toolIcon(step.name);
+      const effectiveDesc = desc || autoDesc(step.name, step.input);
+      const serviceHtml = service
+        ? `<span class="tool-service">${escapeHtml(service)}</span><span class="tool-name">${escapeHtml(op)}</span>`
+        : `<span class="tool-name">${escapeHtml(op)}</span>`;
       const summaryHtml = `
         <div class="tool-summary">
-          <span class="tool-icon">🔧</span>
-          <span class="tool-name">${escapeHtml(step.name || 'tool')}</span>
-          ${desc ? `<span class="tool-desc">— ${escapeHtml(desc)}</span>` : ''}
+          <span class="tool-icon">${icon}</span>
+          ${serviceHtml}
+          ${effectiveDesc ? `<span class="tool-desc">— ${escapeHtml(effectiveDesc)}</span>` : ''}
           ${resultPreview}
           <span class="tool-toggle">▼</span>
         </div>
@@ -954,7 +1223,26 @@
     const right = [];
     if (m.model) right.push(m.model);
     if (m.source) right.push(m.source);
-    $('meta-right').textContent = right.join(' · ');
+    const rightEl = $('meta-right');
+    rightEl.textContent = right.join(' · ');
+    // Session usage totals
+    if (m.usage) {
+      const u = m.usage;
+      const usageEl = document.createElement('span');
+      usageEl.className = 'header-usage';
+      const parts = [];
+      if (u.promptTokens) parts.push(`↑${u.promptTokens.toLocaleString()}`);
+      if (u.outputTokens)  parts.push(`↓${u.outputTokens.toLocaleString()}`);
+      let html = parts.join(' ');
+      if (u.credits != null) html += ` <span class="credits" title="Total Copilot credits">${u.credits.toFixed(1)} cr</span>`;
+      usageEl.innerHTML = html;
+      usageEl.title = [
+        u.promptTokens ? `Total input tokens: ${u.promptTokens.toLocaleString()}` : '',
+        u.outputTokens ? `Total output tokens: ${u.outputTokens.toLocaleString()}` : '',
+        u.credits != null ? `Total credits used: ${u.credits.toFixed(3)}` : '',
+      ].filter(Boolean).join('\n');
+      rightEl.appendChild(usageEl);
+    }
   }
 
   function updateButtons() {

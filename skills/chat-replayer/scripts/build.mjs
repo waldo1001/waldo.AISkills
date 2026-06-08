@@ -44,7 +44,9 @@ const template = readFileSync(templatePath, 'utf8');
 // Escape closing script tags inside the JSON payload to be safe
 const payload = JSON.stringify(transcript).replace(/<\/script/gi, '<\\/script');
 
-const html = template.replace('"__TRANSCRIPT_JSON__"', payload);
+// Use a replacer function so `$&`, `$'`, `$\`` and `$$` sequences inside the
+// JSON payload are inserted literally rather than treated as special patterns.
+const html = template.replace('"__TRANSCRIPT_JSON__"', () => payload);
 
 writeFileSync(outPath, html);
 console.log(`✓ Built → ${outPath}`);
