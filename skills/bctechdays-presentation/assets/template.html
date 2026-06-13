@@ -3849,56 +3849,188 @@
   .svg-zoom-close:hover{background:rgba(255,255,255,.18)}
   .zoomable-svg{cursor:zoom-in}
 
-  /* ===== Narrative presenter notes ===== */
-  .picker-info{
-    width:22px;height:22px;border-radius:50%;
-    border:1px solid rgba(255,255,255,.25);background:transparent;
-    color:#9aa0a6;cursor:pointer;
-    font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:13px;line-height:1;
-    display:flex;align-items:center;justify-content:center;
-    opacity:.55;transition:opacity .15s ease,color .15s ease,border-color .15s ease;
-  }
-  .picker-item:hover .picker-info{opacity:1}
-  .picker-info:hover{color:var(--green);border-color:var(--green)}
-  .narr-backdrop{
-    position:fixed;inset:0;z-index:70;
-    background:rgba(0,0,0,.6);backdrop-filter:blur(3px);
-    opacity:0;pointer-events:none;transition:opacity .18s ease;
-  }
-  .narr-backdrop.open{opacity:1;pointer-events:auto}
-  .narr{
-    position:fixed;left:50%;top:50%;
-    transform:translate(-50%,-50%) scale(.97);
-    z-index:75;width:min(680px,92vw);max-height:74vh;
-    background:rgba(14,14,14,.97);
-    border:1px solid rgba(97,101,230,.45);
-    border-radius:18px;
-    box-shadow:0 0 0 1px rgba(97,101,230,.15),0 24px 90px rgba(0,0,0,.65),0 0 42px rgba(97,101,230,.22);
-    display:flex;flex-direction:column;overflow:hidden;
-    font-family:"Corbel","Hanken Grotesk",sans-serif;
-    opacity:0;pointer-events:none;
-    transition:opacity .18s ease, transform .22s cubic-bezier(.2,.8,.25,1);
-  }
-  .narr.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
-  .narr-head{
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    padding:14px 22px 12px;border-bottom:1px solid rgba(255,255,255,.08);
-    color:#9aa0a6;font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;
-  }
-  .narr-head .narr-slide{color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .narr-head .narr-num{color:var(--green);margin-right:10px}
-  .narr-body{
-    overflow-y:auto;padding:18px 24px 22px;
-    color:#d7dbe0;font-size:16px;line-height:1.55;
-    scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;
-  }
-  .narr-body p{margin:0 0 10px}
-  .narr-body p:last-child{margin-bottom:0}
-  .narr-body p.cue{color:var(--green);font-weight:600}
-  .narr-body p.warn{color:#f0b429;font-weight:600}
+  /* ===== Presenter notes (inline in the slide picker) =====
+     A small ⓘ button on each picker row that has a SLIDE_NOTES entry; clicking it
+     expands the note inline under the row (no modal). */
+  .picker-note-btn{background:transparent;border:0;color:#7c7c86;cursor:pointer;font-size:15px;line-height:1;padding:2px 7px;border-radius:6px;font-family:inherit;}
+  .picker-note-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+  .picker-note-btn.active{color:var(--green)}
+  .picker-note{display:none;padding:0 22px 12px 72px;color:#aab0b6;font-size:12.5px;line-height:1.55;white-space:normal}
+  .picker-note.open{display:block}
 
   /* ===== Topbar anti-animation fix ===== */
   .slide .topbar.reveal{animation:none;opacity:1;transform:none}
+
+  /* ===== Dogsled trail progress tracker (#trail) =====
+     A persistent top tracker; see the JS (TRAIL_POS / updateTrail) and the #trail
+     markup just inside <body>. Slides opt in with data-leg; data-stage zooms the
+     active stop; the big .build-trail overview slide morphs into this via legtrail. */
+  .trail{position:fixed;top:13px;left:50%;transform:translateX(-50%) scale(1.2);transform-origin:top center;width:min(640px,60vw);z-index:40;pointer-events:none;opacity:0;transition:opacity .4s, transform .6s cubic-bezier(.2,.8,.25,1);font-family:'Barlow Condensed',sans-serif;}
+  .trail.show{opacity:1;}
+  .trail.stage-zoom .trail-stop.active{transform:scale(1.95);}
+  .trail.stage-zoom .trail-stop.active .trail-label{font-weight:800;}
+  .trail-track{position:relative;height:2px;background:rgba(20,22,40,.16);border-radius:2px;}
+  .trail.on-dark .trail-track{background:rgba(255,255,255,.22);}
+  .trail-fill{position:absolute;top:0;left:0;height:2px;width:2%;background:var(--red);border-radius:2px;transition:width .45s cubic-bezier(.4,0,.2,1);}
+  .trail-sled{position:absolute;top:50%;left:2%;transform:translate(-50%,-50%);font-size:17px;line-height:1;transition:left .45s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));}
+  .trail-stops{position:absolute;top:-4px;left:0;right:0;display:flex;}
+  .trail-stop{flex:1;display:flex;flex-direction:column;align-items:center;transform-origin:top center;transition:transform .5s cubic-bezier(.2,.8,.25,1);}
+  .trail-dot{width:9px;height:9px;border-radius:50%;background:rgba(20,22,40,.22);border:2px solid #F2F4F0;box-sizing:border-box;transition:background .35s,box-shadow .35s;}
+  .trail.on-dark .trail-dot{background:rgba(255,255,255,.3);border-color:#1b1d2b;}
+  .trail-stop.done .trail-dot{background:var(--red);}
+  .trail-stop.active .trail-dot{background:var(--red);box-shadow:0 0 0 4px rgba(247,81,79,.25);}
+  .trail-label{margin-top:6px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;color:rgba(20,22,40,.4);white-space:nowrap;transition:color .35s;}
+  .trail.on-dark .trail-label{color:rgba(255,255,255,.5);}
+  .trail-stop.done .trail-label{color:rgba(20,22,40,.6);}
+  .trail.on-dark .trail-stop.done .trail-label{color:rgba(255,255,255,.7);}
+  .trail-stop.active .trail-label{color:var(--red);}
+  .trail.on-dark .trail-stop.active .trail-label{color:var(--yellow);}
+  /* Trail morph (overview build-trail -> top trail): slow ~2s glide */
+  ::view-transition-group(legtrail),
+  ::view-transition-image-pair(legtrail),
+  ::view-transition-old(legtrail),
+  ::view-transition-new(legtrail){ animation-duration:2s; animation-timing-function:cubic-bezier(.2,.8,.25,1); }
+
+  /* ===== Overview cards + persistent Overview link + inline build-trail ===== */
+  .ov-card{cursor:pointer;transition:transform .15s ease, background .15s ease, border-color .15s ease;}
+  .ov-card:hover{transform:translateY(-3px);background:rgba(255,255,255,.13)!important;border-color:rgba(255,255,255,.5)!important;}
+  .ov-card:focus-visible{outline:2px solid var(--yellow);outline-offset:3px;}
+  #ovLink{
+    position:fixed;top:10px;left:22px;z-index:41;display:none;align-items:center;gap:7px;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px;
+    color:#fff;background:rgba(22,22,34,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.26);border-radius:999px;padding:5px 12px;cursor:pointer;
+    transition:background .15s ease,border-color .15s ease;
+  }
+  #ovLink.show{display:inline-flex;}
+  #ovLink:hover{background:rgba(22,22,34,.82);border-color:rgba(255,255,255,.55);}
+  .build-trail{position:relative;}
+  .build-trail .bt-line{position:absolute;top:8px;left:0;right:0;height:3px;background:rgba(255,255,255,.22);border-radius:3px;z-index:1;}
+  .build-trail .bt-sled{position:absolute;top:8px;left:0;transform:translate(-55%,-52%);font-size:26px;line-height:1;z-index:3;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));}
+  .build-trail .bt-stops{position:relative;z-index:2;display:flex;gap:10px;}
+  .build-trail .bt-stop{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;}
+  .build-trail .bt-dot{width:16px;height:16px;border-radius:50%;background:var(--yellow);border:3px solid rgba(255,255,255,.28);box-sizing:border-box;transition:transform .15s ease,box-shadow .15s ease;}
+  .build-trail .bt-name{margin-top:14px;font-family:'Montagu Slab',Georgia,serif;color:#fff;font-weight:600;font-size:clamp(18px,1.41vw,24px);line-height:1.15;}
+  .build-trail .bt-sub{margin-top:6px;color:var(--on-dark-soft,rgba(255,255,255,.7));font-size:clamp(14px,1.02vw,17px);max-width:17ch;line-height:1.3;}
+  .build-trail .bt-stop:hover .bt-dot{transform:scale(1.25);box-shadow:0 0 0 5px rgba(249,223,53,.18);}
+  .build-trail .bt-stop:hover .bt-name{color:var(--yellow);}
+  .build-trail .bt-stop:focus-visible{outline:2px solid var(--yellow);outline-offset:4px;border-radius:8px;}
+
+  /* ===== Vocabulary cards — click to zoom a clone to ~200%, Esc to close ===== */
+  .vocab-grid{position:relative;z-index:3;margin-top:30px;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+  .vocab-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;cursor:zoom-in;
+    box-shadow:0 12px 24px -22px rgba(0,0,0,.18);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    display:flex;flex-direction:column;gap:8px;}
+  .vocab-card:hover{transform:translateY(-3px);border-color:rgba(97,101,230,.35);box-shadow:0 18px 36px -24px rgba(0,0,0,.28);}
+  .vc-kicker{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-size:clamp(11px,.86vw,13px);}
+  .vc-word{font-family:'Montagu Slab',Georgia,serif;color:var(--red);font-weight:600;font-size:clamp(26px,2.4vw,40px);line-height:1;}
+  .vc-desc{color:var(--ink-soft);font-size:clamp(14px,1.04vw,17px);line-height:1.45;}
+  .vocab-zoom{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;cursor:zoom-out;}
+  .vocab-zoom.open{opacity:1;pointer-events:auto;}
+  .vocab-zoom .vz-card{background:#fff;border-radius:18px;padding:26px 28px;width:clamp(300px,30vw,420px);
+    box-shadow:0 40px 120px rgba(0,0,0,.65);transform:scale(1.5);transform-origin:center;
+    transition:transform .3s cubic-bezier(.2,.8,.25,1);cursor:default;display:flex;flex-direction:column;gap:12px;}
+  .vocab-zoom.open .vz-card{transform:scale(2);}
+
+  /* ===== Image+text split layouts ===== */
+  /* photo-split: text left, framed image right (light slides) */
+  .photo-split{display:flex;align-items:center;gap:6vw;width:100%;position:relative;z-index:3;padding-top:1vh;}
+  .photo-split .ps-text{flex:1;min-width:0;}
+  .photo-split .ps-img{flex:0 0 44%;max-width:44%;border-radius:16px;overflow:hidden;
+    box-shadow:0 24px 60px -20px rgba(0,0,0,.22), 0 0 0 1px var(--line);}
+  .photo-split .ps-img img{width:100%;height:auto;display:block;}
+  /* instr-split: narrower image column for screenshots */
+  .instr-split{display:flex;gap:5vw;align-items:flex-start;margin-top:22px;width:100%;position:relative;z-index:3;}
+  .instr-split .is-text{flex:1;min-width:0;}
+  .instr-split .is-img{flex:0 0 36%;max-width:36%;border-radius:14px;overflow:hidden;
+    box-shadow:0 20px 50px -18px rgba(0,0,0,.25), 0 0 0 1px var(--line);}
+  .instr-split .is-img img{width:100%;height:auto;display:block;}
+
+  /* ===== Image galleries ===== */
+  /* history-gallery: equal-width row of photos (dark slides) */
+  .history-gallery{display:flex;gap:2vw;margin-top:2vh;}
+  .history-gallery img{flex:1;min-width:0;height:27vh;object-fit:cover;border-radius:12px;
+    box-shadow:0 14px 40px -14px rgba(0,0,0,.55);filter:brightness(.88) contrast(1.06);}
+  /* fail-grid: 2×2 captioned thumbnails (light slides) */
+  .fail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;}
+  .fail-img-wrap{position:relative;border-radius:12px;overflow:hidden;
+    box-shadow:0 10px 28px -16px rgba(0,0,0,.22);border:1px solid var(--line);}
+  .fail-img-wrap img{width:100%;height:18vh;object-fit:cover;display:block;}
+  .fail-img-caption{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.52);backdrop-filter:blur(4px);
+    color:#fff;font-size:13px;font-weight:600;letter-spacing:.03em;padding:6px 12px;}
+
+  /* ===== Terminology grid (light) ===== */
+  .term-grid{display:flex;gap:14px;margin-top:24px;width:100%;}
+  .term-item{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 16px;
+    border-top:3px solid var(--indigo);box-shadow:0 8px 22px -18px rgba(0,0,0,.18);}
+  .term-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    font-size:clamp(23px,1.79vw,31px);color:var(--indigo);margin-bottom:10px;}
+  .term-def{font-size:clamp(17px,1.22vw,20px);color:var(--ink-soft);line-height:1.45;}
+
+  /* ===== Strap list — numbered takeaway rows (dark) ===== */
+  .strap-list{display:flex;flex-direction:column;gap:14px;margin-top:24px;}
+  .strap-item{display:flex;align-items:center;gap:18px;padding:14px 22px;background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.11);border-radius:12px;transition:border-color .25s ease, background .25s ease;}
+  .strap-item:hover{border-color:rgba(97,101,230,.5);background:rgba(97,101,230,.08);}
+  .strap-num{font-family:'Barlow Condensed',sans-serif;font-size:clamp(23px,2.05vw,33px);font-weight:700;color:var(--yellow);min-width:32px;}
+  .strap-text{font-size:clamp(22px,1.66vw,28px);color:var(--on-dark,#fff);font-weight:500;}
+  .strap-pillar{color:var(--on-dark-soft,rgba(255,255,255,.7));font-size:clamp(15px,1.15vw,19px);margin-left:auto;font-style:italic;opacity:.8;}
+
+  /* ===== Retro C/AL skin (Win95 / C-SIDE gag window) ===== */
+  .slide.retro-cal{background:#0a7e7e;}
+  .slide.retro-cal .mesh, .slide.retro-cal .wave{display:none !important;}
+  .crt{position:relative;z-index:3;align-self:center;width:min(1180px,92vw);margin:0 auto;background:#c0c0c0;color:#000;
+    box-shadow: inset -1px -1px 0 #000, inset 1px 1px 0 #dfdfdf, inset -2px -2px 0 #808080, inset 2px 2px 0 #fff, 10px 10px 0 rgba(0,0,0,.35);
+    font-family:'Tahoma','Geneva','MS Sans Serif',sans-serif;}
+  .crt-title{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#000080,#1084d0);color:#fff;
+    font-weight:700;font-size:19px;padding:7px 9px;margin:4px;}
+  .crt-title-text{display:flex;align-items:center;gap:10px;}
+  .crt-title-text::before{content:"\25A6";}
+  .crt-btns{display:flex;gap:4px;}
+  .crt-btns i{width:26px;height:23px;display:flex;align-items:center;justify-content:center;background:#c0c0c0;color:#000;font-style:normal;font-weight:700;font-size:15px;box-shadow: inset -1px -1px 0 #000, inset 1px 1px 0 #fff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;}
+  .crt-menu{display:flex;gap:22px;padding:6px 12px;font-size:16px;color:#000;border-bottom:1px solid #808080;}
+  .crt-menu span:first-letter{text-decoration:underline;}
+  .crt-body{padding:26px 32px 30px;}
+  .crt-eyebrow{font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:15px;color:#000080;margin:0 0 10px;}
+  .crt-h2{font-family:'Times New Roman',Georgia,serif;font-weight:700;color:#000;font-size:clamp(34px,3.8vw,58px);line-height:1.1;margin:0;}
+  .crt-h2 .g{color:#000080 !important;-webkit-text-fill-color:#000080;background:none;}
+  .crt-p{margin-top:16px;font-size:clamp(18px,1.5vw,25px);line-height:1.5;color:#161616;max-width:62ch;}
+  .crt-status{display:flex;margin:4px;}
+  .crt-status span{font-size:15px;padding:4px 13px;box-shadow: inset -1px -1px 0 #fff, inset 1px 1px 0 #808080;}
+  .crt-status span:first-child{flex:1;}
+  .retro-cal .replay-row .replay-link{background:#c0c0c0 !important;color:#000 !important;border:0 !important;border-radius:0 !important;
+    box-shadow: inset -1px -1px 0 #000, inset 1px 1px 0 #fff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf !important;
+    font-family:'Tahoma','MS Sans Serif',sans-serif !important;font-weight:700 !important;letter-spacing:0 !important;
+    padding:11px 18px !important;font-size:clamp(16px,1.2vw,20px) !important;backdrop-filter:none !important;text-shadow:none !important;}
+  .retro-cal .replay-row .replay-link:active{box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #fff, inset 2px 2px 0 #808080 !important;}
+  .retro-cal .replay-row .replay-link .chev{color:#000080 !important;}
+  .retro-cal .pager{color:rgba(255,255,255,.9) !important;}
+
+  /* ===== Replay row — several replay launch buttons side by side, in flow ===== */
+  .replay-row{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;align-items:center;
+    position:relative;z-index:3;margin-top:40px;max-width:980px;margin-left:auto;margin-right:auto;}
+  .replay-row .replay-link{position:static;left:auto;bottom:auto;}
+
+  /* ===== print-pdf mode (?print-pdf in URL) =====
+     Stacks every slide as a static 1280×720 block, all .step reveals forced on,
+     chrome + animation stripped — so "Print → Save as PDF" exports one slide/page. */
+  html.print-pdf,html.print-pdf body{height:auto!important;overflow:visible!important;width:1280px;margin:0;padding:0;}
+  html.print-pdf .deck{position:static!important;display:block!important;}
+  html.print-pdf .slide{display:flex!important;opacity:1!important;transform:none!important;
+    position:relative!important;inset:auto!important;width:1280px!important;height:720px!important;
+    overflow:hidden!important;page-break-after:always;break-after:page;}
+  html.print-pdf .slide .step{opacity:1!important;transform:none!important;}
+  html.print-pdf .nav,
+  html.print-pdf #progress,
+  html.print-pdf #trail,
+  html.print-pdf #ovLink,
+  html.print-pdf .topnav{display:none!important;}
+  html.print-pdf *{animation:none!important;transition:none!important;}
+  @media print{
+    html.print-pdf,html.print-pdf body{width:1280px;}
+    @page{size:1280px 720px;margin:0;}
+  }
 </style>
 </head>
 <body>
@@ -3909,6 +4041,24 @@
 </svg>
 
 <div class="progress" id="progress"></div>
+
+<!-- ============ DOGSLED TRAIL — persistent top progress tracker ============
+     Shows only on slides with a data-leg. Edit the stop labels + data-leg values
+     (and TRAIL_POS in the JS) to match your own stage count. -->
+<div class="trail" id="trail" aria-hidden="true">
+  <div class="trail-track">
+    <div class="trail-fill" id="trailFill"></div>
+    <div class="trail-sled" id="trailSled">&#128759;</div>
+    <div class="trail-stops">
+      <div class="trail-stop" data-leg="1"><div class="trail-dot"></div><div class="trail-label">Stage 1</div></div>
+      <div class="trail-stop" data-leg="2"><div class="trail-dot"></div><div class="trail-label">Stage 2</div></div>
+      <div class="trail-stop" data-leg="3"><div class="trail-dot"></div><div class="trail-label">Stage 3</div></div>
+      <div class="trail-stop" data-leg="4"><div class="trail-dot"></div><div class="trail-label">Stage 4</div></div>
+      <div class="trail-stop" data-leg="5"><div class="trail-dot"></div><div class="trail-label">Stage 5</div></div>
+    </div>
+  </div>
+</div>
+
 <div class="deck" id="deck">
   <!-- ============ TITLE — exact session artwork, full-bleed (the real .pptx title image) ============ -->
   <section class="slide title-photo-slide active" data-slide="00" data-topic="title">
@@ -4824,6 +4974,141 @@
     </div>
   </section>
 
+  <!-- ============ DOGSLED TRAIL — overview slide (build-trail morphs into the top tracker) ============
+       data-anchor="overview" hides the top trail here; on Next (to a data-leg slide)
+       the big .build-trail flies up and becomes the #trail tracker (legtrail morph).
+       Each .bt-stop carries data-goto="N" to jump to the matching data-stage slide. -->
+  <section class="slide fill" data-slide="25c" data-topic="14b-the-trail" data-anchor="overview" data-leg="0">
+    <div class="wave edge" data-wave-lines="22" aria-hidden="true"></div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <span class="eyebrow reveal">The map</span>
+    <h2 class="reveal">Five <span class="g">stages</span></h2>
+    <div class="build-trail reveal" style="margin-top:7vh">
+      <div class="bt-line"></div>
+      <div class="bt-sled">&#128759;</div>
+      <div class="bt-stops">
+        <div class="bt-stop" data-goto="1" tabindex="0"><div class="bt-dot"></div><div class="bt-name">Vocabulary</div><div class="bt-sub">Shared words first</div></div>
+        <div class="bt-stop" data-goto="2" tabindex="0"><div class="bt-dot"></div><div class="bt-name">Definitions</div><div class="bt-sub">Click to zoom a term</div></div>
+        <div class="bt-stop" data-goto="3" tabindex="0"><div class="bt-dot"></div><div class="bt-name">Before / after</div><div class="bt-sub">Show the change</div></div>
+        <div class="bt-stop" data-goto="4" tabindex="0"><div class="bt-dot"></div><div class="bt-name">Takeaways</div><div class="bt-sub">What actually shifts</div></div>
+        <div class="bt-stop" data-goto="5" tabindex="0"><div class="bt-dot"></div><div class="bt-name">Failure modes</div><div class="bt-sub">Where it breaks</div></div>
+      </div>
+    </div>
+    <div class="pager reveal"><span>The trail</span><span>Overview</span></div>
+  </section>
+
+  <!-- ===== Stage 1 (data-leg/data-stage = 1) — terminology grid ===== -->
+  <section class="slide light" data-slide="25d" data-topic="14b-the-trail" data-leg="1" data-stage="1">
+    <div class="wave edge" data-wave-lines="22" aria-hidden="true"></div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <span class="eyebrow reveal">Stage 1 · Terminology grid</span>
+    <h2 class="reveal">A shared <span class="g">vocabulary</span></h2>
+    <div class="term-grid reveal">
+      <div class="term-item"><div class="term-label">Term A</div><div class="term-def">A one-line working definition of the first concept.</div></div>
+      <div class="term-item"><div class="term-label">Term B</div><div class="term-def">A one-line working definition of the second concept.</div></div>
+      <div class="term-item"><div class="term-label">Term C</div><div class="term-def">A one-line working definition of the third concept.</div></div>
+    </div>
+    <div class="pager reveal"><span>Stage 01 / 05</span><span>Vocabulary</span></div>
+  </section>
+
+  <!-- ===== Stage 2 (data-leg/data-stage = 2) — vocab cards (click to zoom) ===== -->
+  <section class="slide light" data-slide="25e" data-topic="14b-the-trail" data-leg="2" data-stage="2">
+    <div class="wave edge" data-wave-lines="22" aria-hidden="true"></div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <span class="eyebrow reveal">Stage 2 · Vocabulary cards</span>
+    <h2 class="reveal">Click a word to <span class="g">zoom</span></h2>
+    <div class="vocab-grid reveal">
+      <div class="vocab-card"><span class="vc-kicker">Noun</span><span class="vc-word">Word</span><span class="vc-desc">A short, zoomable definition revealed at 200%.</span></div>
+      <div class="vocab-card"><span class="vc-kicker">Noun</span><span class="vc-word">Token</span><span class="vc-desc">A short, zoomable definition revealed at 200%.</span></div>
+      <div class="vocab-card"><span class="vc-kicker">Noun</span><span class="vc-word">Agent</span><span class="vc-desc">A short, zoomable definition revealed at 200%.</span></div>
+      <div class="vocab-card"><span class="vc-kicker">Noun</span><span class="vc-word">Context</span><span class="vc-desc">A short, zoomable definition revealed at 200%.</span></div>
+      <div class="vocab-card"><span class="vc-kicker">Noun</span><span class="vc-word">Harness</span><span class="vc-desc">A short, zoomable definition revealed at 200%.</span></div>
+    </div>
+    <div class="pager reveal"><span>Stage 02 / 05</span><span>Definitions</span></div>
+  </section>
+
+  <!-- ===== Stage 3 (data-leg/data-stage = 3) — photo split ===== -->
+  <section class="slide light" data-slide="25f" data-topic="14b-the-trail" data-leg="3" data-stage="3">
+    <div class="wave edge" data-wave-lines="22" aria-hidden="true"></div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <span class="eyebrow reveal">Stage 3 · Photo split</span>
+    <h2 class="reveal">Show the <span class="g">change</span></h2>
+    <div class="photo-split reveal">
+      <div class="ps-text">
+        <p class="lead">Text on the left, a framed screenshot on the right. The image is <b>click-to-zoom</b> via <code>data-lightbox</code>.</p>
+      </div>
+      <div class="ps-img"><img class="zoomable-img" src="assets/title-bg.jpg" alt="Example screenshot — replace with your own"></div>
+    </div>
+    <div class="pager reveal"><span>Stage 03 / 05</span><span>Before / after</span></div>
+  </section>
+
+  <!-- ===== Stage 4 (data-leg/data-stage = 4) — strap list (dark) ===== -->
+  <section class="slide fill" data-slide="25g" data-topic="14b-the-trail" data-leg="4" data-stage="4">
+    <div class="mesh" aria-hidden="true"><svg class="mesh-svg" viewBox="0 0 957.745 827.733" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#bc-mesh-torus"/></svg></div>
+    <div class="wave edge" data-wave-lines="22" aria-hidden="true"></div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <span class="eyebrow reveal">Stage 4 · Strap list</span>
+    <h2 class="reveal">What actually <span class="g">shifts</span></h2>
+    <div class="strap-list reveal">
+      <div class="strap-item"><span class="strap-num">1</span><span class="strap-text">First takeaway in a single line</span><span class="strap-pillar">Pillar</span></div>
+      <div class="strap-item"><span class="strap-num">2</span><span class="strap-text">Second takeaway in a single line</span><span class="strap-pillar">Pillar</span></div>
+      <div class="strap-item"><span class="strap-num">3</span><span class="strap-text">Third takeaway in a single line</span><span class="strap-pillar">Pillar</span></div>
+    </div>
+    <div class="pager reveal"><span>Stage 04 / 05</span><span>Takeaways</span></div>
+  </section>
+
+  <!-- ===== Stage 5 (data-leg/data-stage = 5) — failure grid (2×2 captioned) ===== -->
+  <section class="slide light" data-slide="25h" data-topic="14b-the-trail" data-leg="5" data-stage="5">
+    <div class="wave edge" data-wave-lines="22" aria-hidden="true"></div>
+    <div class="topbar reveal">
+      <a class="brandtag" href="https://www.bctechdays.com" target="_blank" rel="noopener"><svg class="bt-svg" viewBox="0 0 241.577 345.521" aria-hidden="true"><use href="#bc-logo"/></svg></a>
+      <div class="topnav"><span>Session 06</span></div>
+    </div>
+    <span class="eyebrow reveal">Stage 5 · Failure grid</span>
+    <h2 class="reveal">Where it <span class="g">breaks</span></h2>
+    <div class="fail-grid reveal">
+      <div class="fail-img-wrap"><img src="assets/title-bg.jpg" alt=""><div class="fail-img-caption">Confidently wrong</div></div>
+      <div class="fail-img-wrap"><img src="assets/title-bg2.jpg" alt=""><div class="fail-img-caption">Invents things</div></div>
+      <div class="fail-img-wrap"><img src="assets/title-bg2.jpg" alt=""><div class="fail-img-caption">Agreement bias</div></div>
+      <div class="fail-img-wrap"><img src="assets/title-bg.jpg" alt=""><div class="fail-img-caption">Stale knowledge</div></div>
+    </div>
+    <div class="pager reveal"><span>Stage 05 / 05</span><span>Failure modes</span></div>
+  </section>
+
+  <!-- ============ RETRO C/AL SKIN — Win95 / C-SIDE gag window + in-flow replay row ============ -->
+  <section class="slide retro-cal" data-slide="25i" data-topic="14c-retro">
+    <div class="crt">
+      <div class="crt-title"><span class="crt-title-text">Object Designer — Codeunit 50100</span><div class="crt-btns"><i>_</i><i>&#9633;</i><i>&times;</i></div></div>
+      <div class="crt-menu"><span>File</span><span>Edit</span><span>View</span><span>Tools</span><span>Window</span><span>Help</span></div>
+      <div class="crt-body">
+        <p class="crt-eyebrow">The OG way</p>
+        <h2 class="crt-h2">Stop building it <span class="g">like this</span>.</h2>
+        <p class="crt-p">A deliberately old-fashioned window for the "we used to do it this way" beat. Drop several replays side by side below.</p>
+        <div class="replay-row">
+          <a class="replay-link" data-replay="replays/demo.html" data-replay-title="Replay one"><span class="rl-ico">&#9654;</span> Replay one <span class="chev">&rsaquo;</span></a>
+          <a class="replay-link" data-replay="replays/demo.html" data-replay-title="Replay two"><span class="rl-ico">&#9654;</span> Replay two <span class="chev">&rsaquo;</span></a>
+        </div>
+      </div>
+      <div class="crt-status"><span>Ready</span><span>OVR</span></div>
+    </div>
+    <div class="pager"><span>Retro</span><span>—</span></div>
+  </section>
+
   <section class="slide fill coral q-slide" data-slide="26" data-topic="15-closing">
     <div class="mesh" aria-hidden="true"><svg class="mesh-svg" viewBox="0 0 957.745 827.733" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#bc-mesh-torus"/></svg></div>
       <div class="wave hero" data-wave-lines="32" aria-hidden="true"></div>
@@ -4888,6 +5173,14 @@
 </div>
 
 <script>
+  // ----- print-pdf mode (?print-pdf in URL) -----
+  // Lays every slide out as a static 1280×720 block with all .step reveals
+  // forced visible and chrome/animation stripped, so the browser's "Print → Save
+  // as PDF" (or @page) exports one slide per page. See the print-pdf CSS block.
+  if(/[?&]print-pdf(?:&|$)/.test(location.search)){
+    document.documentElement.classList.add('print-pdf');
+  }
+
   // ----- BC TechDays scan-line "glitch wave" generator -----
   (function(){
     const css=getComputedStyle(document.documentElement);
@@ -5014,14 +5307,16 @@
     });
   })();
 
-  // ----- Presenter narratives (optional) -----
-  // Define NARRATIVES keyed by data-slide value. Lines prefixed "›" = green cue, "!" = amber warning.
+  // ----- Presenter notes (optional) -----
+  // Define SLIDE_NOTES keyed by data-slide value: one plain string per slide (the
+  // "what we meant to say" talk track). The slide picker grows a small ⓘ button on
+  // each slide that has a note; clicking it expands the note inline under the picker
+  // row (no modal). If SLIDE_NOTES is undefined, no ⓘ buttons appear.
   // Example:
-  // const NARRATIVES = {
-  //   '00': ['Welcome. Set the scene.', '› Click to reveal the title.', '! Stay on time.'],
-  //   '01': ['The main point.'],
+  // const SLIDE_NOTES = {
+  //   '00': 'Title. Welcome them in. 45 minutes, two live demos.',
+  //   '01': 'The main point — keep it to one sentence out loud.',
   // };
-  // If NARRATIVES is not defined, the picker's "ⓘ" buttons simply don't appear.
 
   // ----- Slide nav with in-slide steps -----
   const slides = document.querySelectorAll('.slide');
@@ -5046,9 +5341,65 @@
     slide.querySelectorAll('.step').forEach(s => s.classList.remove('shown'));
   }
 
+  // ----- Dogsled trail progress tracker (#trail) -----
+  // A persistent top tracker that glides a sled along a track as you move through
+  // the deck. Each slide opts in with data-leg="0..6"; TRAIL_POS maps that leg to a
+  // percentage along the track. Slides with no data-leg (and the overview slide,
+  // data-anchor="overview") hide the trail. Stage-shift slides (data-stage set) zoom
+  // the active stop. The track auto-flips to a light treatment (.on-dark) on colour
+  // panels. Edit TRAIL_POS + the .trail-stop markup to match your own stage count.
+  const TRAIL_POS = {'0':2,'1':10,'2':30,'3':50,'4':70,'5':90,'6':100};
+  const trailEl = document.getElementById('trail');
+  function updateTrail(){
+    if(!trailEl) return;
+    const slide = slides[i];
+    const leg = slide.dataset.leg;
+    if(leg === undefined || (leg === '0' && slide.dataset.trail !== 'on')){ trailEl.classList.remove('show','stage-zoom'); return; }
+    if(slide.dataset.anchor === 'overview'){ trailEl.classList.remove('show','stage-zoom'); return; }
+    trailEl.classList.add('show');
+    trailEl.classList.toggle('stage-zoom', slide.dataset.stage !== undefined);
+    const dark = ['fill','ink','lavender','coral','magenta'].some(c=>slide.classList.contains(c)) || !!slide.querySelector('.hero-bg');
+    trailEl.classList.toggle('on-dark', dark);
+    const p = TRAIL_POS[leg] ?? 0;
+    const fill = document.getElementById('trailFill'), sled = document.getElementById('trailSled');
+    if(fill) fill.style.width = p + '%';
+    if(sled) sled.style.left = p + '%';
+    const L = parseInt(leg,10);
+    trailEl.querySelectorAll('.trail-stop').forEach(st=>{
+      const k = parseInt(st.dataset.leg,10);
+      st.classList.toggle('done', L > k);
+      st.classList.toggle('active', L === k);
+    });
+  }
+
   function show(n){
     const next = (n + total) % total;
     if(next === i && slides[i].classList.contains('active')) return;
+
+    // --- Trail morph: leaving the overview slide forward, the big inline
+    // .build-trail flies up and becomes the top trail tracker via a shared
+    // 'legtrail' View Transition. No-ops unless an overview slide exists and
+    // the next slide has a data-leg. ---------------------------------------
+    const buildTrail = slides[i].querySelector('.build-trail');
+    const trailMorph = !!document.startViewTransition && buildTrail && trailEl
+      && slides[i].dataset.anchor === 'overview'
+      && next > i
+      && slides[next].dataset.leg !== undefined;
+    if (trailMorph) {
+      buildTrail.style.viewTransitionName = 'legtrail';
+      const vt = document.startViewTransition(() => {
+        buildTrail.style.viewTransitionName = '';
+        resetSteps(slides[i]); slides[i].classList.remove('active');
+        i = next;
+        resetSteps(slides[i]); slides[i].classList.add('active');
+        count.textContent = (i+1)+' / '+total;
+        progress.style.width = ((i+1)/total*100)+'%';
+        syncHash(); updateTrail();
+        trailEl.style.viewTransitionName = 'legtrail';
+      });
+      vt.finished.finally(() => { trailEl.style.viewTransitionName = ''; buildTrail.style.viewTransitionName = ''; });
+      return;
+    }
 
     // --- Morph detection -----------------------------------
     // If the slide we're leaving and the slide we're entering both
@@ -5069,6 +5420,7 @@
       count.textContent = (i+1)+' / '+total;
       progress.style.width = ((i+1)/total*100)+'%';
       syncHash();
+      updateTrail();
     };
 
     if (hasMorph) {
@@ -5084,6 +5436,7 @@
       count.textContent = (i+1)+' / '+total;
       progress.style.width = ((i+1)/total*100)+'%';
       syncHash();
+      updateTrail();
     }
   }
   // Persist the current slide in the URL hash so a reload stays put.
@@ -5111,6 +5464,8 @@
   slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
   count.textContent = (i+1)+' / '+total;
   progress.style.width = ((i+1)/total*100)+'%';
+  updateTrail();
+  window.addEventListener('resize', updateTrail);
   // Support manual hash edits / back-forward navigation.
   window.addEventListener('hashchange', ()=>{ const n=slideFromHash(); if(n!==i) show(n); });
 
@@ -5194,65 +5549,33 @@
       title.textContent = labelFor(slide);
       row.append(num, title);
 
-      // Narrative "ⓘ" button (only if NARRATIVES defined for this slide)
-      if(typeof NARRATIVES !== 'undefined'){
-        const narr = NARRATIVES[slide.dataset.slide];
-        if(narr && narr.length){
-          const info = document.createElement('button');
-          info.type = 'button';
-          info.className = 'picker-info';
-          info.textContent = 'i';
-          info.setAttribute('aria-label','Show narrative for this slide');
-          info.addEventListener('click', e => {
-            e.stopPropagation();
-            openNarr(String(idx+1).padStart(2,'0'), labelFor(slide), narr);
-          });
-          row.appendChild(info);
-        }
+      // Inline presenter note (only if SLIDE_NOTES has an entry for this slide).
+      // A small ⓘ button toggles an expanding note row right under the picker item —
+      // no modal. If SLIDE_NOTES is undefined or has no entry, no button appears.
+      const note = (typeof SLIDE_NOTES !== 'undefined') ? SLIDE_NOTES[slide.dataset.slide] : null;
+      let noteBtn = null;
+      if(note){
+        noteBtn = document.createElement('button');
+        noteBtn.type = 'button';
+        noteBtn.className = 'picker-note-btn';
+        noteBtn.setAttribute('aria-label', 'Show narrative for this slide');
+        noteBtn.textContent = 'ⓘ';
+        row.appendChild(noteBtn);
       }
-
       row.addEventListener('click', () => { show(idx); close(); });
       list.appendChild(row);
+      if(note){
+        const np = document.createElement('div');
+        np.className = 'picker-note';
+        np.textContent = note;
+        list.appendChild(np);
+        noteBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          const isOpen = np.classList.toggle('open');
+          noteBtn.classList.toggle('active', isOpen);
+        });
+      }
     });
-
-    // ----- Narrative overlay (opened via the "i" buttons) -----
-    const narrBackdrop = document.createElement('div');
-    narrBackdrop.className = 'narr-backdrop';
-    const narrPanel = document.createElement('div');
-    narrPanel.className = 'narr';
-    narrPanel.setAttribute('role','dialog');
-    narrPanel.setAttribute('aria-label','Slide narrative');
-    narrPanel.innerHTML =
-      '<div class="narr-head">' +
-        '<span class="narr-slide"></span>' +
-        '<button type="button" class="picker-close narr-close" aria-label="Close">esc</button>' +
-      '</div>' +
-      '<div class="narr-body"></div>';
-    document.body.append(narrBackdrop, narrPanel);
-    const narrTitle = narrPanel.querySelector('.narr-slide');
-    const narrBody = narrPanel.querySelector('.narr-body');
-
-    function openNarr(numStr, label, lines){
-      narrTitle.innerHTML = '<span class="narr-num">' + numStr + '</span>' + label
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      narrBody.innerHTML = '';
-      lines.forEach(line => {
-        const p = document.createElement('p');
-        if(line.startsWith('\u203a')){ p.className = 'cue'; line = line.slice(1).trim(); }
-        else if(line.startsWith('!')){ p.className = 'warn'; line = line.slice(1).trim(); }
-        p.textContent = line;
-        narrBody.appendChild(p);
-      });
-      narrBackdrop.classList.add('open');
-      narrPanel.classList.add('open');
-    }
-    function closeNarr(){
-      narrBackdrop.classList.remove('open');
-      narrPanel.classList.remove('open');
-    }
-    function narrIsOpen(){ return narrPanel.classList.contains('open'); }
-    narrBackdrop.addEventListener('click', closeNarr);
-    narrPanel.querySelector('.narr-close').addEventListener('click', closeNarr);
 
     const rows = panel.querySelectorAll('.picker-item');
     function markCurrent(){
@@ -5275,17 +5598,18 @@
     closeBtn.addEventListener('click', close);
     backdrop.addEventListener('click', close);
     document.addEventListener('keydown', e => {
-      if(e.key === 'Escape' && narrIsOpen()){ closeNarr(); e.stopPropagation(); return; }
       if(e.key === 'Escape' && isOpen()){ close(); e.stopPropagation(); }
     });
   })();
 
   /* ----- Image lightbox -----
-     Any <img class="zoomable-img"> opens full-screen on click. Click backdrop or
+     Any <img class="zoomable-img"> — or any element with [data-lightbox="src"]
+     (optional [data-lightbox-alt]) — opens full-screen on click. Click backdrop or
      press Esc to close. The overlay is built once and reused. */
   (function(){
     const targets = document.querySelectorAll('img.zoomable-img');
-    if(!targets.length) return;
+    const triggers = document.querySelectorAll('[data-lightbox]');
+    if(!targets.length && !triggers.length) return;
 
     const lb = document.createElement('div');
     lb.className = 'lightbox';
@@ -5313,11 +5637,84 @@
         open(el.currentSrc || el.src, el.alt);
       });
     });
+    triggers.forEach(el => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        open(el.dataset.lightbox, el.dataset.lightboxAlt || '');
+      });
+    });
     lb.addEventListener('click', e => { if(e.target === lb) close(); });
     closeBtn.addEventListener('click', close);
     document.addEventListener('keydown', e => {
       if(e.key === 'Escape' && lb.classList.contains('open')){ close(); e.stopPropagation(); }
     });
+  })();
+
+  /* ----- Vocabulary card zoom -----
+     Click any .vocab-card to blow a clone of its content up to 200% in a centred
+     overlay. Click the backdrop or press Esc to return. Overlay built once. */
+  (function(){
+    const cards = document.querySelectorAll('.vocab-card');
+    if(!cards.length) return;
+    const ov = document.createElement('div');
+    ov.className = 'vocab-zoom';
+    ov.setAttribute('role','dialog');
+    ov.setAttribute('aria-label','Term detail');
+    const vz = document.createElement('div');
+    vz.className = 'vz-card';
+    ov.appendChild(vz);
+    document.body.appendChild(ov);
+    function open(html){ vz.innerHTML = html; ov.classList.add('open'); }
+    function close(){ ov.classList.remove('open'); }
+    cards.forEach(el => {
+      el.setAttribute('tabindex','0');
+      el.addEventListener('click', e => { e.stopPropagation(); open(el.innerHTML); });
+      el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(el.innerHTML); } });
+    });
+    ov.addEventListener('click', e => { if(e.target === ov) close(); });
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && ov.classList.contains('open')){ close(); e.stopPropagation(); }
+    });
+  })();
+
+  /* ----- Overview cards + persistent "Overview" link (dogsled trail) -----
+     Any [data-goto="<stage>"] element jumps to the slide whose data-stage matches.
+     If a slide has data-anchor="overview", a floating "Overview" button appears
+     while you're on the stage legs (data-leg in STAGE_LEGS) and jumps back to it. */
+  (function(){
+    const slidesArr = [...slides];
+    const stageIdx = {};
+    slidesArr.forEach((s, idx) => { if(s.dataset.stage) stageIdx[s.dataset.stage] = idx; });
+    document.querySelectorAll('[data-goto]').forEach(card => {
+      const target = stageIdx[card.dataset.goto];
+      if(target === undefined) return;
+      const go = () => show(target);
+      card.addEventListener('click', go);
+      card.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+    });
+    const ovIdx = slidesArr.findIndex(s => s.dataset.anchor === 'overview');
+    if(ovIdx >= 0){
+      const link = document.createElement('button');
+      link.type = 'button';
+      link.id = 'ovLink';
+      link.setAttribute('aria-label', 'Go to the stage overview');
+      link.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">' +
+        '<rect x="1" y="1" width="6" height="6" rx="1.2" fill="currentColor"/>' +
+        '<rect x="9" y="1" width="6" height="6" rx="1.2" fill="currentColor"/>' +
+        '<rect x="1" y="9" width="6" height="6" rx="1.2" fill="currentColor"/>' +
+        '<rect x="9" y="9" width="6" height="6" rx="1.2" fill="currentColor"/></svg><span>Overview</span>';
+      link.addEventListener('click', () => show(ovIdx));
+      document.body.appendChild(link);
+      const STAGE_LEGS = new Set(['1','2','3','4','5']);
+      const sync = () => {
+        const cur = slidesArr.find(s => s.classList.contains('active'));
+        link.classList.toggle('show', !!(cur && STAGE_LEGS.has(cur.dataset.leg || '')));
+      };
+      const mo = new MutationObserver(sync);
+      slidesArr.forEach(s => mo.observe(s, {attributes:true, attributeFilter:['class']}));
+      sync();
+    }
   })();
 </script>
 

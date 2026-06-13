@@ -1,6 +1,6 @@
 ---
 name: bctechdays-presentation
-description: Build HTML presentation decks styled like the BC TechDays 2026 brand — a LIGHT cool-grey canvas, RED Montagu Slab slab-serif titles (#F7514F), Corbel body, full-bleed indigo/coral/magenta colour "moment" panels, the real BC TechDays scan-line "glitch wave" + wireframe-roster motif and torn-ticket "BC/NAV TECH DAYS 2026 · mibuso.com" logo (both inlined from the official PowerPoint), and the full pattern engine (claim-stack prov, centered tc-context, six-pillar tc-map, MCP hub, animated bridge, df-day timeline, htrack stage-tracker, agents-team grid, pb-hero playbook bridge, three-node storylines, pipeline analyzer, hub-and-spokes CSP, hands-up audience cards, replay overlay for embedded chat replays, narrative presenter notes, View Transitions / element morph, extended chip types, SVG zoom, lavender Q&A/Thank-You enders). Trigger whenever the user asks for a BC TechDays deck, BC TechDays slides, a BC TechDays-branded presentation, or a deck for a BC TechDays / mibuso session or talk. Business Central / BC / NAV conference talks default to this look.
+description: Build HTML presentation decks styled like the BC TechDays 2026 brand — a LIGHT cool-grey canvas, RED Montagu Slab slab-serif titles (#F7514F), Corbel body, full-bleed indigo/coral/magenta colour "moment" panels, the real BC TechDays scan-line "glitch wave" + wireframe-roster motif and torn-ticket "BC/NAV TECH DAYS 2026 · mibuso.com" logo (both inlined from the official PowerPoint), and the full pattern engine (claim-stack prov, centered tc-context, six-pillar tc-map, MCP hub, animated bridge, df-day timeline, htrack stage-tracker, agents-team grid, pb-hero playbook bridge, three-node storylines, pipeline analyzer, hub-and-spokes CSP, hands-up audience cards, replay overlay for embedded chat replays, inline presenter notes, View Transitions / element morph, a persistent dogsled trail progress tracker with build-trail overview morph, print-pdf export mode, click-to-zoom vocabulary cards, terminology grid, strap list, photo/instruction splits, image galleries, a retro C/AL window skin, in-flow replay row, extended chip types, SVG zoom, lavender Q&A/Thank-You enders). Trigger whenever the user asks for a BC TechDays deck, BC TechDays slides, a BC TechDays-branded presentation, or a deck for a BC TechDays / mibuso session or talk. Business Central / BC / NAV conference talks default to this look.
 ---
 
 # BC TechDays presentation skill
@@ -170,7 +170,7 @@ On colour panels these invert to white automatically. **Example / live-demo link
 Two opt-in patterns let the deck feel alive when the presenter mouses around. Both are wired in `template.html` (CSS + JS); add the class, the behaviour follows.
 
 - **`.zoomable`** — opt-in on any card/box element. On hover the card lifts (`translateY(-4px) scale(1.04)`), borders go indigo, and an inset glow fires. On colour panels (`.slide.fill`) the spotlight flips to a white-tint instead. Use it for grids of choices, agent cards, term boxes, "stacks" rows — anywhere the audience might wonder which one you're emphasising.
-- **`.zoomable-img`** — opt-in on any `<img>`. Cursor turns to `zoom-in`, hover gently scales, and **click opens a full-screen lightbox** (dark blurred backdrop, image centred, "esc" close button top-right). Click backdrop or press **Esc** to close. The overlay is built once on load and reused for every image. Use it for screenshots, diagrams, photos — anywhere the slide thumbnail is too small to read at the back of the room.
+- **`.zoomable-img`** — opt-in on any `<img>`. Cursor turns to `zoom-in`, hover gently scales, and **click opens a full-screen lightbox** (dark blurred backdrop, image centred, "esc" close button top-right). Click backdrop or press **Esc** to close. The overlay is built once on load and reused for every image. Use it for screenshots, diagrams, photos — anywhere the slide thumbnail is too small to read at the back of the room. You can also open the lightbox from a **non-`<img>`** element with `data-lightbox="path/to/image.png"` (and optional `data-lightbox-alt="…"`) — handy for a button or caption that should pop a full-size image.
 
 ```html
 <!-- Hover spotlight on a card -->
@@ -277,27 +277,74 @@ Click any `.zoomable-svg` to open its SVG full-viewport in a dark overlay. Built
 
 JS clones the SVG's `outerHTML` into a `.svg-zoom-stage` div. Esc or backdrop click closes.
 
-## Narrative presenter notes
+## Dogsled trail — persistent top progress tracker
 
-Per-slide talk-track notes accessible from the slide picker, for speaker preparation and on-stage reference.
+A thin **always-on progress tracker** pinned to the top of the deck: a sled glides along a track with named stops, marking which "stage" of the talk you're in. It's the running-progress companion to the per-section `.htrack` stage opener (the trail is global chrome; `.htrack` is a one-slide chapter beat).
 
-**Define notes** in a `NARRATIVES` object keyed by `data-slide`:
+**Markup** (one `#trail` block just inside `<body>`, after `#progress`):
+```html
+<div class="trail" id="trail" aria-hidden="true">
+  <div class="trail-track">
+    <div class="trail-fill" id="trailFill"></div>
+    <div class="trail-sled" id="trailSled">&#128759;</div>
+    <div class="trail-stops">
+      <div class="trail-stop" data-leg="1"><div class="trail-dot"></div><div class="trail-label">Stage 1</div></div>
+      … one .trail-stop per stage …
+    </div>
+  </div>
+</div>
+```
+
+**Per-slide opt-in:** a slide joins the trail with `data-leg="N"`. `TRAIL_POS` (in the JS) maps each leg number to a percent along the track (`{'0':2,'1':10,'2':30,'3':50,'4':70,'5':90,'6':100}` by default — edit it to match your stage count). On each `show()`, `updateTrail()`:
+- hides the trail on slides with **no `data-leg`** (and on the `data-anchor="overview"` slide);
+- glides `#trailFill` / `#trailSled` to the leg's percent and marks stops `.done` / `.active`;
+- on a **stage-shift** slide (`data-stage` set) adds `.stage-zoom` so the active stop zooms to spotlight the new stage;
+- flips to a light treatment (`.on-dark`) automatically on colour panels / dark slides.
+
+**Overview slide + build-trail morph.** A `.slide` with `data-anchor="overview"` holds a big inline **`.build-trail`** (the same stops, large, each `.bt-stop` carrying `data-goto="N"` to jump to the slide whose `data-stage="N"`). Leaving the overview slide **forward** to a `data-leg` slide, the big build-trail **flies up and becomes the top trail** via a shared `legtrail` View Transition (~2s glide). A floating **`#ovLink`** ("Overview") button appears while you're on the stage legs (`STAGE_LEGS` set) and jumps back to the overview. Overview cards / build-trail stops use `[data-goto]`; the engine wires the jumps automatically.
+
+The template demos the whole thing: an overview slide + five `data-leg`/`data-stage` stage slides (each also showcasing a different new component).
+
+## print-pdf export mode
+
+Add **`?print-pdf`** to the URL and the deck lays every slide out as a static **1280×720** block, one per page, with all `.step` reveals forced visible and nav / progress / trail / animations stripped — then **Print → Save as PDF** (the `@page` size is set to match). Triggered by a one-line guard at the top of the main script that adds `.print-pdf` to `<html>`; the rest is the `html.print-pdf …` CSS block. Use it to hand out or archive a deck.
+
+## Vocabulary cards — click-to-zoom
+
+A row of term cards that blow up to ~200% on click — a richer replacement for the old one-word-per-slide vocabulary walk. `.vocab-grid` holds `.vocab-card`s (`.vc-kicker` / `.vc-word` / `.vc-desc`). Clicking a card clones its content into a centred `.vocab-zoom` overlay (`.vz-card`) scaled up; backdrop click or **Esc** closes. The overlay is built once on load.
+
+```html
+<div class="vocab-grid">
+  <div class="vocab-card"><span class="vc-kicker">Noun</span><span class="vc-word">Harness</span><span class="vc-desc">Short definition, zoomed on click.</span></div>
+  …
+</div>
+```
+
+## More layout components
+
+Pure-CSS content blocks added to the template; copy the markup, swap the content.
+
+- **`.term-grid`** — a row of `.term-item` cards (indigo top-rule) with a Barlow-condensed `.term-label` + `.term-def`. A terminology / glossary strip on light slides.
+- **`.strap-list`** — vertical numbered rows (`.strap-item` → `.strap-num` yellow + `.strap-text` + optional right-aligned `.strap-pillar`). Takeaways / principles on a colour panel.
+- **`.photo-split`** — text left (`.ps-text`), framed image right (`.ps-img`); the image takes `.zoomable-img` or `data-lightbox` for click-to-zoom. **`.instr-split`** is the same idea with a narrower image column (`.is-text` / `.is-img`) for screenshots.
+- **`.history-gallery`** — an equal-width row of photos (dark slides), each lightly dimmed; pairs with `.zoomable-img`.
+- **`.fail-grid`** — a 2×2 grid of captioned thumbnails (`.fail-img-wrap` + `.fail-img-caption` overlay). "Where it breaks" / before-and-after evidence.
+- **Retro C/AL skin** (`.slide.retro-cal` + `.crt`) — a deliberately old-fashioned Win95 / C-SIDE window (`.crt-title` / `.crt-menu` / `.crt-body` with `.crt-eyebrow` + `.crt-h2` + `.crt-p`, `.crt-status` footer) on a teal desktop. The "we used to do it the OG way" gag slide. The wave/mesh motif is hidden here on purpose.
+- **`.replay-row`** — several `.replay-link` launch buttons side by side **in flow** (centred), instead of one bottom-left button. Use when a slide offers a menu of replays to play in-deck.
+
+## Presenter notes (inline in the slide picker)
+
+Per-slide talk-track notes accessible from the slide picker, for speaker preparation and on-stage reference. (This replaced the old `.narr` modal: notes now expand **inline** under the picker row — no separate overlay.)
+
+**Define notes** in a `SLIDE_NOTES` object keyed by `data-slide` — one plain string per slide:
 ```js
-const NARRATIVES = {
-  '00': [
-    'Settle the room. 90 minutes, two live demos.',
-    '› Transition: "it always starts the same way."',   // green cue
-    '! Do NOT solve anything yet.'                      // amber warning
-  ],
-  '02': ['Walk the prerequisites…'],
+const SLIDE_NOTES = {
+  '00': 'Title. Welcome them in. 45 minutes, two live demos.',
+  '02': 'Walk the prerequisites — keep it to one sentence out loud.',
 };
 ```
 
-**Line prefixes:** plain = talk track (white), `›` = action cue (green/indigo), `!` = warning (amber).
-
-**UI:** When building the slide picker, each slide that has narratives gets a small `ⓘ` button (`.picker-info`). Clicking it opens a centred `.narr` modal with a dark glassmorphism panel (680px wide, scrollable body, indigo border glow). The picker stays open behind the narrative overlay.
-
-**Esc priority:** Narrative closes first, then picker, then deck navigation — layered correctly.
+**UI:** When building the slide picker, each slide that has a `SLIDE_NOTES` entry grows a small `ⓘ` button (`.picker-note-btn`). Clicking it toggles an expanding `.picker-note` row right under that picker item; the picker stays open. If `SLIDE_NOTES` is undefined or has no entry for a slide, no `ⓘ` appears. Keep each note to a sentence or two — it's a cue, not a script.
 
 ## Slide persistence
 
@@ -355,8 +402,10 @@ Prevent the persistent topbar from re-animating on every slide change:
 - The `.g` accent word is ink on light, **yellow on colour panels**. The template flips it automatically; don't override it back.
 - Use the **glitch-wave / roster-mesh** motif to brand a slide — but one motif per slide, keep it in a corner clear of text, and keep content slides quiet.
 - **One stage opener per stage**: don't spam `.htrack` on every slide — it's a chapter beat, not chrome.
-- The animated **bridge** and **pb-hero** are heavy hitters; one per deck (each).
-- **No dead links** in a delivered deck. Sweep for `href="#"`.
+- The **dogsled trail** is the *global* progress chrome — only tag the slides that belong to a stage with `data-leg` (and `data-stage` on the stage-shift slide). Slides with no `data-leg` hide it. Keep `TRAIL_POS` and the `.trail-stop` count in sync with your stage count, and put the `.build-trail` on the `data-anchor="overview"` slide so the morph has something to fly from.
+- The animated **bridge** and **pb-hero** are heavy hitters; one per deck (each). The **build-trail → top-trail morph** is the same kind of one-shot moment — one overview slide, once.
+- **No dead links** in a delivered deck. Sweep for `href="#"` and placeholder `data-replay`/`data-lightbox`/`src` paths (the template's demo images use `assets/title-bg*.jpg`).
+- Before printing/archiving, open with **`?print-pdf`** and "Save as PDF" rather than screenshotting slides.
 - Default language is English; translate placeholder copy to the real talk.
 
 ## Output
