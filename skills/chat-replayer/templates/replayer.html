@@ -18,6 +18,8 @@
     --tool-bg: rgba(210, 153, 34, 0.08);
     --tool-mcp: #a371f7;
     --tool-mcp-bg: rgba(163, 113, 247, 0.1);
+    --tool-skill: #3fb950;
+    --tool-skill-bg: rgba(63, 185, 80, 0.08);
     --code-bg: #010409;
     --kw: #ff7b72;
     --str: #a5d6ff;
@@ -38,6 +40,8 @@
     --tool-bg: rgba(154, 103, 0, 0.06);
     --tool-mcp: #8250df;
     --tool-mcp-bg: rgba(130, 80, 223, 0.06);
+    --tool-skill: #1a7f37;
+    --tool-skill-bg: rgba(26, 127, 55, 0.06);
     --code-bg: #f6f8fa;
     --kw: #cf222e;
     --str: #0a3069;
@@ -244,6 +248,26 @@
   .tool-wrap.tool-mcp .tool-name {
     background: var(--tool-mcp);
     border-color: var(--tool-mcp);
+  }
+  .tool-wrap.tool-skill {
+    background: var(--tool-skill-bg);
+    border-left: 5px solid var(--tool-skill);
+    border-color: rgba(63, 185, 80, 0.3);
+    box-shadow: 0 0 0 1px rgba(63, 185, 80, 0.12), 0 2px 8px rgba(63, 185, 80, 0.08);
+  }
+  body.light .tool-wrap.tool-skill {
+    border-color: rgba(26, 127, 55, 0.25);
+    box-shadow: 0 0 0 1px rgba(26, 127, 55, 0.1), 0 2px 8px rgba(26, 127, 55, 0.06);
+  }
+  .tool-wrap.tool-skill .tool-icon { color: var(--tool-skill); }
+  .tool-wrap.tool-skill .tool-name {
+    background: var(--tool-skill);
+    border-color: var(--tool-skill);
+  }
+  .tool-wrap.tool-skill .tool-service {
+    color: var(--tool-skill);
+    background: var(--tool-skill-bg);
+    border-color: var(--tool-skill);
   }
   .tool-service {
     font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
@@ -798,6 +822,24 @@
       vscode_fetchWebPage_internal: 'fetch_webpage',
     };
 
+    // Skill tool: skill__<skill-name>
+    if ((raw || '').startsWith('skill__')) {
+      const skillName = raw.slice('skill__'.length);
+      return { service: 'skill', op: skillName };
+    }
+
+    // VS Code double-underscore MCP format: mcp__<server>_<op>
+    if ((raw || '').startsWith('mcp__')) {
+      const rest = raw.slice('mcp__'.length);
+      const knownDoubleServers = ['aashari_mcp-', 'bc-code-intel', 'al-mcp-server'];
+      for (const srv of knownDoubleServers) {
+        if (rest.startsWith(srv + '_')) return { service: srv, op: rest.slice(srv.length + 1) };
+      }
+      const firstUs = rest.indexOf('_');
+      if (firstUs > 0) return { service: rest.slice(0, firstUs), op: rest.slice(firstUs + 1) };
+      return { service: null, op: rest };
+    }
+
     // MCP tool: mcp_<server-name>_<operation> where server-name may contain hyphens
     const mcpM = (raw || '').match(/^mcp_([a-z0-9](?:[a-z0-9_-]*[a-z0-9])?)_(.+)$/i);
     if (mcpM) {
@@ -829,11 +871,14 @@
 
   function friendlyToolName(raw) {
     const { service, op } = parseTool(raw);
+    if (service === 'skill') return op;
     return service ? `${service} · ${op}` : op;
   }
 
   function toolIcon(raw) {
     const n = (raw || '').toLowerCase();
+    if (/^skill__/.test(raw))     return '🎯';
+    if (/aashari_mcp-/.test(n))   return '📘';
     if (/bc-code-intel/.test(n))  return '🧠';
     if (/al-mcp|al_/.test(n))     return '⚙️';
     if (/jira/.test(n))           return '📋';
@@ -1009,13 +1054,15 @@
 
       // Classify tool importance
       const tn = (step.name || '').toLowerCase();
+      const isSkill = /^skill__/.test(step.name || '');
       const isMcp = /^mcp_/.test(tn) || /^al_/.test(tn) || /run_in_terminal/.test(tn);
       const isRealMcp = /^mcp_/.test(tn);  // true MCP-protocol tools — expanded + full details by default
-      const isMuted = /^copilot_(readfile|listdirectory|findfiles|findtextinfiles|getworkspacestructure|getnotebooksummary)$/.test(tn.replace(/[^a-z_]/g,''))
-        || /^vscode_fetchwebpage/.test(tn.replace(/[^a-z_]/g,''));
+      const isMuted = !isSkill && (/^copilot_(readfile|listdirectory|findfiles|findtextinfiles|getworkspacestructure|getnotebooksummary)$/.test(tn.replace(/[^a-z_]/g,''))
+        || /^vscode_fetchwebpage/.test(tn.replace(/[^a-z_]/g,'')));
       // All tools start collapsed
       wrap.className = 'tool-wrap collapsed';
-      if (isRealMcp || isMcp) wrap.classList.add('tool-mcp');
+      if (isSkill) wrap.classList.add('tool-skill');
+      else if (isRealMcp || isMcp) wrap.classList.add('tool-mcp');
       else if (isMuted) wrap.classList.add('tool-muted');
 
       // Summary header: icon + name + description + first-line of result
