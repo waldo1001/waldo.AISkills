@@ -1,6 +1,6 @@
 ---
 name: chat-replayer
-description: Convert AI agent chat sessions (Copilot Studio, GitHub Copilot Chat, ChatGPT, Claude, or any pasted/exported conversation) into self-contained, sanitized HTML files that replay the chat for live presentation. Use this skill whenever the user wants to "show a chat", "replay a conversation", "demo an agent session", "turn a chat into HTML", "make a chat for my talk", or needs to present an AI conversation to an audience without doing it live. Also use for sanitizing chat transcripts before sharing, or building reusable demo chats for conference talks, internal training, or sales demos. Strongly prefer this skill over manually constructing HTML or markdown when the goal is to present a chat session.
+description: Convert AI agent chat sessions (Copilot Studio, GitHub Copilot Chat, ChatGPT, Claude, Claude Code sessions via their `/export` file, or any pasted/exported conversation) into self-contained, sanitized HTML files that replay the chat for live presentation. Use this skill whenever the user wants to "show a chat", "replay a conversation", "demo an agent session", "turn a chat into HTML", "make a chat for my talk", or needs to present an AI conversation to an audience without doing it live. Also use for sanitizing chat transcripts before sharing, or building reusable demo chats for conference talks, internal training, or sales demos. Strongly prefer this skill over manually constructing HTML or markdown when the goal is to present a chat session.
 ---
 
 # Chat Replayer
@@ -40,6 +40,35 @@ Ask the user how they want to provide the chat. Accept any of:
 - **A screenshot** — Claude is multimodal; OCR the conversation visually if needed.
 - **A description** — for hand-crafted demo chats (no real source).
 - **VS Code Copilot Chat session** — pick from the current workspace's chat history (see below).
+- **Claude Code session** (including "this chat") — **always via `/export`** (see below).
+
+### Claude Code session — always through `/export`
+
+For any Claude Code chat, including the current one ("this chat", "this session"), the input is
+**the `.txt` file the user writes with `/export`**. Nothing else.
+
+- **Never read the session store yourself**: not `~/.claude/projects/**/*.jsonl`, not subagent
+  transcripts, not task output files. Rebuilding a session from those files trips the safety
+  classifier and stops the response. The export is the sanctioned route.
+- If the user asks for "this chat" without a file, do not start: ask them to run `/export`
+  (save to file) and to give you the path. One line, no workaround.
+- Convert it with:
+  ```bash
+  node scripts/extract-claude-export.mjs "<export.txt>" --out ./transcript.json [--title "..."] [--questions ./questions.json]
+  ```
+  This produces the transcript — **skip Step 2** and go to Step 3. By default the export is cut
+  at the first `/chat-replayer` prompt, so the replay ends before the request to build it;
+  `--keep-all` keeps everything.
+- **Question dialogs (AskUserQuestion).** The export keeps only "question → answer", not the
+  answer options. Without `--questions` the replay shows each question with the chosen answer.
+  When the chat is **the current session**, you wrote the options yourself and still have
+  them: write them to `questions.json` (one array per dialog, in order: `{ header, question,
+  multiSelect?, options: [{label, description}], answer, other? }`, `other: true` for a typed
+  answer) and pass `--questions`. The script refuses a round count that does not match the
+  export. For an older session, say the options are not in the export.
+- What the export collapses ("Ran N shell commands", "… +N lines") stays collapsed in the
+  replay. Say so in the hand-over; do not reconstruct it from the session store.
+- Write the HTML **next to the export file** unless the user names another place.
 
 If the source isn't obvious, ask: *"Is this from Copilot Studio, Copilot Chat, ChatGPT, Claude, or something else?"* — knowing the source helps with parsing tool calls, which every platform formats differently.
 
@@ -201,6 +230,7 @@ The user is building this once to use across many agent demos. After the first r
 
 ## Common pitfalls
 
+- **Don't read Claude Code's session files** (`~/.claude/projects/**/*.jsonl`). A Claude Code chat comes in through `/export` only — see Step 1.
 - **Don't render a chat into HTML directly.** Always go through the schema. The schema is what makes the player consistent and makes future edits possible.
 - **Don't skip sanitization** even for "internal" chats. The user is building demo material — assume it will end up on a public conference recording.
 - **Don't add dependencies** to the scripts beyond what's already there (Node built-ins only). The whole point is portability.
