@@ -18,6 +18,7 @@ dist/             Packaged skill .zip files, ready to upload.
 | [chat-replayer](skills/chat-replayer/SKILL.md) | Convert AI agent chat sessions into self-contained, sanitized HTML files that replay the chat for live presentation. |
 | [ifacto-presentation](skills/ifacto-presentation/SKILL.md) | Build HTML presentation decks styled like the iFacto.be brand — green-on-black, Poppins, one-green-word headlines, alternating dark/light slides, and a working multi-slide template with keyboard nav and step reveals. |
 | [bctechdays-presentation](skills/bctechdays-presentation/SKILL.md) | Build HTML presentation decks styled like the BC TechDays 2026 brand — light canvas, RED Montagu Slab slab-serif titles, Corbel body, full-bleed indigo/coral panels, and the real logo + wireframe-roster + glitch-wave artwork inlined from the official PowerPoint. Carries the full iFacto pattern engine (grid, timeline, bridge stage). |
+| [directions-presentation](skills/directions-presentation/SKILL.md) | Build HTML presentation decks styled like the Directions EMEA 2026 Paris brand — white canvas, Vibrant Purple panels with the Dark Purple waves, Poppins, the real four-colour frame logo and stripe, and the official layouts (title, agenda, section, big title, KPI/donut stats, laptop + hand-phone mockups, feedback, end slide) on the same shared pattern engine. |
 
 ## Workspace-local skills
 
