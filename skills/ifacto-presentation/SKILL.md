@@ -35,7 +35,7 @@ These come from inspecting the live site. Don't substitute values — the brand 
 
 | Token | Value | Where it shows up |
 |---|---|---|
-| Primary green | `#3BAF5A` | Accent words, buttons, links, logo ring, chevrons |
+| Primary green | `#3BAF5A` | Accent words, buttons, links, logo egg, chevrons |
 | Near-black | `#040404` | Dark slide background |
 | White | `#FFFFFF` | Light slide background |
 | Off-white text on dark | `#FBFBFC` | Body on dark slides |
@@ -115,7 +115,9 @@ Why bottom-left, not top-right / top-center / bottom-center / bottom-right:
 
 ## Logo
 
-Green animated SVG ring + "ifacto" wordmark + "level up your business" tagline. The ring rotates slowly (28s loop) — leave that alone, it's a nice subtle signal that the page is alive.
+The logo is the **official iFacto logo** from the logo kit (OneDrive `Huisstijl Ifacto/ifacto logo kit png.zip`), embedded as base64 images so the deck stays one file: the green egg (`.egg`) + the wordmark with tagline, dark variant on light slides and light variant on dark slides (`.wd-dark` / `.wd-light`). It sits left in the `.topbar`, `.topnav` text right. Never redraw the logo as a circle, SVG ring or text: always use these images.
+
+**Rolling egg**: on every slide change the egg rolls in from the left into its place in the logo, rolling without slipping over its real contour, and rocks briefly before it settles. The script sits just before `</body>`; it honours `prefers-reduced-motion`. Keep it.
 
 ## Slide patterns available in the template
 
@@ -176,7 +178,7 @@ These are all in the template and they're cheap. Don't strip them — they're wh
 
 - Slide entry: stagger-reveal (each `.reveal` element fades up 120ms after the previous).
 - Hero: floating blur orbs (`.glow1/2/3`), speed lines streaking horizontally.
-- Logo ring: slow rotation.
+- Logo: the egg rolls in on every slide change.
 - Cards: hover lift + green corner glow.
 - Flow path: animated dashed stroke.
 - Live flow step: pulsing green halo.
